@@ -86,6 +86,7 @@ export default function UserMenu({ email, name }: UserMenuProps) {
             <form action={logoutAction} className="px-2">
               <button
                 type="submit"
+                role="menuitem"
                 className="w-full text-left px-3 py-2.5 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-3 transition-colors"
               >
                 <FiLogOut size={15} />
