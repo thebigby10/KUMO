@@ -56,6 +56,7 @@ export function Badge({
         <span
           className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColors[variant]}`}
           aria-hidden="true"
+          role="status"
         />
       )}
       {children}
