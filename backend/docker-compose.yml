@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  # --- Your FastAPI Service ---
+  api:
+    build: code-submission-service
+    ports:
+      - "8000:8000"
+    environment:
+      # Note: We use the service name 'judge0-server' here!
+      - JUDGE0_URL=http://judge0-server:2358
+    depends_on:
+      - judge0-server
+
+  # --- Judge0 Services (Simplified) ---
+  judge0-server:
+    image: judge0/judge0:1.13.1
+    ports:
+      - "2358:2358"
+    privileged: true
+    volumes:
+      - ./judge0.conf:/judge0.conf:ro
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=judge0
+      - POSTGRES_DB=judge0
+
+  redis:
+    image: redis:6.0
