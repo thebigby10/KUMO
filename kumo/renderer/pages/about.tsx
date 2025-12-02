@@ -6,7 +6,7 @@ import React from "react";
 
 export default function AboutPage() {
   return (
-    <React.Fragment>
+    <>
       {/* In Next.js, use <Head> to set the title. For this preview, we skip it.
       <Head>
         <title>About - Nextron</title>
@@ -32,6 +32,6 @@ export default function AboutPage() {
           &larr; Back to Home
         </a>
       </div>
-    </React.Fragment>
+    </>
   );
 }
