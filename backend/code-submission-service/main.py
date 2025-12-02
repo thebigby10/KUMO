@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 import httpx
@@ -9,7 +10,7 @@ app = FastAPI(title="Code Submission Service")
 # CONFIGURATION
 # If running locally via Docker Compose, use the service name 'judge0-server'
 # If running FastAPI on host and Judge0 in Docker, use 'localhost'
-JUDGE0_URL = "http://localhost:2358"
+JUDGE0_URL = os.getenv("JUDGE0_URL", "http://judge0-server:2358")
 
 # ---------------------------------------------------------
 # 1. Pydantic Models (Data Validation)
@@ -76,7 +77,7 @@ async def submit_code(payload: SubmissionSchema):
         "language_id": payload.language_id,
         "stdin": payload.stdin,
     }
-
+    print(judge0_payload)
     result = await create_judge0_submission(judge0_payload)
     return {"token": result["token"]}
 

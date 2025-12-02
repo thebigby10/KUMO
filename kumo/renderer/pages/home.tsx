@@ -1,67 +1,213 @@
 import React, { useState, useEffect } from "react";
 
-// NOTE: In your actual Nextron/Next.js app, uncomment the following imports:
-// import Head from 'next/head';
-// import Link from 'next/link';
-
 export default function HomePage() {
   const [ipcMessage, setIpcMessage] = useState("");
+  const [code, setCode] = useState(`function solution(input) {
+  // Write your code here...
+  console.log("Processing: " + input);
+  return true;
+}`);
+  const [inputData, setInputData] = useState("1 2 3 4 5");
+  const [outputData, setOutputData] = useState("");
+  const [activeTab, setActiveTab] = useState("output"); // 'input' or 'output' for mobile/tab switching if needed
 
-  // Function to talk to background.ts
+  // IPC Logic
   const sendPing = () => {
-    // Check if window.ipc exists (it might not in the web preview)
     if (typeof window !== "undefined" && window.ipc) {
-      window.ipc.send("ping", "Hello from the Home Page!");
-    } else {
-      console.log("IPC not available in browser preview");
-      setIpcMessage("IPC not available in browser preview");
+      window.ipc.send("ping", "Run Command Initiated");
     }
   };
 
   useEffect(() => {
-    // Listen for the 'pong' reply from background.ts
     if (typeof window !== "undefined" && window.ipc) {
-      window.ipc.on("pong", (event: any, arg: string) => {
-        setIpcMessage(arg);
-      });
+      window.ipc.on("pong", (event, arg) => setIpcMessage(arg));
     }
   }, []);
 
+  // Handlers
+  const handleRun = () => {
+    setActiveTab("output");
+    setOutputData(
+      "> Compiling...\n> Running main.js...\n> Hello World\n> Process finished with exit code 0",
+    );
+    sendPing();
+  };
+
+  const handleTest = () => {
+    setActiveTab("output");
+    setOutputData(
+      "> Running Test Suite...\n> Test 1: Passed [10ms]\n> Test 2: Passed [12ms]\n> Test 3: Failed (Expected 5, got 4)",
+    );
+  };
+
+  const handleSubmit = () => {
+    setActiveTab("output");
+    setOutputData(
+      "> Submitting to server...\n> 🚀 Submission Accepted!\n> Runtime: 45ms\n> Memory: 24MB",
+    );
+  };
+
   return (
-    <React.Fragment>
-      {/* In Next.js, use <Head> to set the title. For this preview, we skip it.
-      <Head>
-        <title>Home - Nextron</title>
-      </Head>
-      */}
-
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center text-gray-800">
-        <h1 className="text-5xl font-bold mb-4 text-blue-600">Hello World</h1>
-        <p className="mb-8 text-xl">
-          This is the Home Page running in Electron.
-        </p>
-
-        {/* IPC Demo Section */}
-        <div className="p-6 bg-white rounded shadow-md text-center mb-8">
-          <p className="mb-2 font-semibold">IPC Status:</p>
-          <p className="mb-4 text-sm text-gray-500 font-mono">
-            {ipcMessage || "No message received yet"}
-          </p>
-          <button
-            onClick={sendPing}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          >
-            Ping Background Process
-          </button>
+    <div className="flex h-screen w-full bg-[#09090b] text-zinc-300 font-sans selection:bg-blue-500/30 overflow-hidden">
+      {/* --- LEFT PANEL: EDITOR --- */}
+      <div className="w-7/12 flex flex-col border-r border-white/10">
+        {/* Editor Header */}
+        <div className="h-12 bg-[#09090b] border-b border-white/10 flex items-center px-4 justify-between select-none">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center justify-center w-5 h-5 rounded bg-blue-600/20 text-blue-400 text-xs font-bold">
+              JS
+            </span>
+            <span className="text-sm font-medium text-zinc-100">
+              solution.js
+            </span>
+          </div>
+          <div className="text-xs text-zinc-500 flex gap-2 items-center">
+            <div
+              className={`w-2 h-2 rounded-full ${ipcMessage ? "bg-green-500" : "bg-zinc-700"}`}
+            ></div>
+            {ipcMessage ? "Connected" : "Offline"}
+          </div>
         </div>
 
-        {/* Routing Link
-            NOTE: In your actual app, use: <Link href="/about">Go to About Page &rarr;</Link>
-        */}
-        <a href="/about" className="text-blue-500 hover:underline text-lg">
-          Go to About Page &rarr;
-        </a>
+        {/* Editor Body */}
+        <div className="flex-1 relative group">
+          {/* Line Numbers (Visual only for this demo) */}
+          <div className="absolute left-0 top-0 bottom-0 w-12 bg-[#09090b] border-r border-white/5 flex flex-col items-end pt-4 pr-3 text-zinc-600 font-mono text-sm select-none">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div key={i} className="leading-6">
+                {i + 1}
+              </div>
+            ))}
+          </div>
+
+          {/* Text Area */}
+          <textarea
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="w-full h-full bg-[#0c0c0e] pl-16 pr-4 pt-4 text-sm font-mono leading-6 text-zinc-100 resize-none focus:outline-none"
+            spellCheck="false"
+          />
+        </div>
       </div>
-    </React.Fragment>
+
+      {/* --- RIGHT PANEL: I/O & CONTROLS --- */}
+      <div className="w-5/12 flex flex-col bg-[#0c0c0e]">
+        {/* Input Section */}
+        <div className="flex-1 flex flex-col min-h-0 border-b border-white/10">
+          <div className="h-10 bg-[#09090b] border-b border-white/10 flex items-center px-4 justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+              Standard Input
+            </span>
+          </div>
+          <textarea
+            value={inputData}
+            onChange={(e) => setInputData(e.target.value)}
+            className="flex-1 w-full bg-transparent p-4 font-mono text-sm text-zinc-300 resize-none focus:outline-none placeholder-zinc-700"
+            placeholder="Enter input data here..."
+          />
+        </div>
+
+        {/* Output Section */}
+        <div className="flex-1 flex flex-col min-h-0 relative">
+          <div className="h-10 bg-[#09090b] border-b border-white/10 flex items-center px-4 justify-between border-t border-white/10">
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+              Console Output
+            </span>
+            <button
+              onClick={() => setOutputData("")}
+              className="text-xs text-zinc-600 hover:text-zinc-400 transition"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="flex-1 w-full bg-[#09090b] p-4 font-mono text-sm overflow-y-auto">
+            {outputData ? (
+              <pre className="text-green-400/90 whitespace-pre-wrap">
+                {outputData}
+              </pre>
+            ) : (
+              <span className="text-zinc-700 italic">
+                Run code to see output...
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* --- BOTTOM ACTION BAR --- */}
+        <div className="h-16 bg-[#09090b] border-t border-white/10 flex items-center justify-between px-6">
+          <div className="text-xs text-zinc-600">Ready to submit</div>
+
+          <div className="flex items-center gap-3">
+            {/* Run Button */}
+            <button
+              onClick={handleRun}
+              className="group flex items-center gap-2 px-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-all active:scale-95 border border-white/5"
+            >
+              <svg
+                className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                ></path>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+              <span className="text-sm font-medium">Run</span>
+            </button>
+
+            {/* Test Button */}
+            <button
+              onClick={handleTest}
+              className="group flex items-center gap-2 px-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-all active:scale-95 border border-white/5"
+            >
+              <svg
+                className="w-4 h-4 text-yellow-500/80 group-hover:text-yellow-400 transition-colors"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                ></path>
+              </svg>
+              <span className="text-sm font-medium">Test</span>
+            </button>
+
+            {/* Submit Button */}
+            <button
+              onClick={handleSubmit}
+              className="flex items-center gap-2 px-6 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                ></path>
+              </svg>
+              <span className="text-sm font-semibold">Submit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

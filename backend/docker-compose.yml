@@ -1,31 +1,58 @@
 version: "3.8"
 
 services:
-  # --- Your FastAPI Service ---
   api:
     build: code-submission-service
     ports:
       - "8000:8000"
     environment:
-      # Note: We use the service name 'judge0-server' here!
       - JUDGE0_URL=http://judge0-server:2358
     depends_on:
       - judge0-server
 
-  # --- Judge0 Services (Simplified) ---
   judge0-server:
-    image: judge0/judge0:1.13.1
+    image: judge0/judge0:1.13.0 # Use specific version
+    command: ["./scripts/server"]
     ports:
       - "2358:2358"
     privileged: true
     volumes:
-      - ./judge0.conf:/judge0.conf:ro
+      - ./judge0.conf:/judge0/config/judge0.conf # Mount config file
     depends_on:
       - db
       - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=judge0
+      - POSTGRES_DB=judge0
+
+  judge0-workers:
+    image: judge0/judge0:1.13.0 # Use specific version
+    command: ["./scripts/workers"]
+    privileged: true
+    volumes:
+      - ./judge0.conf:/judge0/config/judge0.conf # Mount config file
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=judge0
+      - POSTGRES_DB=judge0
+      - SERVICE_TYPE=worker
 
   db:
     image: postgres:13
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=judge0
       - POSTGRES_PASSWORD=judge0
@@ -33,3 +60,7 @@ services:
 
   redis:
     image: redis:6.0
+    command: ["redis-server", "--appendonly", "yes"]
+
+volumes:
+  postgres-data:
