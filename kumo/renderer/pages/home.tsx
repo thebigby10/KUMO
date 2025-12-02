@@ -20,7 +20,21 @@ export default function HomePage() {
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.ipc) {
-      window.ipc.on("pong", (event, arg) => setIpcMessage(arg));
+      // ipc.on forwards unknown[] from preload; normalize the first arg to a string
+      window.ipc.on("pong", (...args: unknown[]) => {
+        const first = args[0];
+        if (typeof first === "string") {
+          setIpcMessage(first);
+        } else if (first === undefined) {
+          setIpcMessage("");
+        } else {
+          try {
+            setIpcMessage(JSON.stringify(first));
+          } catch {
+            setIpcMessage(String(first));
+          }
+        }
+      });
     }
   }, []);
 
@@ -50,18 +64,18 @@ export default function HomePage() {
   return (
     <div className="flex h-screen w-full bg-[#09090b] text-zinc-300 font-sans selection:bg-blue-500/30 overflow-hidden">
       {/* --- LEFT PANEL: EDITOR --- */}
-      <div className="w-7/12 flex flex-col border-r border-white/10">
+      <div className="flex flex-col w-7/12 border-r border-white/10">
         {/* Editor Header */}
         <div className="h-12 bg-[#09090b] border-b border-white/10 flex items-center px-4 justify-between select-none">
           <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-5 h-5 rounded bg-blue-600/20 text-blue-400 text-xs font-bold">
+            <span className="flex items-center justify-center w-5 h-5 text-xs font-bold text-blue-400 rounded bg-blue-600/20">
               JS
             </span>
             <span className="text-sm font-medium text-zinc-100">
               solution.js
             </span>
           </div>
-          <div className="text-xs text-zinc-500 flex gap-2 items-center">
+          <div className="flex items-center gap-2 text-xs text-zinc-500">
             <div
               className={`w-2 h-2 rounded-full ${ipcMessage ? "bg-green-500" : "bg-zinc-700"}`}
             ></div>
@@ -70,7 +84,7 @@ export default function HomePage() {
         </div>
 
         {/* Editor Body */}
-        <div className="flex-1 relative group">
+        <div className="relative flex-1 group">
           {/* Line Numbers (Visual only for this demo) */}
           <div className="absolute left-0 top-0 bottom-0 w-12 bg-[#09090b] border-r border-white/5 flex flex-col items-end pt-4 pr-3 text-zinc-600 font-mono text-sm select-none">
             {Array.from({ length: 20 }).map((_, i) => (
@@ -93,40 +107,40 @@ export default function HomePage() {
       {/* --- RIGHT PANEL: I/O & CONTROLS --- */}
       <div className="w-5/12 flex flex-col bg-[#0c0c0e]">
         {/* Input Section */}
-        <div className="flex-1 flex flex-col min-h-0 border-b border-white/10">
+        <div className="flex flex-col flex-1 min-h-0 border-b border-white/10">
           <div className="h-10 bg-[#09090b] border-b border-white/10 flex items-center px-4 justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+            <span className="text-xs font-bold tracking-wider uppercase text-zinc-500">
               Standard Input
             </span>
           </div>
           <textarea
             value={inputData}
             onChange={(e) => setInputData(e.target.value)}
-            className="flex-1 w-full bg-transparent p-4 font-mono text-sm text-zinc-300 resize-none focus:outline-none placeholder-zinc-700"
+            className="flex-1 w-full p-4 font-mono text-sm text-gray-400 bg-transparent resize-none focus:outline-none placeholder-zinc-700"
             placeholder="Enter input data here..."
           />
         </div>
 
         {/* Output Section */}
-        <div className="flex-1 flex flex-col min-h-0 relative">
-          <div className="h-10 bg-[#09090b] border-b border-white/10 flex items-center px-4 justify-between border-t border-white/10">
-            <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+        <div className="relative flex flex-col flex-1 min-h-0">
+          <div className="h-10 bg-[#09090b] border-b border-white/10 flex items-center px-4 justify-between border-t">
+            <span className="text-xs font-bold tracking-wider uppercase text-zinc-500">
               Console Output
             </span>
             <button
               onClick={() => setOutputData("")}
-              className="text-xs text-zinc-600 hover:text-zinc-400 transition"
+              className="text-xs transition text-zinc-600 hover:text-zinc-400"
             >
               Clear
             </button>
           </div>
           <div className="flex-1 w-full bg-[#09090b] p-4 font-mono text-sm overflow-y-auto">
             {outputData ? (
-              <pre className="text-green-400/90 whitespace-pre-wrap">
+              <pre className="whitespace-pre-wrap text-green-400/90">
                 {outputData}
               </pre>
             ) : (
-              <span className="text-zinc-700 italic">
+              <span className="italic text-zinc-700">
                 Run code to see output...
               </span>
             )}
@@ -141,10 +155,10 @@ export default function HomePage() {
             {/* Run Button */}
             <button
               onClick={handleRun}
-              className="group flex items-center gap-2 px-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-all active:scale-95 border border-white/5"
+              className="flex items-center gap-2 px-4 py-2 transition-all border rounded-md group bg-zinc-800 hover:bg-zinc-700 text-zinc-200 active:scale-95 border-white/5"
             >
               <svg
-                className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors"
+                className="w-4 h-4 transition-colors text-zinc-400 group-hover:text-white"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -167,10 +181,10 @@ export default function HomePage() {
             {/* Test Button */}
             <button
               onClick={handleTest}
-              className="group flex items-center gap-2 px-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-all active:scale-95 border border-white/5"
+              className="flex items-center gap-2 px-4 py-2 transition-all border rounded-md group bg-zinc-800 hover:bg-zinc-700 text-zinc-200 active:scale-95 border-white/5"
             >
               <svg
-                className="w-4 h-4 text-yellow-500/80 group-hover:text-yellow-400 transition-colors"
+                className="w-4 h-4 transition-colors text-yellow-500/80 group-hover:text-yellow-400"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -188,7 +202,7 @@ export default function HomePage() {
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
-              className="flex items-center gap-2 px-6 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+              className="flex items-center gap-2 px-6 py-2 text-white transition-all bg-blue-600 rounded-md shadow-lg hover:bg-blue-500 shadow-blue-500/20 active:scale-95"
             >
               <svg
                 className="w-4 h-4"
