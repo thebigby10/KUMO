@@ -1,0 +1,58 @@
+services:
+  # 1. Your FastAPI Service
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PISTON_URL=http://piston:2000
+    depends_on:
+      piston:
+        condition: service_started
+      piston_installer:
+        condition: service_completed_successfully
+    networks:
+      - execution-net
+
+  # 2. Piston Engine
+  piston:
+    image: ghcr.io/engineer-man/piston:latest
+    container_name: piston_engine
+    restart: always
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    volumes:
+      - piston_packages:/piston/packages
+    tmpfs:
+      - /tmp:exec
+      # Fix for "Read-only file system" errors
+      - /piston/jobs
+    networks:
+      - execution-net
+
+  # 3. Auto-Installer (Fixes "Missing CLI" issue)
+  piston_installer:
+    image: node:18-alpine
+    container_name: piston_installer
+    # This container clones the CLI tool and runs it for you
+    command: >
+      sh -c "
+      apk add --no-cache git &&
+      git clone https://github.com/engineer-man/piston /tmp/piston &&
+      cd /tmp/piston/cli &&
+      npm install &&
+      echo 'Installing languages...' &&
+      node index.js -u http://piston:2000 ppman install python java gcc &&
+      echo 'Done!'
+      "
+    depends_on:
+      - piston
+    networks:
+      - execution-net
+
+volumes:
+  piston_packages:
+
+networks:
+  execution-net:
