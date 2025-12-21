@@ -14,12 +14,29 @@ import Link from "next/link";
 import Editor from "@monaco-editor/react";
 import { createLabWork, editLabWork } from "@/actions/work"; // Import edit action
 
+type TaskLanguage = "python" | "cpp" | "c" | "java";
+
+const LANGUAGE_DEFAULTS: Record<TaskLanguage, string> = {
+  python: `def main():\n    # Write your code here\n    pass\n\nif __name__ == "__main__":\n    main()`,
+  cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n    return 0;\n}`,
+  c: `#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}`,
+  java: `public class Main {\n    public static void main(String[] args) {\n        // Write your code here\n    }\n}`,
+};
+
+const LANGUAGE_LABELS: Record<TaskLanguage, string> = {
+  python: "Python 3",
+  cpp: "C++ (GCC)",
+  c: "C (GCC)",
+  java: "Java (OpenJDK)",
+};
+
 interface TaskData {
   id?: string; // DB ID (optional, only exists in edit mode)
   uiId: string; // Internal React key
   title: string;
   description: string;
   pdfUrl: string;
+  language: TaskLanguage;
   starterCode: string;
   testCases: { input: string; expectOutput: string }[];
   hints: string[];
@@ -71,6 +88,7 @@ export default function CreateAssignmentForm({
         title: t.title,
         description: t.description || "",
         pdfUrl: t.url || "", // Map DB 'url' to 'pdfUrl'
+        language: (t.language || "python") as TaskLanguage,
         starterCode: t.editors[0]?.solution || "",
         testCases: t.testCases || [],
         hints: t.hints?.map((h: any) => h.hint) || [],
@@ -83,7 +101,8 @@ export default function CreateAssignmentForm({
         title: "Problem 1",
         description: "",
         pdfUrl: "",
-        starterCode: `def main():\n    # Write your code here\n    pass\n\nif __name__ == "__main__":\n    main()`,
+        language: "python" as TaskLanguage,
+        starterCode: LANGUAGE_DEFAULTS.python,
         testCases: [],
         hints: [],
         isExpanded: true,
@@ -100,7 +119,8 @@ export default function CreateAssignmentForm({
         title: `Problem ${prev.length + 1}`,
         description: "",
         pdfUrl: "",
-        starterCode: `def main():\n    # Write your code here\n    pass\n\nif __name__ == "__main__":\n    main()`,
+        language: "python" as TaskLanguage,
+        starterCode: LANGUAGE_DEFAULTS.python,
         testCases: [],
         hints: [],
         isExpanded: true,
@@ -202,6 +222,7 @@ export default function CreateAssignmentForm({
           title: t.title,
           description: t.description,
           pdfUrl: t.pdfUrl,
+          language: t.language,
           starterCode: t.starterCode,
           testCases: t.testCases,
           hints: t.hints.filter((h) => h.trim() !== ""),
@@ -239,53 +260,53 @@ export default function CreateAssignmentForm({
   >
     {/* Error */}
     {error && (
-      <div className="flex items-center gap-2 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
+      <div className="flex items-center gap-2 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600">
         <AlertCircle size={18} />
         <span className="text-sm">{error}</span>
       </div>
     )}
 
     {/* 1. Assignment Info */}
-    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 space-y-6">
-      <h3 className="text-lg font-semibold text-white border-b border-slate-700 pb-3">
+    <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-6 shadow-sm">
+      <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-3">
         {isEditMode ? "Edit Assignment" : "Assignment Details"}
       </h3>
 
       <div className="space-y-5">
         {/* Title */}
         <div>
-          <label className="text-sm font-medium text-slate-300 mb-1 block">
+          <label className="text-sm font-medium text-gray-700 mb-1 block">
             Title <span className="text-red-400">*</span>
           </label>
           <input
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-800 text-white placeholder-slate-500
-              border border-slate-700 rounded-lg
-              focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+            className="w-full px-4 py-3 bg-gray-50 text-gray-900 placeholder-gray-400
+              border border-gray-200 rounded-lg
+              focus:ring-2 focus:ring-pink-400/20 focus:border-pink-400 outline-none"
             placeholder="e.g. Lab 1"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="text-sm font-medium text-slate-300 mb-1 block">
+          <label className="text-sm font-medium text-gray-700 mb-1 block">
             Description
           </label>
           <textarea
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-800 text-white placeholder-slate-500
-              border border-slate-700 rounded-lg outline-none"
+            className="w-full px-4 py-3 bg-gray-50 text-gray-900 placeholder-gray-400
+              border border-gray-200 rounded-lg outline-none"
           />
         </div>
 
         {/* Meta */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div>
-            <label className="text-sm text-slate-300 mb-1 block">
+            <label className="text-sm text-gray-700 mb-1 block">
               Total Points
             </label>
             <input
@@ -293,34 +314,34 @@ export default function CreateAssignmentForm({
               min={0}
               value={points}
               onChange={(e) => setPoints(Number(e.target.value))}
-              className="w-full px-4 py-3 bg-slate-800 text-white
-                border border-slate-700 rounded-lg outline-none"
+              className="w-full px-4 py-3 bg-gray-50 text-gray-900
+                border border-gray-200 rounded-lg outline-none"
             />
           </div>
 
           <div>
-            <label className="text-sm text-slate-300 mb-1 block">
+            <label className="text-sm text-gray-700 mb-1 block">
               Start Time
             </label>
             <input
               type="datetime-local"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full px-4 py-3 bg-slate-800 text-slate-300
-                border border-slate-700 rounded-lg outline-none"
+              className="w-full px-4 py-3 bg-gray-50 text-gray-700
+                border border-gray-200 rounded-lg outline-none"
             />
           </div>
 
           <div>
-            <label className="text-sm text-slate-300 mb-1 block">
+            <label className="text-sm text-gray-700 mb-1 block">
               Due Date
             </label>
             <input
               type="datetime-local"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="w-full px-4 py-3 bg-slate-800 text-slate-300
-                border border-slate-700 rounded-lg outline-none"
+              className="w-full px-4 py-3 bg-gray-50 text-gray-700
+                border border-gray-200 rounded-lg outline-none"
             />
           </div>
         </div>
@@ -330,10 +351,10 @@ export default function CreateAssignmentForm({
     {/* 2. Problems */}
     <div className="space-y-5">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-white">
+        <h3 className="text-lg font-semibold text-gray-900">
           Coding Problems
         </h3>
-        <span className="text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+        <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
           {tasks.length} Problems
         </span>
       </div>
@@ -341,15 +362,15 @@ export default function CreateAssignmentForm({
       {tasks.map((task, tIndex) => (
         <div
           key={task.uiId}
-          className="bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden"
+          className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm"
         >
           {/* Header */}
           <div
             onClick={() => toggleTask(tIndex)}
             className="flex items-center justify-between px-6 py-4 cursor-pointer
-              bg-slate-800/60 hover:bg-slate-800 transition"
+              bg-gray-50 hover:bg-gray-100 transition"
           >
-            <div className="flex items-center gap-2 text-slate-200 font-medium">
+            <div className="flex items-center gap-2 text-gray-700 font-medium">
               {task.isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               {task.title || `Problem ${tIndex + 1}`}
             </div>
@@ -360,22 +381,22 @@ export default function CreateAssignmentForm({
                 e.stopPropagation();
                 removeTask(tIndex);
               }}
-              className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
             >
               <Trash2 size={18} />
             </button>
           </div>
 
           {task.isExpanded && (
-            <div className="p-6 space-y-6 border-t border-slate-700">
+            <div className="p-6 space-y-6 border-t border-gray-200">
               {/* Task Fields */}
               <input
                 value={task.title}
                 onChange={(e) =>
                   updateTaskField(tIndex, "title", e.target.value)
                 }
-                className="w-full px-4 py-3 bg-slate-800 text-white
-                  border border-slate-700 rounded-lg outline-none"
+                className="w-full px-4 py-3 bg-gray-50 text-gray-900
+                  border border-gray-200 rounded-lg outline-none"
                 placeholder="Problem title"
               />
 
@@ -384,8 +405,8 @@ export default function CreateAssignmentForm({
                 onChange={(e) =>
                   updateTaskField(tIndex, "pdfUrl", e.target.value)
                 }
-                className="w-full px-4 py-3 bg-slate-800 text-white
-                  border border-slate-700 rounded-lg outline-none"
+                className="w-full px-4 py-3 bg-gray-50 text-gray-900
+                  border border-gray-200 rounded-lg outline-none"
                 placeholder="PDF URL"
               />
 
@@ -395,15 +416,44 @@ export default function CreateAssignmentForm({
                 onChange={(e) =>
                   updateTaskField(tIndex, "description", e.target.value)
                 }
-                className="w-full px-4 py-3 bg-slate-800 text-white
-                  border border-slate-700 rounded-lg outline-none"
+                className="w-full px-4 py-3 bg-gray-50 text-gray-900
+                  border border-gray-200 rounded-lg outline-none"
                 placeholder="Problem description"
               />
 
-              <div className="border border-slate-700 rounded-lg overflow-hidden">
+              {/* Language Selector */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Programming Language
+                </label>
+                <select
+                  value={task.language}
+                  onChange={(e) => {
+                    const newLang = e.target.value as TaskLanguage;
+                    const updated = [...tasks];
+                    updated[tIndex] = {
+                      ...updated[tIndex],
+                      language: newLang,
+                      starterCode: LANGUAGE_DEFAULTS[newLang],
+                    };
+                    setTasks(updated);
+                  }}
+                  className="w-full px-4 py-3 bg-gray-50 text-gray-900
+                    border border-gray-200 rounded-lg outline-none"
+                >
+                  {(Object.keys(LANGUAGE_LABELS) as TaskLanguage[]).map((lang) => (
+                    <option key={lang} value={lang}>
+                      {LANGUAGE_LABELS[lang]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
                 <Editor
                   height="200px"
-                  defaultLanguage="python"
+                  defaultLanguage={task.language === "cpp" ? "cpp" : task.language}
+                  language={task.language === "cpp" ? "cpp" : task.language}
                   value={task.starterCode}
                   onChange={(val) =>
                     updateTaskField(tIndex, "starterCode", val || "")
@@ -415,34 +465,34 @@ export default function CreateAssignmentForm({
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-slate-300">
+                  <label className="text-sm font-medium text-gray-700">
                     Test Cases
                   </label>
                   <button
                     type="button"
                     onClick={() => addTestCase(tIndex)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-pink-500 hover:text-pink-600 bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-lg transition-colors"
                   >
                     <Plus size={14} />
                     Add Test Case
                   </button>
                 </div>
                 {task.testCases.length === 0 && (
-                  <p className="text-xs text-slate-500 italic">
+                  <p className="text-xs text-gray-400 italic">
                     No test cases yet. Add test cases to enable auto-grading.
                   </p>
                 )}
                 {task.testCases.map((tc, tcIdx) => (
                   <div
                     key={tcIdx}
-                    className="flex items-start gap-3 p-3 bg-slate-800/50 border border-slate-700 rounded-lg"
+                    className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg"
                   >
-                    <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded bg-slate-700 text-[10px] font-bold text-slate-400 mt-1">
+                    <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded bg-gray-200 text-[10px] font-bold text-gray-500 mt-1">
                       {tcIdx + 1}
                     </span>
                     <div className="flex-1 grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wide mb-1 block">
+                        <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1 block">
                           Input
                         </label>
                         <textarea
@@ -451,12 +501,12 @@ export default function CreateAssignmentForm({
                           onChange={(e) =>
                             updateTestCase(tIndex, tcIdx, "input", e.target.value)
                           }
-                          className="w-full px-3 py-2 bg-slate-900 text-white text-sm font-mono border border-slate-600 rounded-lg outline-none resize-none placeholder-slate-600"
+                          className="w-full px-3 py-2 bg-white text-gray-900 text-sm font-mono border border-gray-200 rounded-lg outline-none resize-none placeholder-gray-400"
                           placeholder="stdin input"
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wide mb-1 block">
+                        <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1 block">
                           Expected Output
                         </label>
                         <textarea
@@ -465,7 +515,7 @@ export default function CreateAssignmentForm({
                           onChange={(e) =>
                             updateTestCase(tIndex, tcIdx, "expectOutput", e.target.value)
                           }
-                          className="w-full px-3 py-2 bg-slate-900 text-white text-sm font-mono border border-slate-600 rounded-lg outline-none resize-none placeholder-slate-600"
+                          className="w-full px-3 py-2 bg-white text-gray-900 text-sm font-mono border border-gray-200 rounded-lg outline-none resize-none placeholder-gray-400"
                           placeholder="expected stdout"
                         />
                       </div>
@@ -473,7 +523,7 @@ export default function CreateAssignmentForm({
                     <button
                       type="button"
                       onClick={() => removeTestCase(tIndex, tcIdx)}
-                      className="shrink-0 p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors mt-1"
+                      className="shrink-0 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors mt-1"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -483,13 +533,13 @@ export default function CreateAssignmentForm({
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-slate-300">
+                  <label className="text-sm font-medium text-gray-700">
                     Hints
                   </label>
                   <button
                     type="button"
                     onClick={() => addHint(tIndex)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors"
                   >
                     <Plus size={14} />
                     Add Hint
@@ -500,19 +550,19 @@ export default function CreateAssignmentForm({
                     key={hIdx}
                     className="flex items-center gap-3"
                   >
-                    <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded bg-slate-700 text-[10px] font-bold text-slate-400">
+                    <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded bg-gray-200 text-[10px] font-bold text-gray-500">
                       {hIdx + 1}
                     </span>
                     <input
                       value={hint}
                       onChange={(e) => updateHint(tIndex, hIdx, e.target.value)}
-                      className="flex-1 px-3 py-2 bg-slate-800 text-white text-sm border border-slate-700 rounded-lg outline-none placeholder-slate-600"
+                      className="flex-1 px-3 py-2 bg-gray-50 text-gray-900 text-sm border border-gray-200 rounded-lg outline-none placeholder-gray-400"
                       placeholder="Enter a hint"
                     />
                     <button
                       type="button"
                       onClick={() => removeHint(tIndex, hIdx)}
-                      className="shrink-0 p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      className="shrink-0 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -528,8 +578,8 @@ export default function CreateAssignmentForm({
       <button
         type="button"
         onClick={addTask}
-        className="w-full py-4 rounded-2xl border-2 border-dashed border-slate-700
-          text-slate-400 hover:text-blue-400 hover:border-blue-500/50
+        className="w-full py-4 rounded-2xl border-2 border-dashed border-gray-300
+          text-gray-400 hover:text-pink-500 hover:border-pink-300
           transition flex items-center justify-center gap-2"
       >
         <Plus size={20} />
@@ -539,10 +589,10 @@ export default function CreateAssignmentForm({
 
     {/* Footer */}
     <div className="fixed bottom-6 right-8 z-20">
-      <div className="flex gap-3 bg-slate-900 border border-slate-700 p-2 rounded-xl shadow-xl">
+      <div className="flex gap-3 bg-white border border-gray-200 p-2 rounded-xl shadow-lg">
         <Link
           href={`/dashboard/lab/${labId}/work`}
-          className="px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-lg"
+          className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
         >
           Cancel
         </Link>
@@ -550,8 +600,8 @@ export default function CreateAssignmentForm({
           type="submit"
           disabled={loading}
           className="px-6 py-2 text-sm text-white rounded-lg
-            bg-gradient-to-r from-blue-600 to-indigo-600
-            hover:from-blue-500 hover:to-indigo-500
+            bg-gradient-to-r from-pink-500 to-rose-500
+            hover:from-pink-600 hover:to-rose-600
             disabled:opacity-50 flex items-center gap-2"
         >
           <Save size={16} />

@@ -5,6 +5,8 @@ import { useState } from "react";
 import { LabType } from "@/types/labType";
 import { updateLab } from "@/actions/classroom-actions/lab";
 
+import LabBannerPicker from "../LabBannerPicker";
+
 interface EditLabModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,6 +27,7 @@ export default function EditLabModal({ isOpen, onClose, userEmail, lab }: EditLa
   const [section, setSection] = useState(lab.section || "");
   const [subject, setSubject] = useState(lab.subject || "");
   const [room, setRoom] = useState(lab.room || "");
+  const [banner, setBanner] = useState(lab.banner || "bg-gradient-to-br from-pink-400 via-rose-400 to-pink-600");
 
   if (!isOpen) return null;
 
@@ -33,7 +36,11 @@ export default function EditLabModal({ isOpen, onClose, userEmail, lab }: EditLa
     setLoading(true);
     setError("");
     try {
+<<<<<<< HEAD
       await updateLab(lab.id, userEmail, { name, section, subject, room });
+=======
+      await updateLab(lab.id, userEmail, { name, section, subject, room, banner });
+>>>>>>> main
       onClose();
     } catch {
       setError("Failed to update lab. Please try again.");
@@ -128,6 +135,11 @@ export default function EditLabModal({ isOpen, onClose, userEmail, lab }: EditLa
               />
             </div>
 
+<<<<<<< HEAD
+=======
+            <LabBannerPicker value={banner} onChange={setBanner} />
+
+>>>>>>> main
             {/* Footer */}
             <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
               <button

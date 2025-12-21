@@ -49,7 +49,12 @@ interface CodeEditorPageProps {
   endTime: string | null;
 }
 
-const LANGUAGES = [{ key: "python" as LanguageKey, label: "Python" }];
+const LANGUAGES = [
+  { key: "python" as LanguageKey, label: "Python" },
+  { key: "cpp" as LanguageKey, label: "C++" },
+  { key: "c" as LanguageKey, label: "C" },
+  { key: "java" as LanguageKey, label: "Java" },
+];
 
 const CodeEditorPageInner = ({ tasks, workId, endTime }: CodeEditorPageProps) => {
   const router = useRouter();
@@ -500,7 +505,7 @@ const CodeEditorPageInner = ({ tasks, workId, endTime }: CodeEditorPageProps) =>
       <div className="flex flex-col items-center justify-center w-screen h-screen bg-[#1a1a1a] text-white space-y-6">
         <div className="p-8 bg-[#262626] rounded-xl border border-gray-700 shadow-2xl text-center max-w-md">
           <Lock className="w-16 h-16 mx-auto text-blue-500 mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Secure Exam Environment</h1>
+          <h1 className="text-2xl font-bold mb-2">Sandbox lab Environment</h1>
           <p className="text-gray-400 mb-6 text-sm">
             This assessment requires Kiosk Mode.
             <br />
