@@ -18,9 +18,9 @@ export default async function LabLayout({
   if (!lab) notFound();
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Modern Tab Navigation */}
-      <nav className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
+      <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-1 py-1">
             <NavTab href={`/dashboard/lab/${labId}`} labId={labId}>

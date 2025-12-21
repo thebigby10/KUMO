@@ -37,6 +37,7 @@ interface CreateWorkFormPayload {
     title: string;
     description: string;
     pdfUrl?: string;
+    language: string;
     starterCode: string;
     testCases: { input: string; expectOutput: string }[];
     hints: string[];
@@ -63,6 +64,7 @@ export async function createLabWork(payload: CreateWorkFormPayload) {
         title: t.title,
         description: t.description,
         pdfUrl: t.pdfUrl,
+        language: t.language || "python",
         starterCode: t.starterCode,
         point: Math.floor(payload.totalPoints / tasks.length), // Distribute points evenly
         testCases: t.testCases,
@@ -107,6 +109,7 @@ interface EditWorkFormPayload {
     title: string;
     description: string;
     pdfUrl?: string;
+    language: string;
     starterCode: string;
     testCases: { input: string; expectOutput: string }[];
     hints: string[];
@@ -146,6 +149,7 @@ export async function editLabWork(payload: EditWorkFormPayload) {
         title: t.title,
         description: t.description,
         pdfUrl: t.pdfUrl,
+        language: t.language || "python",
         starterCode: t.starterCode,
         point: Math.floor(payload.totalPoints / tasks.length),
         testCases: t.testCases,

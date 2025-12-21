@@ -18,6 +18,7 @@ export async function createLab(formData: FormData, userEmail: string) {
   const section = formData.get("section") as string;
   const subject = formData.get("subject") as string;
   const room = formData.get("room") as string;
+  const banner = formData.get("banner") as string;
 
   if (!name || !userEmail) {
     return { error: "Class name and User are required" };
@@ -30,6 +31,7 @@ export async function createLab(formData: FormData, userEmail: string) {
         section,
         subject,
         room,
+        banner,
         labCode: generateLabCode(),
         instructors: {
           create: {
@@ -122,6 +124,7 @@ export async function updateLab(
     room?: string;
     section?: string;
     subject?: string;
+    banner?: string;
     isArchived?: boolean;
   },
 ) {

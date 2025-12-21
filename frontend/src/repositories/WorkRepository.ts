@@ -11,6 +11,7 @@ export interface CreateWorkPayload {
     title: string;
     description: string;
     pdfUrl?: string;
+    language: string;
     starterCode: string;
     point: number;
     testCases: { input: string; expectOutput: string }[];
@@ -25,6 +26,7 @@ export interface UpdateWorkPayload extends CreateWorkPayload {
     title: string;
     description: string;
     pdfUrl?: string;
+    language: string;
     starterCode: string;
     point: number;
     testCases: { input: string; expectOutput: string }[];
@@ -59,6 +61,7 @@ export class WorkRepository {
             description: taskData.description,
             point: taskData.point,
             url: taskData.pdfUrl,
+            language: taskData.language || "python",
           },
         });
 
@@ -95,6 +98,7 @@ export class WorkRepository {
         createdTasks.push({
           id: newTask.id,
           starterCode: taskData.starterCode,
+          language: taskData.language || "python",
           pdfUrl: taskData.pdfUrl || null,
         });
       }
@@ -115,7 +119,7 @@ export class WorkRepository {
               taskId: task.id,
               userEmail: enrollment.userEmail,
               code: task.starterCode,
-              language: "python", // Default
+              language: task.language, // Use task's language
               status: "DRAFT" as const,
             });
           }
@@ -217,6 +221,7 @@ export class WorkRepository {
               description: taskData.description,
               point: taskData.point,
               url: taskData.pdfUrl,
+              language: taskData.language || "python",
             },
           });
 
@@ -257,6 +262,7 @@ export class WorkRepository {
               description: taskData.description,
               point: taskData.point,
               url: taskData.pdfUrl,
+              language: taskData.language || "python",
             },
           });
 
@@ -304,7 +310,7 @@ export class WorkRepository {
                 userEmail: e.userEmail,
                 code: taskData.starterCode,
                 status: "DRAFT",
-                language: "python",
+                language: taskData.language || "python",
               })),
             });
           }
