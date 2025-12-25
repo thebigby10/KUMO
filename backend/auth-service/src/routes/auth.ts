@@ -182,7 +182,7 @@ router.post('/google', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { email, name } = payload;
+    const { email, name, sub, picture, email_verified } = payload;
 
     // C. Check if user exists in OUR DB
     let user = await prisma.user.findUnique({
@@ -196,8 +196,24 @@ router.post('/google', async (req: Request, res: Response): Promise<void> => {
           email,
           name: name || 'Google User',
           password: null, // No password for Google users
+          googleId: sub,
+          provider: 'google',
+          avatar: picture,
+          isEmailVerified: email_verified === true,
         },
       });
+    } else {
+      // If user exists but doesn't have googleId linked, link it now
+      if (!user.googleId) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            googleId: sub,
+            avatar: user.avatar || picture,
+            isEmailVerified: user.isEmailVerified || (email_verified === true),
+          },
+        });
+      }
     }
 
     // E. Issue OUR Internal JWT (The "Kumo Badge")
