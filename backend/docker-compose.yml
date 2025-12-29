@@ -1,4 +1,5 @@
 services:
+  # 1. Piston Engine (The Code Runner)
   piston:
     image: ghcr.io/engineer-man/piston:latest
     container_name: piston_engine
@@ -6,12 +7,15 @@ services:
     privileged: true
     environment:
       - PISTON_DISABLE_CGROUPS=true
+    ports:
+      - "2000:2000"
     volumes:
       - ./piston-core:/piston
       - piston_packages:/piston/packages
-      - ./init_piston.sh:/piston/init_piston.sh
-    command: ["sh", "/piston/init_piston.sh"]
+    # We remove the init script command if you don't have that file created yet.
+    # It will default to starting the API.
 
+  # 2. Code Execution Service (Python Wrapper)
   code-execution-service:
     build: ./code-execution-service
     container_name: code-execution-service
@@ -22,5 +26,20 @@ services:
     environment:
       - PISTON_URL=http://piston:2000
 
+  # 3. Database (For Auth Service) - NEW!
+  postgres:
+    image: postgres:16-alpine
+    container_name: kumo_db
+    restart: always
+    environment:
+      POSTGRES_USER: kumo_admin
+      POSTGRES_PASSWORD: secure_password_123
+      POSTGRES_DB: kumo_auth
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
   piston_packages:
+  postgres_data:
