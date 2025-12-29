@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import prisma from "../lib/prisma";
 import { getCurrentUser, logoutAction } from "../actions/auth";
 import ClassroomActionWrapper from "./ClassroomActionWrapper";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   
@@ -72,43 +73,45 @@ export default async function DashboardPage() {
               const isMyClass = owner?.email === user.email;
 
               return (
-                <div key={lab.id} className="group border rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer bg-white flex flex-col h-72">
-                  {/* Banner */}
-                  <div className="h-28 bg-blue-600 p-4 text-white relative bg-[url('https://gstatic.com/classroom/themes/img_read.jpg')] bg-cover">
-                    <div className="flex justify-between items-start">
-                      <h2 className="text-xl font-medium hover:underline truncate w-10/12">{lab.name}</h2>
-                      <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/20 rounded-full transition">
-                        ⋮
+                <Link href={`/dashboard/lab/${lab.id}`} key={lab.id} className="block group h-full">
+                  <div key={lab.id} className="group border rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer bg-white flex flex-col h-72">
+                    {/* Banner */}
+                    <div className="h-28 bg-blue-600 p-4 text-white relative bg-[url('https://gstatic.com/classroom/themes/img_read.jpg')] bg-cover">
+                      <div className="flex justify-between items-start">
+                        <h2 className="text-xl font-medium hover:underline truncate w-10/12">{lab.name}</h2>
+                        <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/20 rounded-full transition">
+                          ⋮
+                        </button>
+                      </div>
+                      <p className="text-sm opacity-90 truncate mt-1">{lab.section}</p>
+                      
+                      {/* Show Teacher Name if I am a student */}
+                      {!isMyClass && owner && (
+                        <p className="text-xs absolute bottom-3 left-4 opacity-90 font-medium">
+                          {owner.name || owner.email}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Body */}
+                    <div className="p-4 flex-1 flex flex-col gap-2">
+                      <div className="text-xs text-gray-500 font-medium">
+                          {lab.subject ? lab.subject : "No Subject"}
+                          {lab.room ? ` • Room ${lab.room}` : ""}
+                      </div>
+                    </div>
+
+                    {/* Footer Icons */}
+                    <div className="border-t p-3 flex justify-end gap-1 border-gray-100 bg-gray-50/50">
+                      <button className="p-2 hover:bg-gray-200 rounded-full text-gray-600 transition" title="Open Gradebook">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                      </button>
+                      <button className="p-2 hover:bg-gray-200 rounded-full text-gray-600 transition" title="Open Folder">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
                       </button>
                     </div>
-                    <p className="text-sm opacity-90 truncate mt-1">{lab.section}</p>
-                    
-                    {/* Show Teacher Name if I am a student */}
-                    {!isMyClass && owner && (
-                       <p className="text-xs absolute bottom-3 left-4 opacity-90 font-medium">
-                         {owner.name || owner.email}
-                       </p>
-                    )}
                   </div>
-
-                  {/* Body */}
-                  <div className="p-4 flex-1 flex flex-col gap-2">
-                    <div className="text-xs text-gray-500 font-medium">
-                        {lab.subject ? lab.subject : "No Subject"}
-                        {lab.room ? ` • Room ${lab.room}` : ""}
-                    </div>
-                  </div>
-
-                  {/* Footer Icons */}
-                  <div className="border-t p-3 flex justify-end gap-1 border-gray-100 bg-gray-50/50">
-                    <button className="p-2 hover:bg-gray-200 rounded-full text-gray-600 transition" title="Open Gradebook">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                    </button>
-                    <button className="p-2 hover:bg-gray-200 rounded-full text-gray-600 transition" title="Open Folder">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-                    </button>
-                  </div>
-                </div>
+                </Link>
               );
             })}
           </div>
