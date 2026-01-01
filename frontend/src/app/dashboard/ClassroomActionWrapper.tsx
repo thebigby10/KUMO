@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Plus } from "lucide-react";
-import CreateLabModal from "../components/CreateLabModal";
-import JoinLabModal from "../components/JoinLabModal";
+import CreateLabModal from "@/components/CreateLabModal";
+import JoinLabModal from "@/components/JoinLabModal";
 
 export default function ClassroomActionWrapper({ userEmail }: { userEmail: string }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

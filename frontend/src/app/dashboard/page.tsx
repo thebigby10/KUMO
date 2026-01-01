@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import prisma from "../lib/prisma";
-import { getCurrentUser, logoutAction } from "../actions/auth";
+import prisma from "@/lib/prisma";
+import { getCurrentUser, logoutAction } from "../../actions/auth";
 import ClassroomActionWrapper from "./ClassroomActionWrapper";
 import Link from "next/link";
 

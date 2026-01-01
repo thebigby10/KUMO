@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import prisma from "@/app/lib/prisma";
-import { getCurrentUser } from "@/app/actions/auth";
+import prisma from "@/lib/prisma";
+import { getCurrentUser } from "@/actions/auth";
 import { MoreVertical, Copy } from "lucide-react";
 
 export default async function LabStreamPage({
