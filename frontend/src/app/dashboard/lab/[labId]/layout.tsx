@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import prisma from "@/app/lib/prisma";
+import prisma from "@/lib/prisma";
 import { Settings } from "lucide-react";
-import { getCurrentUser } from "@/app/actions/auth";
+import { getCurrentUser } from "@/actions/auth";
 
 export default async function LabLayout({
   children,
