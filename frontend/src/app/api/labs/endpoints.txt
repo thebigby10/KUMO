@@ -8,15 +8,16 @@ GET /api/labs - Get all labs (with optional archived query param)
 
 GET /api/labs/{id} - Get a specific lab by ID
 
-POST /api/labs - Create a new lab
+POST /api/labs - Create a new lab 
+mandatory fields:
+{
+    name,
+    userEmail
+}
 
 PUT /api/labs/{id} - Update entire lab
 
 PATCH /api/labs/{id} - Partially update lab
-
-PATCH /api/labs/{id}/archive - Archive lab
-
-PATCH /api/labs/{id}/activate - Activate archived lab
 
 DELETE /api/labs/{id} - Delete lab
 
