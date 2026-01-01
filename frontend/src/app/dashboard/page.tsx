@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import prisma from "../lib/prisma";
 import { getCurrentUser, logoutAction } from "../actions/auth";
 import ClassroomActionWrapper from "./ClassroomActionWrapper";
+import UserMenu from "../components/UserMenu";
 import Link from "next/link";
 
 export default async function DashboardPage() {
@@ -33,6 +34,7 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-white">
       {/* Navbar */}
       <nav className="flex items-center justify-between px-6 py-3 border-b bg-white sticky top-0 z-10">
+        
         <div className="flex items-center gap-2">
           <button className="p-2 hover:bg-gray-100 rounded-full transition text-gray-600">
              <div className="text-xl">☰</div>
@@ -41,16 +43,11 @@ export default async function DashboardPage() {
         </div>
         
         <div className="flex items-center gap-4">
-          {/* This wrapper will now hold both Create & Join logic */}
           <ClassroomActionWrapper userEmail={user.email} />
           
-          {/* User Profile / Logout */}
-          <div className="flex items-center gap-3 pl-4">
-             <form action={logoutAction}>
-              <button title={`Logout ${user.email}`} className="w-9 h-9 bg-purple-700 rounded-full flex items-center justify-center text-white font-medium hover:bg-purple-800 transition shadow-sm">
-                {user.email.charAt(0).toUpperCase()}
-              </button>
-            </form>
+          {/* 2. Replace the old <form> block with this: */}
+          <div className="pl-2">
+            <UserMenu email={user.email} name={user.name} />
           </div>
         </div>
       </nav>

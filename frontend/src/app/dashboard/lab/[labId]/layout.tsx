@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import prisma from "@/app/lib/prisma";
 import { Settings } from "lucide-react";
 import { getCurrentUser } from "@/app/actions/auth";
+import UserMenu from "@/app/components/UserMenu";
 
 export default async function LabLayout({
   children,
@@ -52,13 +53,14 @@ export default async function LabLayout({
         </div>
 
         {/* Right: Settings & Profile */}
-        <div className="flex items-center gap-4">
+        
+        <div className="flex items-center gap-3">
           <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
             <Settings size={24} />
           </button>
-          <div className="w-9 h-9 bg-purple-700 rounded-full flex items-center justify-center text-white font-medium">
-             {user?.email?.charAt(0).toUpperCase() || "U"}
-          </div>
+          
+          {/* 2. Replace the old avatar div with this: */}
+          <UserMenu email={user?.email || ""} name={user?.name} />
         </div>
       </nav>
 
