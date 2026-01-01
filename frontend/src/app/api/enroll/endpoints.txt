@@ -1,0 +1,25 @@
+GET /api/enrollments - Get all enrollments (with optional filters)
+
+/api/enrollments - all active enrollments
+
+/api/enrollments?labId=lab_001 - enrollments for lab_001
+
+/api/enrollments?userEmail=john@example.com - enrollments for john@example.com
+
+/api/enrollments?includeArchived=true - all enrollments including archived labs
+
+
+
+
+POST /api/enrollments - Create a new enrollment
+{
+  "userEmail": "student@example.com",
+  "labId": "lab_001"
+}
+
+
+
+DELETE /api/enrollments - Delete an enrollment by ID
+{
+  "id": "enrol_001"
+}
