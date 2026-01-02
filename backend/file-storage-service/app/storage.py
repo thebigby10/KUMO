@@ -6,15 +6,20 @@ from datetime import timedelta
 
 from minio import Minio
 
+from .config import settings
+
 
 class MinioClient:
     def __init__(self):
         self.client = Minio(
-            "localhost:9000", access_key="admin", secret_key="password123", secure=False
+            settings.MINIO_ENDPOINT,
+            access_key=settings.MINIO_ACCESS_KEY,
+            secret_key=settings.MINIO_SECRET_KEY,
+            secure=settings.MINIO_SECURE,
         )
-        self.bucket_name = "my-microservice-bucket"
+        self.bucket_name = settings.MINIO_BUCKET_NAME
         self._create_bucket_if_not_exists()
-        self._set_public_policy()  # Add this call
+        self._set_public_policy()
 
     def _create_bucket_if_not_exists(self):
         if not self.client.bucket_exists(self.bucket_name):
@@ -60,9 +65,7 @@ class MinioClient:
         return unique_filename
 
     def get_presigned_url(self, file_uuid_name):
-        return self.client.presigned_get_object(
-            self.bucket_name, file_uuid_name, expires=timedelta(hours=1)
-        )
+        return f"{settings.MINIO_PUBLIC_URL}/{self.bucket_name}/{file_uuid_name}"
 
 
 s3_service = MinioClient()
