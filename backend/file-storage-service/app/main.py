@@ -1,7 +1,7 @@
 # app/main.py
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
-from storage import s3_service
+from .storage import s3_service
 
 app = FastAPI()
 
