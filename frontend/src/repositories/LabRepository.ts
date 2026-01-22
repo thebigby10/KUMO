@@ -2,33 +2,27 @@ import { db } from "@/models/models";
 import { Prisma } from "@prisma/client";
 
 export class LabRepository {
+  // --- CREATE ---
   static async create(data: Prisma.LabCreateInput) {
+    // Prisma allows nested writes (creating instructor with lab).
+    // This is still a Lab creation operation.
     return await db.lab.create({ data });
+  }
+
+  // --- READ ---
+  static async findById(id: string) {
+    return await db.lab.findUnique({
+      where: { id },
+    });
   }
 
   static async findByCode(labCode: string) {
     return await db.lab.findUnique({
       where: { labCode },
-      include: {
-        instructors: true,
-        enrollments: true,
-      },
     });
   }
 
-  static async findById(id: string) {
-    return await db.lab.findUnique({
-      where: { id },
-      include: {
-        instructors: true,
-        announcements: {
-          orderBy: { createdAt: "desc" },
-          include: { user: true },
-        },
-      },
-    });
-  }
-
+  // Finds labs where the user is either an instructor or enrolled
   static async findAllRelatedToUser(email: string) {
     return await db.lab.findMany({
       where: {
@@ -38,6 +32,7 @@ export class LabRepository {
         ],
       },
       include: {
+        // We often need the owner name for the dashboard card
         instructors: {
           where: { role: "OWNER" },
           include: { user: true },
@@ -47,15 +42,18 @@ export class LabRepository {
     });
   }
 
-  static async addEnrollment(userEmail: string, labId: string) {
-    return await db.enrollment.create({
-      data: { userEmail, labId },
+  // --- UPDATE ---
+  static async update(id: string, data: Prisma.LabUpdateInput) {
+    return await db.lab.update({
+      where: { id },
+      data,
     });
   }
 
-  static async findInstructor(labId: string, userEmail: string) {
-    return await db.instructor.findUnique({
-      where: { labId_userEmail: { labId, userEmail } },
+  // --- DELETE ---
+  static async delete(id: string) {
+    return await db.lab.delete({
+      where: { id },
     });
   }
 }
