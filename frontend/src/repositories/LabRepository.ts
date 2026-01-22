@@ -50,10 +50,24 @@ export class LabRepository {
     });
   }
 
-  // --- DELETE ---
-  static async delete(id: string) {
-    return await db.lab.delete({
+  static async archive(id: string, isArchived: boolean) {
+    return await db.lab.update({
       where: { id },
+      data: { isArchived },
     });
+  }
+
+  // --- DELETE ---
+
+  // Deletes lab and all related data (Prisma relations usually handle this if onDelete: Cascade is set in schema,
+  // but explicit transaction is safer if schema isn't strict)
+  static async delete(id: string) {
+    return await db.$transaction([
+      db.enrollment.deleteMany({ where: { labId: id } }),
+      db.instructor.deleteMany({ where: { labId: id } }),
+      db.announcement.deleteMany({ where: { labId: id } }),
+      db.labWork.deleteMany({ where: { labId: id } }), // This will likely fail without cascading deletes on tasks
+      db.lab.delete({ where: { id } }),
+    ]);
   }
 }

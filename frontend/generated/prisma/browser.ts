@@ -82,3 +82,13 @@ export type Editor = Prisma.EditorModel
  * 
  */
 export type Hint = Prisma.HintModel
+/**
+ * Model Submission
+ * 
+ */
+export type Submission = Prisma.SubmissionModel
+/**
+ * Model SubmissionRecord
+ * 
+ */
+export type SubmissionRecord = Prisma.SubmissionRecordModel
