@@ -29,6 +29,7 @@ model User {
   enrollments   Enrollment[]
   instructing   Instructor[]
   announcements Announcement[]
+  submissions   Submission[]
 
   @@map("users")
 }
@@ -125,9 +126,10 @@ model LabWork {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  lab       Lab           @relation(fields: [labId], references: [id])
-  tasks     LabTask[]
-  materials LabMaterial[]
+  lab         Lab           @relation(fields: [labId], references: [id])
+  tasks       LabTask[]
+  materials   LabMaterial[]
+  submissions Submission[]
 
   @@map("lab_works")
 }
@@ -142,11 +144,12 @@ model LabTask {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  labWork   LabWork        @relation(fields: [labWorkId], references: [id])
-  materials TaskMaterial[]
-  testCases TestCase[]
-  editors   Editor[]
-  hints     Hint[]
+  labWork           LabWork            @relation(fields: [labWorkId], references: [id])
+  materials         TaskMaterial[]
+  testCases         TestCase[]
+  editors           Editor[]
+  hints             Hint[]
+  submissionRecords SubmissionRecord[]
 
   @@map("lab_tasks")
 }
@@ -212,4 +215,46 @@ model Hint {
 enum Role {
   OWNER
   ASSISTANT
+}
+
+// --- 6. SUBMISSIONS ---
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  RETURNED
+}
+
+model Submission {
+  id          String           @id @default(uuid())
+  labWorkId   String
+  userEmail   String
+  status      SubmissionStatus @default(DRAFT)
+  grade       Int? // The grade given by instructor
+  feedback    String? // Instructor feedback
+  submittedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  labWork LabWork @relation(fields: [labWorkId], references: [id])
+  user    User    @relation(fields: [userEmail], references: [email])
+
+  // A submission consists of code for multiple tasks
+  records SubmissionRecord[]
+
+  @@unique([labWorkId, userEmail]) // One submission per work per student
+  @@map("submissions")
+}
+
+model SubmissionRecord {
+  id           String @id @default(uuid())
+  submissionId String
+  taskId       String
+  code         String @db.Text // The student's code
+  language     String // e.g., "python", "cpp"
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  task       LabTask    @relation(fields: [taskId], references: [id])
+
+  @@unique([submissionId, taskId])
+  @@map("submission_records")
 }
