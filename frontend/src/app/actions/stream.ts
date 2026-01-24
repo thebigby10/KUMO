@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { StreamController } from "@/controller/AnnouncementController";
+import { AnnouncementController } from "@/controller/AnnouncementController";
 
 export async function createAnnouncement(formData: FormData, labId: string, userEmail: string) {
   const content = formData.get("content") as string;
@@ -11,7 +11,7 @@ export async function createAnnouncement(formData: FormData, labId: string, user
   }
 
   try {
-    await StreamController.createAnnouncement(labId, userEmail, content);
+    await AnnouncementController.createAnnouncement(labId, userEmail, content);
 
     revalidatePath(`/dashboard/lab/${labId}`);
     return { success: true };

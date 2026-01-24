@@ -6,6 +6,17 @@ import { LabWorkRepository } from "@/repositories/LabWorkRepository";
 import { generateLabCode } from "@/lib/utils";
 import { db } from "@/models/models";
 
+/**
+ * Controller for managing Labs (classrooms).
+ * 
+ * This is the main controller for lab-related operations including:
+ * - Creating and deleting labs
+ * - Joining labs via code
+ * - Fetching lab details with related data (announcements, works, members)
+ * - Managing lab membership (students and instructors)
+ * 
+ * All methods include proper authorization checks.
+ */
 export class LabController {
   // --- CREATE ---
   static async create(

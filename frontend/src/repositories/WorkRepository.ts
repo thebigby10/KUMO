@@ -1,5 +1,12 @@
-import { db } from "@/models";
+import { db } from "@/models/models";
 
+/**
+ * @deprecated This repository is not currently used.
+ * Use LabWorkRepository instead for all LabWork operations.
+ * 
+ * The transaction logic here duplicates what exists in WorkController.
+ * Consider removing this file after confirming with the team.
+ */
 export interface LabWorkTransactionData {
   labId: string;
   title: string;

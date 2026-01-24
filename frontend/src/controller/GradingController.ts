@@ -2,6 +2,15 @@ import { SubmissionRepository } from "@/repositories/SubmissionRepository";
 import { InstructorRepository } from "@/repositories/InstructorRepository";
 import { LabWorkRepository } from "@/repositories/LabWorkRepository";
 
+/**
+ * Controller for instructor grading operations.
+ * 
+ * Provides functionality for:
+ * - Viewing all submissions for an assignment
+ * - Grading individual submissions with points and feedback
+ * 
+ * All methods require instructor authorization.
+ */
 export class GradingController {
   // [Missing] getSubmissionsForWork
   static async getSubmissionsForWork(workId: string, userEmail: string) {

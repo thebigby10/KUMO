@@ -93,7 +93,7 @@ export default function AnnouncementInput({ labId, userEmail, userAvatarChar }: 
   return (
     <div 
       onClick={() => setIsExpanded(true)}
-      className="bg-white border rounded-lg p-4 shadow-sm flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition shadow-sm hover:shadow-md"
+      className="bg-white border rounded-lg p-4 shadow-sm flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition hover:shadow-md"
     >
       <div className="w-10 h-10 bg-purple-700 rounded-full flex items-center justify-center text-white font-bold shrink-0">
          {userAvatarChar}

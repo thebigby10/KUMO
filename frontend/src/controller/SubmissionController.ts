@@ -3,10 +3,25 @@ import { LabWorkRepository } from "@/repositories/LabWorkRepository";
 import { LabTaskRepository } from "@/repositories/LabTaskRepository";
 import { db } from "@/models/models";
 
-// Helper for Piston Execution
+/**
+ * URL for the Piston code execution engine.
+ * In Docker: http://piston:2000/api/v2/execute
+ * Locally: http://localhost:2000/api/v2/execute
+ */
 const PISTON_URL =
   process.env.PISTON_URL || "http://localhost:2000/api/v2/execute";
 
+/**
+ * Controller for managing student submissions.
+ * 
+ * Handles the complete submission lifecycle:
+ * - Initializing/retrieving student submissions
+ * - Saving code drafts
+ * - Submitting and unsubmitting assignments
+ * - Running code against test cases via Piston
+ * 
+ * This controller is used by the code editor page to save and execute student code.
+ */
 export class SubmissionController {
   // [Missing] initializeSubmission / getStudentSubmission
   static async getStudentSubmission(workId: string, userEmail: string) {

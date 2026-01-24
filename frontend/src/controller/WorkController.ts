@@ -2,6 +2,9 @@ import { LabWorkRepository } from "@/repositories/LabWorkRepository";
 import { InstructorRepository } from "@/repositories/InstructorRepository";
 import { db } from "@/models/models";
 
+/**
+ * Data Transfer Object for creating a new LabWork assignment.
+ */
 export interface CreateWorkDTO {
   labId: string;
   userEmail: string;
@@ -17,6 +20,25 @@ export interface CreateWorkDTO {
   }[];
 }
 
+/**
+ * Controller for managing LabWork (assignments) in a lab.
+ * 
+ * Responsibilities:
+ * - Creating assignments with tasks and starter code
+ * - Fetching assignment details
+ * - Updating and deleting assignments
+ * - Authorization checks for instructor-only operations
+ * 
+ * @example
+ * // Create a new assignment
+ * const work = await WorkController.createAssignment({
+ *   labId: "lab-123",
+ *   userEmail: "instructor@example.com",
+ *   title: "Lab 1: Python Basics",
+ *   totalPoints: 100,
+ *   tasks: [{ title: "Task 1", description: "...", starterCode: "...", language: "python" }]
+ * });
+ */
 export class WorkController {
   // --- CREATE ---
   static async createAssignment(payload: CreateWorkDTO) {

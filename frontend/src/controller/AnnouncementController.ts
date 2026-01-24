@@ -2,7 +2,11 @@ import { AnnouncementRepository } from "@/repositories/AnnouncementRepository";
 import { EnrollmentRepository } from "@/repositories/EnrollmentRepository";
 import { InstructorRepository } from "@/repositories/InstructorRepository";
 
-export class StreamController {
+/**
+ * Controller for handling announcements in the lab stream.
+ * Manages creating and deleting announcements with proper authorization.
+ */
+export class AnnouncementController {
   static async createAnnouncement(
     labId: string,
     userEmail: string,
