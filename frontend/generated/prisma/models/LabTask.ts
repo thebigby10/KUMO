@@ -245,6 +245,7 @@ export type LabTaskWhereInput = {
   testCases?: Prisma.TestCaseListRelationFilter
   editors?: Prisma.EditorListRelationFilter
   hints?: Prisma.HintListRelationFilter
+  submissionRecords?: Prisma.SubmissionRecordListRelationFilter
 }
 
 export type LabTaskOrderByWithRelationInput = {
@@ -261,6 +262,7 @@ export type LabTaskOrderByWithRelationInput = {
   testCases?: Prisma.TestCaseOrderByRelationAggregateInput
   editors?: Prisma.EditorOrderByRelationAggregateInput
   hints?: Prisma.HintOrderByRelationAggregateInput
+  submissionRecords?: Prisma.SubmissionRecordOrderByRelationAggregateInput
 }
 
 export type LabTaskWhereUniqueInput = Prisma.AtLeast<{
@@ -280,6 +282,7 @@ export type LabTaskWhereUniqueInput = Prisma.AtLeast<{
   testCases?: Prisma.TestCaseListRelationFilter
   editors?: Prisma.EditorListRelationFilter
   hints?: Prisma.HintListRelationFilter
+  submissionRecords?: Prisma.SubmissionRecordListRelationFilter
 }, "id">
 
 export type LabTaskOrderByWithAggregationInput = {
@@ -325,6 +328,7 @@ export type LabTaskCreateInput = {
   testCases?: Prisma.TestCaseCreateNestedManyWithoutTaskInput
   editors?: Prisma.EditorCreateNestedManyWithoutTaskInput
   hints?: Prisma.HintCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskUncheckedCreateInput = {
@@ -340,6 +344,7 @@ export type LabTaskUncheckedCreateInput = {
   testCases?: Prisma.TestCaseUncheckedCreateNestedManyWithoutTaskInput
   editors?: Prisma.EditorUncheckedCreateNestedManyWithoutTaskInput
   hints?: Prisma.HintUncheckedCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskUpdateInput = {
@@ -355,6 +360,7 @@ export type LabTaskUpdateInput = {
   testCases?: Prisma.TestCaseUpdateManyWithoutTaskNestedInput
   editors?: Prisma.EditorUpdateManyWithoutTaskNestedInput
   hints?: Prisma.HintUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskUncheckedUpdateInput = {
@@ -370,6 +376,7 @@ export type LabTaskUncheckedUpdateInput = {
   testCases?: Prisma.TestCaseUncheckedUpdateManyWithoutTaskNestedInput
   editors?: Prisma.EditorUncheckedUpdateManyWithoutTaskNestedInput
   hints?: Prisma.HintUncheckedUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskCreateManyInput = {
@@ -558,6 +565,20 @@ export type LabTaskUpdateOneRequiredWithoutHintsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.LabTaskUpdateToOneWithWhereWithoutHintsInput, Prisma.LabTaskUpdateWithoutHintsInput>, Prisma.LabTaskUncheckedUpdateWithoutHintsInput>
 }
 
+export type LabTaskCreateNestedOneWithoutSubmissionRecordsInput = {
+  create?: Prisma.XOR<Prisma.LabTaskCreateWithoutSubmissionRecordsInput, Prisma.LabTaskUncheckedCreateWithoutSubmissionRecordsInput>
+  connectOrCreate?: Prisma.LabTaskCreateOrConnectWithoutSubmissionRecordsInput
+  connect?: Prisma.LabTaskWhereUniqueInput
+}
+
+export type LabTaskUpdateOneRequiredWithoutSubmissionRecordsNestedInput = {
+  create?: Prisma.XOR<Prisma.LabTaskCreateWithoutSubmissionRecordsInput, Prisma.LabTaskUncheckedCreateWithoutSubmissionRecordsInput>
+  connectOrCreate?: Prisma.LabTaskCreateOrConnectWithoutSubmissionRecordsInput
+  upsert?: Prisma.LabTaskUpsertWithoutSubmissionRecordsInput
+  connect?: Prisma.LabTaskWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LabTaskUpdateToOneWithWhereWithoutSubmissionRecordsInput, Prisma.LabTaskUpdateWithoutSubmissionRecordsInput>, Prisma.LabTaskUncheckedUpdateWithoutSubmissionRecordsInput>
+}
+
 export type LabTaskCreateWithoutLabWorkInput = {
   id?: string
   title: string
@@ -570,6 +591,7 @@ export type LabTaskCreateWithoutLabWorkInput = {
   testCases?: Prisma.TestCaseCreateNestedManyWithoutTaskInput
   editors?: Prisma.EditorCreateNestedManyWithoutTaskInput
   hints?: Prisma.HintCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskUncheckedCreateWithoutLabWorkInput = {
@@ -584,6 +606,7 @@ export type LabTaskUncheckedCreateWithoutLabWorkInput = {
   testCases?: Prisma.TestCaseUncheckedCreateNestedManyWithoutTaskInput
   editors?: Prisma.EditorUncheckedCreateNestedManyWithoutTaskInput
   hints?: Prisma.HintUncheckedCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskCreateOrConnectWithoutLabWorkInput = {
@@ -638,6 +661,7 @@ export type LabTaskCreateWithoutMaterialsInput = {
   testCases?: Prisma.TestCaseCreateNestedManyWithoutTaskInput
   editors?: Prisma.EditorCreateNestedManyWithoutTaskInput
   hints?: Prisma.HintCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskUncheckedCreateWithoutMaterialsInput = {
@@ -652,6 +676,7 @@ export type LabTaskUncheckedCreateWithoutMaterialsInput = {
   testCases?: Prisma.TestCaseUncheckedCreateNestedManyWithoutTaskInput
   editors?: Prisma.EditorUncheckedCreateNestedManyWithoutTaskInput
   hints?: Prisma.HintUncheckedCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskCreateOrConnectWithoutMaterialsInput = {
@@ -682,6 +707,7 @@ export type LabTaskUpdateWithoutMaterialsInput = {
   testCases?: Prisma.TestCaseUpdateManyWithoutTaskNestedInput
   editors?: Prisma.EditorUpdateManyWithoutTaskNestedInput
   hints?: Prisma.HintUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskUncheckedUpdateWithoutMaterialsInput = {
@@ -696,6 +722,7 @@ export type LabTaskUncheckedUpdateWithoutMaterialsInput = {
   testCases?: Prisma.TestCaseUncheckedUpdateManyWithoutTaskNestedInput
   editors?: Prisma.EditorUncheckedUpdateManyWithoutTaskNestedInput
   hints?: Prisma.HintUncheckedUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskCreateWithoutTestCasesInput = {
@@ -710,6 +737,7 @@ export type LabTaskCreateWithoutTestCasesInput = {
   materials?: Prisma.TaskMaterialCreateNestedManyWithoutTaskInput
   editors?: Prisma.EditorCreateNestedManyWithoutTaskInput
   hints?: Prisma.HintCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskUncheckedCreateWithoutTestCasesInput = {
@@ -724,6 +752,7 @@ export type LabTaskUncheckedCreateWithoutTestCasesInput = {
   materials?: Prisma.TaskMaterialUncheckedCreateNestedManyWithoutTaskInput
   editors?: Prisma.EditorUncheckedCreateNestedManyWithoutTaskInput
   hints?: Prisma.HintUncheckedCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskCreateOrConnectWithoutTestCasesInput = {
@@ -754,6 +783,7 @@ export type LabTaskUpdateWithoutTestCasesInput = {
   materials?: Prisma.TaskMaterialUpdateManyWithoutTaskNestedInput
   editors?: Prisma.EditorUpdateManyWithoutTaskNestedInput
   hints?: Prisma.HintUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskUncheckedUpdateWithoutTestCasesInput = {
@@ -768,6 +798,7 @@ export type LabTaskUncheckedUpdateWithoutTestCasesInput = {
   materials?: Prisma.TaskMaterialUncheckedUpdateManyWithoutTaskNestedInput
   editors?: Prisma.EditorUncheckedUpdateManyWithoutTaskNestedInput
   hints?: Prisma.HintUncheckedUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskCreateWithoutEditorsInput = {
@@ -782,6 +813,7 @@ export type LabTaskCreateWithoutEditorsInput = {
   materials?: Prisma.TaskMaterialCreateNestedManyWithoutTaskInput
   testCases?: Prisma.TestCaseCreateNestedManyWithoutTaskInput
   hints?: Prisma.HintCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskUncheckedCreateWithoutEditorsInput = {
@@ -796,6 +828,7 @@ export type LabTaskUncheckedCreateWithoutEditorsInput = {
   materials?: Prisma.TaskMaterialUncheckedCreateNestedManyWithoutTaskInput
   testCases?: Prisma.TestCaseUncheckedCreateNestedManyWithoutTaskInput
   hints?: Prisma.HintUncheckedCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskCreateOrConnectWithoutEditorsInput = {
@@ -826,6 +859,7 @@ export type LabTaskUpdateWithoutEditorsInput = {
   materials?: Prisma.TaskMaterialUpdateManyWithoutTaskNestedInput
   testCases?: Prisma.TestCaseUpdateManyWithoutTaskNestedInput
   hints?: Prisma.HintUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskUncheckedUpdateWithoutEditorsInput = {
@@ -840,6 +874,7 @@ export type LabTaskUncheckedUpdateWithoutEditorsInput = {
   materials?: Prisma.TaskMaterialUncheckedUpdateManyWithoutTaskNestedInput
   testCases?: Prisma.TestCaseUncheckedUpdateManyWithoutTaskNestedInput
   hints?: Prisma.HintUncheckedUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskCreateWithoutHintsInput = {
@@ -854,6 +889,7 @@ export type LabTaskCreateWithoutHintsInput = {
   materials?: Prisma.TaskMaterialCreateNestedManyWithoutTaskInput
   testCases?: Prisma.TestCaseCreateNestedManyWithoutTaskInput
   editors?: Prisma.EditorCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskUncheckedCreateWithoutHintsInput = {
@@ -868,6 +904,7 @@ export type LabTaskUncheckedCreateWithoutHintsInput = {
   materials?: Prisma.TaskMaterialUncheckedCreateNestedManyWithoutTaskInput
   testCases?: Prisma.TestCaseUncheckedCreateNestedManyWithoutTaskInput
   editors?: Prisma.EditorUncheckedCreateNestedManyWithoutTaskInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedCreateNestedManyWithoutTaskInput
 }
 
 export type LabTaskCreateOrConnectWithoutHintsInput = {
@@ -898,6 +935,7 @@ export type LabTaskUpdateWithoutHintsInput = {
   materials?: Prisma.TaskMaterialUpdateManyWithoutTaskNestedInput
   testCases?: Prisma.TestCaseUpdateManyWithoutTaskNestedInput
   editors?: Prisma.EditorUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskUncheckedUpdateWithoutHintsInput = {
@@ -912,6 +950,83 @@ export type LabTaskUncheckedUpdateWithoutHintsInput = {
   materials?: Prisma.TaskMaterialUncheckedUpdateManyWithoutTaskNestedInput
   testCases?: Prisma.TestCaseUncheckedUpdateManyWithoutTaskNestedInput
   editors?: Prisma.EditorUncheckedUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedUpdateManyWithoutTaskNestedInput
+}
+
+export type LabTaskCreateWithoutSubmissionRecordsInput = {
+  id?: string
+  title: string
+  description?: string | null
+  url?: string | null
+  point: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  labWork: Prisma.LabWorkCreateNestedOneWithoutTasksInput
+  materials?: Prisma.TaskMaterialCreateNestedManyWithoutTaskInput
+  testCases?: Prisma.TestCaseCreateNestedManyWithoutTaskInput
+  editors?: Prisma.EditorCreateNestedManyWithoutTaskInput
+  hints?: Prisma.HintCreateNestedManyWithoutTaskInput
+}
+
+export type LabTaskUncheckedCreateWithoutSubmissionRecordsInput = {
+  id?: string
+  labWorkId: string
+  title: string
+  description?: string | null
+  url?: string | null
+  point: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  materials?: Prisma.TaskMaterialUncheckedCreateNestedManyWithoutTaskInput
+  testCases?: Prisma.TestCaseUncheckedCreateNestedManyWithoutTaskInput
+  editors?: Prisma.EditorUncheckedCreateNestedManyWithoutTaskInput
+  hints?: Prisma.HintUncheckedCreateNestedManyWithoutTaskInput
+}
+
+export type LabTaskCreateOrConnectWithoutSubmissionRecordsInput = {
+  where: Prisma.LabTaskWhereUniqueInput
+  create: Prisma.XOR<Prisma.LabTaskCreateWithoutSubmissionRecordsInput, Prisma.LabTaskUncheckedCreateWithoutSubmissionRecordsInput>
+}
+
+export type LabTaskUpsertWithoutSubmissionRecordsInput = {
+  update: Prisma.XOR<Prisma.LabTaskUpdateWithoutSubmissionRecordsInput, Prisma.LabTaskUncheckedUpdateWithoutSubmissionRecordsInput>
+  create: Prisma.XOR<Prisma.LabTaskCreateWithoutSubmissionRecordsInput, Prisma.LabTaskUncheckedCreateWithoutSubmissionRecordsInput>
+  where?: Prisma.LabTaskWhereInput
+}
+
+export type LabTaskUpdateToOneWithWhereWithoutSubmissionRecordsInput = {
+  where?: Prisma.LabTaskWhereInput
+  data: Prisma.XOR<Prisma.LabTaskUpdateWithoutSubmissionRecordsInput, Prisma.LabTaskUncheckedUpdateWithoutSubmissionRecordsInput>
+}
+
+export type LabTaskUpdateWithoutSubmissionRecordsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  point?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  labWork?: Prisma.LabWorkUpdateOneRequiredWithoutTasksNestedInput
+  materials?: Prisma.TaskMaterialUpdateManyWithoutTaskNestedInput
+  testCases?: Prisma.TestCaseUpdateManyWithoutTaskNestedInput
+  editors?: Prisma.EditorUpdateManyWithoutTaskNestedInput
+  hints?: Prisma.HintUpdateManyWithoutTaskNestedInput
+}
+
+export type LabTaskUncheckedUpdateWithoutSubmissionRecordsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  labWorkId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  point?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  materials?: Prisma.TaskMaterialUncheckedUpdateManyWithoutTaskNestedInput
+  testCases?: Prisma.TestCaseUncheckedUpdateManyWithoutTaskNestedInput
+  editors?: Prisma.EditorUncheckedUpdateManyWithoutTaskNestedInput
+  hints?: Prisma.HintUncheckedUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskCreateManyLabWorkInput = {
@@ -936,6 +1051,7 @@ export type LabTaskUpdateWithoutLabWorkInput = {
   testCases?: Prisma.TestCaseUpdateManyWithoutTaskNestedInput
   editors?: Prisma.EditorUpdateManyWithoutTaskNestedInput
   hints?: Prisma.HintUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskUncheckedUpdateWithoutLabWorkInput = {
@@ -950,6 +1066,7 @@ export type LabTaskUncheckedUpdateWithoutLabWorkInput = {
   testCases?: Prisma.TestCaseUncheckedUpdateManyWithoutTaskNestedInput
   editors?: Prisma.EditorUncheckedUpdateManyWithoutTaskNestedInput
   hints?: Prisma.HintUncheckedUpdateManyWithoutTaskNestedInput
+  submissionRecords?: Prisma.SubmissionRecordUncheckedUpdateManyWithoutTaskNestedInput
 }
 
 export type LabTaskUncheckedUpdateManyWithoutLabWorkInput = {
@@ -972,6 +1089,7 @@ export type LabTaskCountOutputType = {
   testCases: number
   editors: number
   hints: number
+  submissionRecords: number
 }
 
 export type LabTaskCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -979,6 +1097,7 @@ export type LabTaskCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   testCases?: boolean | LabTaskCountOutputTypeCountTestCasesArgs
   editors?: boolean | LabTaskCountOutputTypeCountEditorsArgs
   hints?: boolean | LabTaskCountOutputTypeCountHintsArgs
+  submissionRecords?: boolean | LabTaskCountOutputTypeCountSubmissionRecordsArgs
 }
 
 /**
@@ -1019,6 +1138,13 @@ export type LabTaskCountOutputTypeCountHintsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.HintWhereInput
 }
 
+/**
+ * LabTaskCountOutputType without action
+ */
+export type LabTaskCountOutputTypeCountSubmissionRecordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SubmissionRecordWhereInput
+}
+
 
 export type LabTaskSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1034,6 +1160,7 @@ export type LabTaskSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   testCases?: boolean | Prisma.LabTask$testCasesArgs<ExtArgs>
   editors?: boolean | Prisma.LabTask$editorsArgs<ExtArgs>
   hints?: boolean | Prisma.LabTask$hintsArgs<ExtArgs>
+  submissionRecords?: boolean | Prisma.LabTask$submissionRecordsArgs<ExtArgs>
   _count?: boolean | Prisma.LabTaskCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["labTask"]>
 
@@ -1079,6 +1206,7 @@ export type LabTaskInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   testCases?: boolean | Prisma.LabTask$testCasesArgs<ExtArgs>
   editors?: boolean | Prisma.LabTask$editorsArgs<ExtArgs>
   hints?: boolean | Prisma.LabTask$hintsArgs<ExtArgs>
+  submissionRecords?: boolean | Prisma.LabTask$submissionRecordsArgs<ExtArgs>
   _count?: boolean | Prisma.LabTaskCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type LabTaskIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1096,6 +1224,7 @@ export type $LabTaskPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     testCases: Prisma.$TestCasePayload<ExtArgs>[]
     editors: Prisma.$EditorPayload<ExtArgs>[]
     hints: Prisma.$HintPayload<ExtArgs>[]
+    submissionRecords: Prisma.$SubmissionRecordPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1505,6 +1634,7 @@ export interface Prisma__LabTaskClient<T, Null = never, ExtArgs extends runtime.
   testCases<T extends Prisma.LabTask$testCasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LabTask$testCasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TestCasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   editors<T extends Prisma.LabTask$editorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LabTask$editorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hints<T extends Prisma.LabTask$hintsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LabTask$hintsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HintPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  submissionRecords<T extends Prisma.LabTask$submissionRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LabTask$submissionRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubmissionRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2031,6 +2161,30 @@ export type LabTask$hintsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.HintScalarFieldEnum | Prisma.HintScalarFieldEnum[]
+}
+
+/**
+ * LabTask.submissionRecords
+ */
+export type LabTask$submissionRecordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SubmissionRecord
+   */
+  select?: Prisma.SubmissionRecordSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SubmissionRecord
+   */
+  omit?: Prisma.SubmissionRecordOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubmissionRecordInclude<ExtArgs> | null
+  where?: Prisma.SubmissionRecordWhereInput
+  orderBy?: Prisma.SubmissionRecordOrderByWithRelationInput | Prisma.SubmissionRecordOrderByWithRelationInput[]
+  cursor?: Prisma.SubmissionRecordWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SubmissionRecordScalarFieldEnum | Prisma.SubmissionRecordScalarFieldEnum[]
 }
 
 /**
