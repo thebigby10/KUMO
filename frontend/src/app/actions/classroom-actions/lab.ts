@@ -1,16 +1,7 @@
 "use server";
 
-import prisma from "@/app/lib/prisma";
+import { LabController } from "@/controller/LabController";
 import { revalidatePath } from "next/cache";
-
-function generateLabCode(length = 6) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
 
 export async function createLab(formData: FormData, userEmail: string) {
   const name = formData.get("name") as string;
@@ -23,21 +14,10 @@ export async function createLab(formData: FormData, userEmail: string) {
   }
 
   try {
-    const newLab = await prisma.lab.create({
-      data: {
-        name,
-        section,
-        subject,
-        room,
-        labCode: generateLabCode(),
-        instructors: {
-          create: {
-            userEmail: userEmail,
-            role: "OWNER"
-          }
-        }
-      }
-    });
+    const newLab = await LabController.create(
+      { name, section, subject, room },
+      userEmail
+    );
 
     revalidatePath("/dashboard");
     return { success: true, lab: newLab };
@@ -56,44 +36,14 @@ export async function joinLab(formData: FormData, userEmail: string) {
   }
 
   try {
-    // 1. Find the lab by the unique code
-    const lab = await prisma.lab.findUnique({
-      where: { labCode },
-      include: {
-        instructors: true,
-        enrollments: true,
-      }
-    });
-
-    if (!lab) {
-      return { error: "Class not found. Please check the code." };
-    }
-
-    // 2. Check: Is the user the Instructor?
-    const isInstructor = lab.instructors.some(inst => inst.userEmail === userEmail);
-    if (isInstructor) {
-      return { error: "You are already teaching this class." };
-    }
-
-    // 3. Check: Is the user already enrolled?
-    const isEnrolled = lab.enrollments.some(enroll => enroll.userEmail === userEmail);
-    if (isEnrolled) {
-      return { error: "You are already enrolled in this class." };
-    }
-
-    // 4. Create the Enrollment
-    await prisma.enrollment.create({
-      data: {
-        userEmail: userEmail,
-        labId: lab.id,
-      }
-    });
+    await LabController.join(labCode, userEmail);
 
     revalidatePath("/dashboard");
     return { success: true };
 
   } catch (error) {
     console.error("Failed to join lab:", error);
-    return { error: "Failed to join class. Please try again." };
+    const message = error instanceof Error ? error.message : "Failed to join class. Please try again.";
+    return { error: message };
   }
 }

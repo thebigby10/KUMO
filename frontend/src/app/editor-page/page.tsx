@@ -73,7 +73,7 @@ const CodeEditorPage = ({
 
     try {
       // Using Next.js API route proxy to avoid CORS issues and work in prod
-      const response = await fetch("/api/code-exection/execute", {
+      const response = await fetch("/api/code-execution/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
