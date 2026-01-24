@@ -38,7 +38,7 @@ export default function ClassroomActionWrapper({ userEmail }: { userEmail: strin
       {/* The Plus Button */}
       <button 
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className={`p-2 rounded-full transition duration-200 ${isDropdownOpen ? 'bg-gray-100 rotate-90' : 'hover:bg-gray-100 text-gray-600'}`}
+        className={`p-2 rounded-full transition duration-200 ${isDropdownOpen ? 'bg-gray-100 rotate-45 text-gray-600' : 'hover:bg-gray-100 text-gray-600'}`}
         title="Create or join a class"
       >
         <Plus size={24} />

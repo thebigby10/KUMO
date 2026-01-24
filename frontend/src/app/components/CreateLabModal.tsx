@@ -34,7 +34,7 @@ export default function CreateLabModal({ isOpen, onClose, userEmail }: CreateLab
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-in fade-in duration-200">
       <div className="w-full max-w-lg overflow-hidden bg-white rounded-lg shadow-xl animate-in fade-in zoom-in duration-200">
         
         {/* Header */}
