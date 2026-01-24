@@ -47,3 +47,49 @@ export async function joinLab(formData: FormData, userEmail: string) {
     return { error: message };
   }
 }
+
+export async function removeStudent(labId: string, studentEmail: string) {
+  const { getCurrentUser } = await import("../auth");
+  const user = await getCurrentUser();
+  
+  if (!user?.email) {
+    return { error: "Not authenticated" };
+  }
+
+  try {
+    await LabController.removeStudent(labId, user.email, studentEmail);
+    
+    revalidatePath(`/dashboard/lab/${labId}/people`);
+    return { success: true };
+
+  } catch (error) {
+    console.error("Failed to remove student:", error);
+    const message = error instanceof Error ? error.message : "Failed to remove student";
+    return { error: message };
+  }
+}
+
+export async function addInstructor(labId: string, instructorEmail: string) {
+  const { getCurrentUser } = await import("../auth");
+  const user = await getCurrentUser();
+  
+  if (!user?.email) {
+    return { error: "Not authenticated" };
+  }
+
+  if (!instructorEmail || !instructorEmail.includes("@")) {
+    return { error: "Please enter a valid email address" };
+  }
+
+  try {
+    await LabController.addInstructor(labId, user.email, instructorEmail);
+    
+    revalidatePath(`/dashboard/lab/${labId}/people`);
+    return { success: true };
+
+  } catch (error) {
+    console.error("Failed to add instructor:", error);
+    const message = error instanceof Error ? error.message : "Failed to add instructor";
+    return { error: message };
+  }
+}
