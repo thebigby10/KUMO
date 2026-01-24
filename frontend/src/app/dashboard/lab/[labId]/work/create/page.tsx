@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/app/actions/auth";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import CreateAssignmentForm from "@/app/components/classwork/CreateAssignmentForm";
-import { LabController } from "@/controller/LabController"; // Logic moved here
+import { LabController } from "@/controller/LabController";
 
 export default async function CreateWorkPage({
   params,
