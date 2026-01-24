@@ -1,8 +1,22 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// ============================================================================
+// KUMO DATABASE SCHEMA - SINGLE SOURCE OF TRUTH
+// ============================================================================
+// 
+// This is the AUTHORITATIVE schema for the entire KUMO application.
+// Both the frontend and backend/auth-service use this database.
+// 
+// MIGRATION RULES:
+//   1. ALL schema changes MUST be made in this file
+//   2. Run `npx prisma migrate dev` from /frontend directory
+//   3. After changes, sync to /backend/auth-service/prisma/schema.prisma
+//   4. Run `npx prisma generate` in both /frontend and /backend/auth-service
+// 
+// ARCHITECTURE:
+//   - Frontend: Full CRUD access to all tables (via Controllers/Repositories)
+//   - auth-service: Read/write access to `users` table only (authentication)
+//   - Database: Single PostgreSQL instance (kumo_auth)
+// 
+// ============================================================================
 
 generator client {
   provider = "prisma-client"
