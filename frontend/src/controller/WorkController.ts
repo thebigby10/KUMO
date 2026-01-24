@@ -125,4 +125,26 @@ export class WorkController {
       return await tx.labWork.delete({ where: { id: workId } });
     });
   }
+  // [Missing] getAllWorksForLab
+  static async getAllWorksForLab(labId: string) {
+    return await LabWorkRepository.findAllByLabId(labId);
+  }
+
+  // [Missing] updateWork
+  static async updateWork(
+    workId: string,
+    userEmail: string,
+    data: { title?: string; description?: string; endTime?: Date },
+  ) {
+    const work = await LabWorkRepository.findById(workId);
+    if (!work) throw new Error("Work not found");
+
+    const instructor = await InstructorRepository.findByUserAndLab(
+      userEmail,
+      work.labId,
+    );
+    if (!instructor) throw new Error("Unauthorized");
+
+    return await LabWorkRepository.update(workId, data);
+  }
 }

@@ -131,4 +131,78 @@ export class LabController {
   static async findById(labId: string) {
     return LabRepository.findById(labId);
   }
+  // [Missing] updateLab
+  static async updateLab(
+    labId: string,
+    userEmail: string,
+    data: {
+      name?: string;
+      room?: string;
+      section?: string;
+      isArchived?: boolean;
+    },
+  ) {
+    // 1. Authorization: Only OWNER/Instructor
+    const instructor = await InstructorRepository.findByUserAndLab(
+      userEmail,
+      labId,
+    );
+    if (!instructor) throw new Error("Unauthorized");
+
+    return await LabRepository.update(labId, data);
+  }
+
+  // [Missing] deleteLab
+  static async deleteLab(labId: string, userEmail: string) {
+    const instructor = await InstructorRepository.findByUserAndLab(
+      userEmail,
+      labId,
+    );
+
+    // Only the OWNER can hard delete
+    if (!instructor || instructor.role !== "OWNER") {
+      throw new Error("Only the class owner can delete this class");
+    }
+
+    return await LabRepository.delete(labId);
+  }
+
+  // [Missing] getMembers (People Tab)
+  static async getMembers(labId: string) {
+    const instructors = await InstructorRepository.findAllByLabId(labId);
+    const enrollments = await EnrollmentRepository.findAllByLabId(labId);
+
+    return {
+      instructors: instructors.map((i) => ({ ...i.user, role: i.role })),
+      students: enrollments.map((e) => e.user),
+    };
+  }
+
+  // [Missing] addInstructor
+  static async addInstructor(
+    labId: string,
+    ownerEmail: string,
+    newInstructorEmail: string,
+  ) {
+    const owner = await InstructorRepository.findByUserAndLab(
+      ownerEmail,
+      labId,
+    );
+    if (owner?.role !== "OWNER")
+      throw new Error("Only the owner can add teachers");
+
+    // Prevent adding if already enrolled as student
+    const isStudent = await EnrollmentRepository.findByUserAndLab(
+      newInstructorEmail,
+      labId,
+    );
+    if (isStudent)
+      throw new Error("User is currently a student. Remove them first.");
+
+    return await InstructorRepository.create(
+      newInstructorEmail,
+      labId,
+      "ASSISTANT",
+    );
+  }
 }
