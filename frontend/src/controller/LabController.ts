@@ -4,7 +4,6 @@ import { InstructorRepository } from "@/repositories/InstructorRepository";
 import { AnnouncementRepository } from "@/repositories/AnnouncementRepository";
 import { LabWorkRepository } from "@/repositories/LabWorkRepository";
 import { generateLabCode } from "@/lib/utils";
-import { db } from "@/models/models";
 
 export class LabController {
   // --- CREATE ---
