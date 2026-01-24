@@ -1,32 +1,7 @@
 services:
-  # 1. Piston Engine (The Code Runner)
-  piston:
-    image: ghcr.io/engineer-man/piston:latest
-    container_name: piston_engine
-    restart: always
-    privileged: true
-    environment:
-      - PISTON_DISABLE_CGROUPS=true
-    ports:
-      - "2000:2000"
-    volumes:
-      - ./piston-core:/piston
-      - piston_packages:/piston/packages
-    # We remove the init script command if you don't have that file created yet.
-    # It will default to starting the API.
-
-  # 2. Code Execution Service (Python Wrapper)
-  code-execution-service:
-    build: ./code-execution-service
-    container_name: code-execution-service
-    ports:
-      - "8000:8000"
-    depends_on:
-      - piston
-    environment:
-      - PISTON_URL=http://piston:2000
-
-  # 3. Database (For Auth Service) - NEW!
+  # ==========================================
+  # 1. DATABASE (PostgreSQL)
+  # ==========================================
   postgres:
     image: postgres:16-alpine
     container_name: kumo_db
@@ -39,7 +14,128 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kumo-network
+
+  # ==========================================
+  # 2. AUTH SERVICE (Node.js)
+  # ==========================================
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth_service
+    ports:
+      - "3001:3001"
+    environment:
+      # NOTE: "postgres" here refers to the service name defined above, not localhost
+      DATABASE_URL: "postgresql://kumo_admin:secure_password_123@postgres:5432/kumo_auth?schema=public"
+      JWT_SECRET: "6f1e5fe88ad128ad8fd561c3476f11ce3f944f027329b9ebe58a5f72b10e97e4"
+      GOOGLE_CLIENT_ID: "514889526106-472odpbmjcc9qipsiodsitcqa74akuvf.apps.googleusercontent.com"
+    depends_on:
+      - postgres
+    networks:
+      - kumo-network
+
+  # ==========================================
+  # 3. PISTON ENGINE (Code Runner)
+  # ==========================================
+  piston:
+    image: ghcr.io/engineer-man/piston:latest
+    container_name: piston_engine
+    restart: always
+    privileged: true
+    environment:
+      - PISTON_DISABLE_CGROUPS=true
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston_packages:/piston/packages
+      - /tmp:/tmp
+    networks:
+      - kumo-network
+
+  # Helper to install languages automatically on startup
+  piston_installer:
+    image: node:18-alpine
+    container_name: piston_installer
+    command: >
+      sh -c "
+      apk add --no-cache git &&
+      git clone https://github.com/engineer-man/piston /tmp/piston &&
+      cd /tmp/piston/cli &&
+      npm install &&
+      echo 'Installing languages...' &&
+      node index.js -u http://piston:2000 ppman install python java gcc &&
+      echo 'Done!'
+      "
+    depends_on:
+      - piston
+    networks:
+      - kumo-network
+
+  # ==========================================
+  # 4. CODE EXECUTION SERVICE (Python API)
+  # ==========================================
+  code-execution-service:
+    build:
+      context: ./code-execution-service
+    container_name: code_execution_service
+    ports:
+      - "8001:8000" # Maps Host 8001 -> Container 8000
+    environment:
+      - PISTON_URL=http://piston:2000
+    depends_on:
+      - piston
+    networks:
+      - kumo-network
+
+  # ==========================================
+  # 5. OBJECT STORAGE (MinIO)
+  # ==========================================
+  minio:
+    image: minio/minio
+    container_name: minio_storage
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # Console
+    environment:
+      MINIO_ROOT_USER: "admin"
+      MINIO_ROOT_PASSWORD: "password123"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - kumo-network
+
+  # ==========================================
+  # 6. FILE STORAGE SERVICE (FastAPI)
+  # ==========================================
+  file-storage-service:
+    build:
+      context: ./file-storage-service
+    container_name: file_storage_service
+    ports:
+      - "8002:8000" # Maps Host 8002 -> Container 8000
+    environment:
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=password123
+      - MINIO_BUCKET_NAME=kumo-bucket
+      # For browser access, we might need localhost here,
+      # but for service-to-service, use minio:9000
+      - MINIO_PUBLIC_URL=http://localhost:9000
+    depends_on:
+      minio:
+        condition: service_started
+    networks:
+      - kumo-network
 
 volumes:
-  piston_packages:
   postgres_data:
+  piston_packages:
+  minio_data:
+
+networks:
+  kumo-network:
+    driver: bridge

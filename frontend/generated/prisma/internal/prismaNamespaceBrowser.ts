@@ -63,7 +63,9 @@ export const ModelName = {
   TaskMaterial: 'TaskMaterial',
   TestCase: 'TestCase',
   Editor: 'Editor',
-  Hint: 'Hint'
+  Hint: 'Hint',
+  Submission: 'Submission',
+  SubmissionRecord: 'SubmissionRecord'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -237,6 +239,32 @@ export const HintScalarFieldEnum = {
 } as const
 
 export type HintScalarFieldEnum = (typeof HintScalarFieldEnum)[keyof typeof HintScalarFieldEnum]
+
+
+export const SubmissionScalarFieldEnum = {
+  id: 'id',
+  labWorkId: 'labWorkId',
+  userEmail: 'userEmail',
+  status: 'status',
+  grade: 'grade',
+  feedback: 'feedback',
+  submittedAt: 'submittedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubmissionScalarFieldEnum = (typeof SubmissionScalarFieldEnum)[keyof typeof SubmissionScalarFieldEnum]
+
+
+export const SubmissionRecordScalarFieldEnum = {
+  id: 'id',
+  submissionId: 'submissionId',
+  taskId: 'taskId',
+  code: 'code',
+  language: 'language'
+} as const
+
+export type SubmissionRecordScalarFieldEnum = (typeof SubmissionRecordScalarFieldEnum)[keyof typeof SubmissionRecordScalarFieldEnum]
 
 
 export const SortOrder = {

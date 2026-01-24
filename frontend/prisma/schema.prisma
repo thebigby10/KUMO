@@ -13,23 +13,23 @@ datasource db {
   provider = "postgresql"
 }
 
-
 model User {
   id              String   @id @default(uuid())
   email           String   @unique
   name            String?
-  password        String?  // Optional for Google Users
-  avatar          String?  // New from ERD
-  googleId        String?  // New from ERD
+  password        String? // Optional for Google Users
+  avatar          String? // New from ERD
+  googleId        String? // New from ERD
   isEmailVerified Boolean  @default(false) // New from ERD
   provider        String   @default("email") // New from ERD
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   // Relations
-  enrollments     Enrollment[]
-  instructing     Instructor[]
-  announcements   Announcement[]
+  enrollments   Enrollment[]
+  instructing   Instructor[]
+  announcements Announcement[]
+  submissions   Submission[]
 
   @@map("users")
 }
@@ -41,7 +41,7 @@ model Lab {
   section     String?
   subject     String?
   room        String?
-  banner      String?  // URL to banner image
+  banner      String? // URL to banner image
   description String?
   labCode     String   @unique // The code students use to join
   isArchived  Boolean  @default(false)
@@ -49,9 +49,9 @@ model Lab {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  enrollments Enrollment[]
-  instructors Instructor[]
-  labWorks    LabWork[]
+  enrollments   Enrollment[]
+  instructors   Instructor[]
+  labWorks      LabWork[]
   announcements Announcement[]
 
   @@map("labs")
@@ -73,10 +73,10 @@ model Enrollment {
 
 // Junction table: Teachers in a Lab
 model Instructor {
-  id        String   @id @default(uuid())
+  id        String @id @default(uuid())
   labId     String
   userEmail String
-  role      Role     @default(ASSISTANT) // OWNER or ASSISTANT
+  role      Role   @default(ASSISTANT) // OWNER or ASSISTANT
 
   lab  Lab  @relation(fields: [labId], references: [id])
   user User @relation(fields: [userEmail], references: [email])
@@ -89,26 +89,26 @@ model Instructor {
 model Announcement {
   id        String   @id @default(uuid())
   labId     String
-  content   String   
-  postedBy  String   
+  content   String
+  postedBy  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   lab  Lab  @relation(fields: [labId], references: [id])
   user User @relation(fields: [postedBy], references: [email])
-  
+
   materials AnnouncementMaterial[]
 
   @@map("announcements")
 }
 
 model AnnouncementMaterial {
-  id             String @id @default(uuid())
+  id             String  @id @default(uuid())
   title          String
   url            String
   description    String?
   announcementId String
-  
+
   announcement Announcement @relation(fields: [announcementId], references: [id])
 
   @@map("announcement_materials")
@@ -116,19 +116,20 @@ model AnnouncementMaterial {
 
 // --- 4. COURSEWORK (Assignments) ---
 model LabWork {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   labId       String
   title       String
   description String?
-  totalPoints Int      @default(100)
+  totalPoints Int       @default(100)
   startTime   DateTime?
   endTime     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  lab       Lab          @relation(fields: [labId], references: [id])
-  tasks     LabTask[]
-  materials LabMaterial[]
+  lab         Lab           @relation(fields: [labId], references: [id])
+  tasks       LabTask[]
+  materials   LabMaterial[]
+  submissions Submission[]
 
   @@map("lab_works")
 }
@@ -138,40 +139,43 @@ model LabTask {
   labWorkId   String
   title       String
   description String?
-  url         String?  // Piston/execution config url?
+  url         String? // Piston/execution config url?
   point       Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  labWork   LabWork      @relation(fields: [labWorkId], references: [id])
-  materials TaskMaterial[]
-  testCases TestCase[]
-  editors   Editor[]
-  hints     Hint[]
+  labWork           LabWork            @relation(fields: [labWorkId], references: [id])
+  materials         TaskMaterial[]
+  testCases         TestCase[]
+  editors           Editor[]
+  hints             Hint[]
+  submissionRecords SubmissionRecord[]
 
   @@map("lab_tasks")
 }
 
 // --- 5. SUPPORTING TABLES ---
 model LabMaterial {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   labWorkId   String
   title       String?
   description String?
   url         String
 
   labWork LabWork @relation(fields: [labWorkId], references: [id])
+
   @@map("lab_materials")
 }
 
 model TaskMaterial {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   taskId      String
   title       String?
   description String?
   url         String?
 
   task LabTask @relation(fields: [taskId], references: [id])
+
   @@map("task_materials")
 }
 
@@ -182,17 +186,19 @@ model TestCase {
   expectOutput String
 
   task LabTask @relation(fields: [taskId], references: [id])
+
   @@map("test_cases")
 }
 
 model Editor {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   taskId      String
   solution    String // Starter code or solution
   description String?
   url         String?
 
   task LabTask @relation(fields: [taskId], references: [id])
+
   @@map("editors")
 }
 
@@ -202,10 +208,53 @@ model Hint {
   hint   String
 
   task LabTask @relation(fields: [taskId], references: [id])
+
   @@map("hints")
 }
 
 enum Role {
   OWNER
   ASSISTANT
+}
+
+// --- 6. SUBMISSIONS ---
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  RETURNED
+}
+
+model Submission {
+  id          String           @id @default(uuid())
+  labWorkId   String
+  userEmail   String
+  status      SubmissionStatus @default(DRAFT)
+  grade       Int? // The grade given by instructor
+  feedback    String? // Instructor feedback
+  submittedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  labWork LabWork @relation(fields: [labWorkId], references: [id])
+  user    User    @relation(fields: [userEmail], references: [email])
+
+  // A submission consists of code for multiple tasks
+  records SubmissionRecord[]
+
+  @@unique([labWorkId, userEmail]) // One submission per work per student
+  @@map("submissions")
+}
+
+model SubmissionRecord {
+  id           String @id @default(uuid())
+  submissionId String
+  taskId       String
+  code         String @db.Text // The student's code
+  language     String // e.g., "python", "cpp"
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  task       LabTask    @relation(fields: [taskId], references: [id])
+
+  @@unique([submissionId, taskId])
+  @@map("submission_records")
 }
