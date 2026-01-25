@@ -1,5 +1,5 @@
 import { db } from "@/models/models";
-import { SubmissionStatus } from "@prisma/client";
+import { SubmissionStatus } from "../../generated/prisma/client";
 
 export class SubmissionRepository {
   // Find or create the container for a student's work

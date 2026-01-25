@@ -1,5 +1,5 @@
 import { db } from "@/models/models";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 
 export class LabRepository {
   // --- CREATE ---
