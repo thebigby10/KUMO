@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { joinLab } from "../actions/classroom-actions/lab";
+import { joinLab } from "../../actions/classroom-actions/lab";
 import { useState } from "react";
 
 interface JoinLabModalProps {
