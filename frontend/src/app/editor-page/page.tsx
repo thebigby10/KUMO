@@ -28,9 +28,9 @@ interface CodeEditorPageProps {
 
 const LANGUAGES = [
   { key: "python" as LanguageKey, label: "Python" },
-  { key: "cpp" as LanguageKey, label: "C++" },
-  { key: "c" as LanguageKey, label: "C" },
-  { key: "java" as LanguageKey, label: "Java" },
+  // { key: "cpp" as LanguageKey, label: "C++" },
+  // { key: "c" as LanguageKey, label: "C" },
+  // { key: "java" as LanguageKey, label: "Java" },
 ];
 
 const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
@@ -52,7 +52,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
       language: normalizeLang(task.initialLanguage || "python"),
       input: "",
       output: "",
-    }))
+    })),
   );
 
   // Current task state
@@ -72,11 +72,13 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
   const [inputWidth, setInputWidth] = useState(50);
 
   // Update task state helper
-  const updateCurrentTaskState = (updates: Partial<typeof currentTaskState>) => {
+  const updateCurrentTaskState = (
+    updates: Partial<typeof currentTaskState>,
+  ) => {
     setTaskStates((prev) =>
       prev.map((state, idx) =>
-        idx === activeTaskIndex ? { ...state, ...updates } : state
-      )
+        idx === activeTaskIndex ? { ...state, ...updates } : state,
+      ),
     );
   };
 
@@ -116,7 +118,8 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
 
       const data = await response.json();
       if (response.ok) {
-        let outputText = data.output || data.stdout || "Program finished (no output).";
+        let outputText =
+          data.output || data.stdout || "Program finished (no output).";
         if (data.stderr) {
           outputText += "\n" + data.stderr;
         }
@@ -128,7 +131,8 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
       }
     } catch (err) {
       updateCurrentTaskState({
-        output: "Error: Could not connect to execution server. Check if containers are running.",
+        output:
+          "Error: Could not connect to execution server. Check if containers are running.",
       });
     } finally {
       setIsRunning(false);
@@ -250,7 +254,10 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
                   onClick={() => setShowLangDropdown(!showLangDropdown)}
                   className="flex items-center gap-2 px-3 py-1 text-xs font-bold uppercase text-gray-300 bg-[#333] border border-gray-600 rounded hover:bg-[#3a3a3a] transition-colors"
                 >
-                  {LANGUAGES.find((l) => l.key === currentTaskState.language)?.label}
+                  {
+                    LANGUAGES.find((l) => l.key === currentTaskState.language)
+                      ?.label
+                  }
                   <ChevronDown size={14} />
                 </button>
 
@@ -280,7 +287,8 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
           <Editor
             height="100%"
             language={
-              currentTaskState.language === "c" || currentTaskState.language === "cpp"
+              currentTaskState.language === "c" ||
+              currentTaskState.language === "cpp"
                 ? "cpp"
                 : currentTaskState.language
             }
@@ -321,7 +329,9 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
           <div className="flex flex-1 gap-1 p-2 overflow-hidden bg-[#262626]">
             <textarea
               value={currentTaskState.input}
-              onChange={(e) => updateCurrentTaskState({ input: e.target.value })}
+              onChange={(e) =>
+                updateCurrentTaskState({ input: e.target.value })
+              }
               className="p-3 font-mono text-sm text-gray-300 bg-[#1a1a1a] border border-[#444] rounded outline-none resize-none"
               style={{ width: `${inputWidth}%` }}
               placeholder="Stdin..."
