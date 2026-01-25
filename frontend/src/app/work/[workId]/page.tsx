@@ -1,5 +1,3 @@
-// src/app/work/[workId]/page.tsx
-
 import { notFound } from "next/navigation";
 import CodeEditorPage from "@/app/editor-page/page";
 import { WorkController } from "@/controller/WorkController";
@@ -17,8 +15,6 @@ export default async function WorkEnvPage({
 
   const work = await WorkController.getWorkById(workId);
 
-  console.log("Fetched work:", work);
-
   if (!work || work.tasks.length === 0) notFound();
 
   // Transform tasks to match the CodeEditorPage interface
@@ -26,7 +22,7 @@ export default async function WorkEnvPage({
     id: task.id,
     title: task.title,
     description: task.description || "No description provided.",
-    initialCode: task.editors[0].solution || "",
+    initialCode: task.editors[0]?.solution || "", // Added safe navigation
     initialLanguage: task.url || "python",
   }));
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Plus, Calendar, FileCode } from "lucide-react";
-import { LabController } from "@/controller/LabController"; // Logic moved here
+import { LabController } from "@/controller/LabController";
 import { getCurrentUser } from "@/actions/auth";
 
 export default async function ClassworkPage({
@@ -14,11 +14,6 @@ export default async function ClassworkPage({
 
   if (!user?.email) return null;
 
-  // CONTROLLER CALL: Fetch Lab with LabWorks
-  // We use the Controller to get the lab and its associated work data
-  // Note: Ensure your LabController/Repository has a method 'getWithWorks' or modifies 'getById' to include labWorks.
-  // For this example, we assume `getById` was updated or a new `getWithWorks` exists.
-  // If strict separation is followed, the Controller handles the Prisma `include`.
   const lab = await LabController.getWithWorks(labId);
 
   if (!lab) notFound();
@@ -44,7 +39,8 @@ export default async function ClassworkPage({
       </div>
 
       <div className="space-y-4">
-        {lab.labWorks.length === 0 ? (
+        {/* Note: 'works' renamed from 'labWorks' in controller */}
+        {lab.works.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
               <FileCode size={32} />
@@ -54,7 +50,7 @@ export default async function ClassworkPage({
             </h3>
           </div>
         ) : (
-          lab.labWorks.map((work) => (
+          lab.works.map((work) => (
             <Link
               key={work.id}
               href={`/work/${work.id}`}
