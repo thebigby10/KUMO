@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/app/actions/auth";
-import { LabController } from "@/controller/LabController"; // Logic moved here
-import ClassroomActionWrapper from "./ClassroomActionWrapper";
-import UserMenu from "../components/UserMenu";
+import { LabController } from "@/controller/LabController";
 import Link from "next/link";
 
 export default async function DashboardPage() {
@@ -16,29 +14,7 @@ export default async function DashboardPage() {
   const labs = await LabController.getAllForUser(user.email);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navbar */}
-      <nav className="flex items-center justify-between px-6 py-3 border-b bg-white sticky top-0 z-10">
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-100 rounded-full transition text-gray-600">
-            <div className="text-xl">☰</div>
-          </button>
-          <span className="text-xl font-medium text-gray-600 ml-2">
-            Kumo Classroom
-          </span>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <ClassroomActionWrapper userEmail={user.email} />
-
-          <div className="pl-2">
-            <UserMenu email={user.email} name={user.name} />
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Grid Content */}
-      <main className="p-6">
+    <div className="p-6">
         {labs.length === 0 ? (
           <div className="flex flex-col items-center justify-center mt-20 text-center animate-in fade-in duration-500">
             <div className="w-64 h-48 bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg mb-4 flex items-center justify-center text-gray-400">
@@ -121,7 +97,6 @@ export default async function DashboardPage() {
             })}
           </div>
         )}
-      </main>
     </div>
   );
 }
