@@ -5,8 +5,8 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 function generateLabCode(length = 6) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -34,15 +34,14 @@ export async function createLab(formData: FormData, userEmail: string) {
         instructors: {
           create: {
             userEmail: userEmail,
-            role: "OWNER"
-          }
-        }
-      }
+            role: "OWNER",
+          },
+        },
+      },
     });
 
     revalidatePath("/dashboard");
     return { success: true, lab: newLab };
-
   } catch (error) {
     console.error("Failed to create lab:", error);
     return { error: "Failed to create lab" };
@@ -63,7 +62,7 @@ export async function joinLab(formData: FormData, userEmail: string) {
       include: {
         instructors: true,
         enrollments: true,
-      }
+      },
     });
 
     if (!lab) {
@@ -71,13 +70,17 @@ export async function joinLab(formData: FormData, userEmail: string) {
     }
 
     // 2. Check: Is the user the Instructor?
-    const isInstructor = lab.instructors.some(inst => inst.userEmail === userEmail);
+    const isInstructor = lab.instructors.some(
+      (inst) => inst.userEmail === userEmail,
+    );
     if (isInstructor) {
       return { error: "You are already teaching this class." };
     }
 
     // 3. Check: Is the user already enrolled?
-    const isEnrolled = lab.enrollments.some(enroll => enroll.userEmail === userEmail);
+    const isEnrolled = lab.enrollments.some(
+      (enroll) => enroll.userEmail === userEmail,
+    );
     if (isEnrolled) {
       return { error: "You are already enrolled in this class." };
     }
@@ -87,12 +90,11 @@ export async function joinLab(formData: FormData, userEmail: string) {
       data: {
         userEmail: userEmail,
         labId: lab.id,
-      }
+      },
     });
 
     revalidatePath("/dashboard");
     return { success: true };
-
   } catch (error) {
     console.error("Failed to join lab:", error);
     return { error: "Failed to join class. Please try again." };
@@ -108,7 +110,20 @@ export async function deleteLab(labId: string, userEmail: string) {
   revalidatePath("/dashboard");
 }
 
-
 export async function getPeople(labId: string) {
   return await LabController.getPeople(labId);
+}
+
+export async function updateLab(
+  labId: string,
+  userEmail: string,
+  labData: {
+    name?: string;
+    room?: string;
+    section?: string;
+    subject?: string;
+    isArchived?: boolean;
+  },
+) {
+  return await LabController.updateLab(labId, userEmail, labData);
 }

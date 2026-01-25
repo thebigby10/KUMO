@@ -139,6 +139,7 @@ export class LabController {
       name?: string;
       room?: string;
       section?: string;
+      subject?: string;
       isArchived?: boolean;
     },
   ) {
