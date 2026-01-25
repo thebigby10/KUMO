@@ -4,6 +4,7 @@ import { Plus, Calendar, FileCode } from "lucide-react";
 import { LabController } from "@/controller/LabController";
 import { getCurrentUser } from "@/actions/auth";
 import WorkActionMenu from "@/components/classwork/WorkActionMenu";
+import GradeButton from "@/components/classwork/GradeButton"; // [NEW IMPORT]
 
 export default async function ClassworkPage({
   params,
@@ -56,8 +57,6 @@ export default async function ClassworkPage({
           </div>
         ) : (
           lab.works.map((work) => {
-            // Determine Link destination based on Role
-            // Instructors go to Edit page, Students go to Solve page
             const linkHref = isInstructor
               ? `/dashboard/lab/${labId}/work/${work.id}/edit`
               : `/work/${work.id}`;
@@ -69,7 +68,6 @@ export default async function ClassworkPage({
                 className="group block bg-white border border-gray-200 rounded-xl p-5 hover:border-blue-400 hover:shadow-md transition cursor-pointer relative"
               >
                 <div className="flex items-start justify-between">
-                  {/* Left Side: Icon & Info */}
                   <div className="flex items-center gap-4 flex-1">
                     <div
                       className={`p-3 rounded-lg transition ${
@@ -94,7 +92,6 @@ export default async function ClassworkPage({
                         <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                         <span>{work.totalPoints} Points</span>
 
-                        {/* Instructor: Show Submission Count */}
                         {isInstructor && (
                           <>
                             <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
@@ -108,18 +105,13 @@ export default async function ClassworkPage({
                     </div>
                   </div>
 
-                  {/* Right Side: Date & Actions */}
                   <div className="flex items-center gap-3">
-                    {/* NEW: Grading Button for Instructors */}
-                    {isInstructor && (
-                      <Link
+                    {/* [UPDATED] Use GradeButton Component */}
+                    {/*{isInstructor && (
+                      <GradeButton
                         href={`/dashboard/lab/${labId}/work/${work.id}/grade`}
-                        onClick={(e) => e.stopPropagation()} // Prevent triggering the main card link
-                        className="hidden sm:flex text-xs font-medium text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition"
-                      >
-                        Grade
-                      </Link>
-                    )}
+                      />
+                    )}*/}
 
                     {work.endTime && (
                       <div className="hidden sm:flex text-xs text-gray-500 items-center gap-1 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
@@ -132,7 +124,6 @@ export default async function ClassworkPage({
                       </div>
                     )}
 
-                    {/* Instructor Actions Dropdown (Edit/Delete) */}
                     {isInstructor && (
                       <WorkActionMenu workId={work.id} labId={labId} />
                     )}
