@@ -1,3 +1,5 @@
+// src/app/editor-page/ResizeHandle.tsx
+
 const ResizeHandle = ({ 
   onMouseDown, 
   direction, 

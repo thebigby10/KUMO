@@ -1,3 +1,4 @@
+
 import { LabRepository } from "@/repositories/LabRepository";
 import { EnrollmentRepository } from "@/repositories/EnrollmentRepository";
 import { InstructorRepository } from "@/repositories/InstructorRepository";
@@ -138,6 +139,7 @@ export class LabController {
       name?: string;
       room?: string;
       section?: string;
+      subject?: string;
       isArchived?: boolean;
     },
   ) {
