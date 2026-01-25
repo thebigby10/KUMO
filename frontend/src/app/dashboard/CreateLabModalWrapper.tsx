@@ -1,8 +1,10 @@
+//src/app/dashboard/CreateLabModalWrapper.tsx
+
 "use client";
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import CreateLabModal from "@/components/CreateLabModal";
+import CreateLabModal from "@/components/modals/CreateLabModal";
 
 export default function CreateLabModalWrapper({ userEmail }: { userEmail: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
