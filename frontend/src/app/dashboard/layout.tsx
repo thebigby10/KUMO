@@ -1,13 +1,13 @@
 // src/app/dashboard/layout.tsx
 
 import React from "react";
-import { getCurrentUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import DashboardLayoutClient from "./DashboardLayoutClient";
 import ClassroomActionWrapper from "./ClassroomActionWrapper";
-import UserMenu from "../components/UserMenu";
 import { LabController } from "@/controller/LabController";
 import { LabType } from "@/types/labType";
+import { getCurrentUser } from "@/actions/auth";
+import UserMenu from "@/components/UserMenu";
 
 export default async function DashboardLayout({
   children,
