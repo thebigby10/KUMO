@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Plus, Calendar, FileCode, CheckCircle2 } from "lucide-react";
+import { Plus, Calendar, FileCode } from "lucide-react";
 import { LabController } from "@/controller/LabController";
 import { getCurrentUser } from "@/actions/auth";
 import WorkActionMenu from "@/components/classwork/WorkActionMenu";
@@ -57,6 +57,7 @@ export default async function ClassworkPage({
         ) : (
           lab.works.map((work) => {
             // Determine Link destination based on Role
+            // Instructors go to Edit page, Students go to Solve page
             const linkHref = isInstructor
               ? `/dashboard/lab/${labId}/work/${work.id}/edit`
               : `/work/${work.id}`;
@@ -109,6 +110,17 @@ export default async function ClassworkPage({
 
                   {/* Right Side: Date & Actions */}
                   <div className="flex items-center gap-3">
+                    {/* NEW: Grading Button for Instructors */}
+                    {isInstructor && (
+                      <Link
+                        href={`/dashboard/lab/${labId}/work/${work.id}/grade`}
+                        onClick={(e) => e.stopPropagation()} // Prevent triggering the main card link
+                        className="hidden sm:flex text-xs font-medium text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition"
+                      >
+                        Grade
+                      </Link>
+                    )}
+
                     {work.endTime && (
                       <div className="hidden sm:flex text-xs text-gray-500 items-center gap-1 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
                         <Calendar size={14} />
@@ -120,7 +132,7 @@ export default async function ClassworkPage({
                       </div>
                     )}
 
-                    {/* Instructor Actions Dropdown */}
+                    {/* Instructor Actions Dropdown (Edit/Delete) */}
                     {isInstructor && (
                       <WorkActionMenu workId={work.id} labId={labId} />
                     )}
