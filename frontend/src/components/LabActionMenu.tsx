@@ -3,8 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { FaEllipsisVertical } from "react-icons/fa6";
+import { LabType } from "@/types/labType";
+import { deleteLab } from "@/actions/classroom-actions/lab";
 
-export default function LabActionMenu({ labId }: { labId: string }) {
+export default function LabActionMenu({ lab, userEmail }: { lab: LabType; userEmail: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -19,12 +21,12 @@ export default function LabActionMenu({ labId }: { labId: string }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const handleDeleteLab = async(labId: string, userEmail: string) => {
+    await deleteLab(labId, userEmail);
+  };
+
   return (
-    <div
-      ref={ref}
-      className="relative"
-      onClick={(e) => e.stopPropagation()} // prevent card navigation
-    >
+    <div ref={ref} className="relative" onClick={(e) => e.stopPropagation()}>
       <button
         onClick={() => setOpen((v) => !v)}
         className="p-2 rounded-full hover:bg-gray-200"
@@ -35,7 +37,7 @@ export default function LabActionMenu({ labId }: { labId: string }) {
       {open && (
         <div className="absolute right-0 bottom-10 w-36 bg-white border border-gray-100 rounded-md shadow-lg z-50">
           <Link
-            href={`/dashboard/lab/${labId}/edit`}
+            href={`/dashboard/lab/${lab.id}/edit`}
             className="block px-4 py-2 text-sm hover:bg-gray-100"
           >
             Edit
@@ -46,10 +48,14 @@ export default function LabActionMenu({ labId }: { labId: string }) {
             onClick={() => {
               setOpen(false);
               // hook delete modal / action here
-              console.log("Delete lab", labId);
+              handleDeleteLab(lab.id, userEmail);
             }}
           >
             Delete
+          </button>
+
+          <button className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
+            Archive
           </button>
         </div>
       )}

@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { FaRegUser } from "react-icons/fa";
 import LabActionMenu from "./LabActionMenu";
+import { LabType } from "@/types/labType";
 
-export default function LabCardActions({ lab, userEmail }: { lab: any; userEmail: string }) {
+export default function LabCardActions({ lab, userEmail }: { lab: LabType; userEmail: string }) {
   return (
     <div
       className="border-t p-3 flex justify-end gap-2 border-gray-100 bg-white text-black"
@@ -18,7 +19,7 @@ export default function LabCardActions({ lab, userEmail }: { lab: any; userEmail
       </Link>
 
       {lab.instructors.some((inst: any) => inst.userEmail === userEmail) && (
-        <LabActionMenu labId={lab.id} />
+        <LabActionMenu lab={lab} userEmail={userEmail} />
       )}
     </div>
   );

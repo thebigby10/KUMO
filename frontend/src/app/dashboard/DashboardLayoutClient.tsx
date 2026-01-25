@@ -1,3 +1,6 @@
+// ============================================
+// 1. DashboardLayoutClient.tsx - Updated z-index
+// ============================================
 "use client";
 
 import React, { useState } from "react";
@@ -47,8 +50,8 @@ export default function DashboardLayoutClient({
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 fixed h-full overflow-y-auto z-20">
+      {/* Sidebar - z-30 */}
+      <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 fixed h-full overflow-y-auto z-30">
         <div className="py-2">
           <nav className="px-2 space-y-1">
             {navItems.map((item) => {
@@ -163,9 +166,14 @@ export default function DashboardLayoutClient({
       </aside>
 
       <div className="flex-1 ml-64">
-        {navbar}
+        {/* Navbar - z-40 */}
+        <div className="sticky top-0 z-40">
+          {navbar}
+        </div>
         <div className="overflow-auto">{children}</div>
       </div>
     </div>
   );
 }
+
+

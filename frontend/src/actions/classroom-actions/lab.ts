@@ -1,5 +1,6 @@
 "use server";
 
+import { LabController } from "@/controller/LabController";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -96,4 +97,18 @@ export async function joinLab(formData: FormData, userEmail: string) {
     console.error("Failed to join lab:", error);
     return { error: "Failed to join class. Please try again." };
   }
+}
+
+export async function deleteLab(labId: string, userEmail: string) {
+  if (!labId || !userEmail) {
+    return { error: "Lab ID and User are required" };
+  }
+
+  await LabController.deleteLab(labId, userEmail);
+  revalidatePath("/dashboard");
+}
+
+
+export async function getPeople(labId: string) {
+  return await LabController.getPeople(labId);
 }
