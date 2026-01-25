@@ -23,6 +23,25 @@ export class LabWorkRepository {
     });
   }
 
+  /**
+   * Find a work with full task details including test cases.
+   * Used for the grading view where we need to run tests.
+   */
+  static async findByIdWithFullTaskDetails(id: string) {
+    return await db.labWork.findUnique({
+      where: { id },
+      include: {
+        tasks: {
+          include: {
+            editors: true,
+            testCases: true,
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+  }
+
   static async findAllByLabId(labId: string) {
     return await db.labWork.findMany({
       where: { labId },

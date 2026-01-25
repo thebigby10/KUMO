@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Plus, Calendar, FileCode } from "lucide-react";
+import { Plus, Calendar, FileCode, Users, Eye } from "lucide-react";
 import { getCurrentUser } from "@/app/actions/auth";
-import { LabController } from "@/controller/LabController"; // Logic moved here
+import { LabController } from "@/controller/LabController";
 
 export default async function ClassworkPage({
   params,
@@ -15,10 +15,6 @@ export default async function ClassworkPage({
   if (!user?.email) return null;
 
   // CONTROLLER CALL: Fetch Lab with LabWorks
-  // We use the Controller to get the lab and its associated work data
-  // Note: Ensure your LabController/Repository has a method 'getWithWorks' or modifies 'getById' to include labWorks.
-  // For this example, we assume `getById` was updated or a new `getWithWorks` exists.
-  // If strict separation is followed, the Controller handles the Prisma `include`.
   const lab = await LabController.getWithWorks(labId);
 
   if (!lab) notFound();
@@ -52,40 +48,77 @@ export default async function ClassworkPage({
             <h3 className="text-lg font-medium text-gray-900">
               No assignments yet
             </h3>
+            {isInstructor && (
+              <p className="text-sm text-gray-500 mt-2">
+                Create your first assignment to get started
+              </p>
+            )}
           </div>
         ) : (
-          lab.labWorks.map((work) => (
-            <Link
-              key={work.id}
-              href={`/work/${work.id}`}
-              className="group block bg-white border border-gray-200 rounded-lg p-5 hover:border-blue-400 hover:shadow-md transition cursor-pointer"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition">
-                    <FileCode size={24} />
+          lab.labWorks.map((work) => {
+            // Route based on role:
+            // - Instructors → Submission Dashboard (/work/[id]/submissions)
+            // - Students → Code Editor (/work/[id])
+            const workUrl = isInstructor
+              ? `/work/${work.id}/submissions`
+              : `/work/${work.id}`;
+
+            return (
+              <Link
+                key={work.id}
+                href={workUrl}
+                className="group block bg-white border border-gray-200 rounded-lg p-5 hover:border-blue-400 hover:shadow-md transition cursor-pointer"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition">
+                      <FileCode size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition">
+                        {work.title}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {work.tasks.length}{" "}
+                        {work.tasks.length === 1 ? "Task" : "Tasks"} •{" "}
+                        {work.totalPoints} Points
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition">
-                      {work.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      {work.tasks.length}{" "}
-                      {work.tasks.length === 1 ? "Task" : "Tasks"} •{" "}
-                      {work.totalPoints} Points
-                    </p>
+
+                  <div className="flex items-center gap-3">
+                    {work.endTime && (
+                      <div className="text-xs text-gray-500 flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-full">
+                        <Calendar size={14} />
+                        Due {new Date(work.endTime).toLocaleDateString()}
+                      </div>
+                    )}
+                    
+                    {/* Role indicator pill */}
+                    <div
+                      className={`text-xs flex items-center gap-1 px-3 py-1 rounded-full ${
+                        isInstructor
+                          ? "bg-purple-50 text-purple-600"
+                          : "bg-green-50 text-green-600"
+                      }`}
+                    >
+                      {isInstructor ? (
+                        <>
+                          <Users size={14} />
+                          View Submissions
+                        </>
+                      ) : (
+                        <>
+                          <Eye size={14} />
+                          Start Work
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-
-                {work.endTime && (
-                  <div className="text-xs text-gray-500 flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-full">
-                    <Calendar size={14} />
-                    Due {new Date(work.endTime).toLocaleDateString()}
-                  </div>
-                )}
-              </div>
-            </Link>
-          ))
+              </Link>
+            );
+          })
         )}
       </div>
     </div>
