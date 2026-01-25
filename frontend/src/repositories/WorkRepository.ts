@@ -1,26 +1,25 @@
 import { db } from "@/models/models";
 import { Prisma, Work } from "@prisma/client";
 
-// DTO for complex creation
 export interface CreateWorkPayload {
   labId: string;
   title: string;
   description?: string;
   totalPoints: number;
+  startTime?: Date | null;
   endTime?: Date | null;
   tasks: Array<{
     title: string;
     description: string;
-    point: number;
-    url?: string; // Language stored here
+    pdfUrl?: string;
     starterCode: string;
+    point: number;
+    testCases: { input: string; expectOutput: string }[];
+    hints: string[];
   }>;
 }
 
 export class WorkRepository {
-  /**
-   * CREATE: Transactional creation of Work + Tasks + Editor Config
-   */
   static async createWithTasks(data: CreateWorkPayload): Promise<Work> {
     return await db.$transaction(async (tx) => {
       // 1. Create Parent Work
@@ -30,29 +29,86 @@ export class WorkRepository {
           title: data.title,
           description: data.description,
           totalPoints: data.totalPoints,
+          startTime: data.startTime,
           endTime: data.endTime,
         },
       });
 
-      // 2. Create Children (Tasks)
-      for (const task of data.tasks) {
+      // 2. Create Tasks & store references for submission creation
+      const createdTasks = [];
+
+      for (const taskData of data.tasks) {
+        // Create Task
         const newTask = await tx.task.create({
           data: {
             workId: newWork.id,
-            title: task.title,
-            description: task.description,
-            point: task.point,
-            url: task.url,
+            title: taskData.title,
+            description: taskData.description,
+            point: taskData.point,
+            url: taskData.pdfUrl,
           },
         });
 
-        // 3. Create Editor (Starter Code)
+        // Create Editor
         await tx.editor.create({
           data: {
             taskId: newTask.id,
-            solution: task.starterCode,
+            solution: taskData.starterCode,
             url: "",
           },
+        });
+
+        // Create Test Cases
+        if (taskData.testCases.length > 0) {
+          await tx.testCase.createMany({
+            data: taskData.testCases.map((tc) => ({
+              taskId: newTask.id,
+              input: tc.input,
+              expectOutput: tc.expectOutput,
+            })),
+          });
+        }
+
+        // Create Hints
+        if (taskData.hints.length > 0) {
+          await tx.hint.createMany({
+            data: taskData.hints.map((h) => ({
+              taskId: newTask.id,
+              hint: h,
+            })),
+          });
+        }
+
+        createdTasks.push({
+          id: newTask.id,
+          starterCode: taskData.starterCode,
+        });
+      }
+
+      // 3. Auto-create Submissions for all enrolled students for ALL tasks
+      const enrollments = await tx.enrollment.findMany({
+        where: { labId: data.labId },
+        select: { userEmail: true },
+      });
+
+      if (enrollments.length > 0 && createdTasks.length > 0) {
+        const submissionData = [];
+
+        for (const enrollment of enrollments) {
+          for (const task of createdTasks) {
+            submissionData.push({
+              workId: newWork.id,
+              taskId: task.id,
+              userEmail: enrollment.userEmail,
+              code: task.starterCode,
+              language: "python", // Default
+              status: "DRAFT" as const,
+            });
+          }
+        }
+
+        await tx.submission.createMany({
+          data: submissionData,
         });
       }
 
@@ -60,12 +116,13 @@ export class WorkRepository {
     });
   }
 
+  // Standard CRUD methods...
   static async findById(id: string) {
     return await db.work.findUnique({
       where: { id },
       include: {
         tasks: {
-          include: { editors: true, testCases: true },
+          include: { editors: true, testCases: true, hints: true },
           orderBy: { createdAt: "asc" },
         },
       },
@@ -77,56 +134,25 @@ export class WorkRepository {
       where: { labId },
       orderBy: { createdAt: "desc" },
       include: {
-        tasks: { select: { id: true } }, // Lightweight count
+        tasks: { select: { id: true } },
         _count: { select: { submissions: true } },
       },
     });
   }
 
   static async update(id: string, data: Prisma.WorkUpdateInput) {
-    return await db.work.update({
-      where: { id },
-      data,
-    });
+    return await db.work.update({ where: { id }, data });
   }
 
-  /**
-   * DELETE: Cascading delete via transaction
-   */
   static async delete(id: string) {
     return await db.$transaction(async (tx) => {
-      // 1. Identify Tasks
-      const tasks = await tx.task.findMany({
-        where: { workId: id },
-        select: { id: true },
-      });
-      const taskIds = tasks.map((t) => t.id);
-
-      if (taskIds.length > 0) {
-        // Delete Task Dependencies
-        await tx.editor.deleteMany({ where: { taskId: { in: taskIds } } });
-        await tx.testCase.deleteMany({ where: { taskId: { in: taskIds } } });
-        await tx.hint.deleteMany({ where: { taskId: { in: taskIds } } });
-        await tx.taskMaterial.deleteMany({
-          where: { taskId: { in: taskIds } },
-        });
-
-        // Delete Submission Records (Linked to Tasks)
-        await tx.submissionRecord.deleteMany({
-          where: { taskId: { in: taskIds } },
-        });
-
-        // Delete Tasks
-        await tx.task.deleteMany({ where: { workId: id } });
-      }
-
-      // 2. Delete Work Dependencies
-      await tx.labMaterial.deleteMany({ where: { workId: id } });
-
-      // Delete Submissions (SubmissionRecords were deleted above via Task link, or via Cascade here)
+      // Delete submissions linked to this work
       await tx.submission.deleteMany({ where: { workId: id } });
-
-      // 3. Delete Work
+      // Delete tasks (cascade handles task children)
+      await tx.task.deleteMany({ where: { workId: id } });
+      // Delete materials
+      await tx.labMaterial.deleteMany({ where: { workId: id } });
+      // Delete work
       return await tx.work.delete({ where: { id } });
     });
   }
