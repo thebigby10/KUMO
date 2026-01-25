@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/app/actions/auth";
 import CodeEditorPage from "@/app/editor-page/page";
 import { WorkController } from "@/controller/WorkController"; // Logic moved here
+import { getCurrentUser } from "@/actions/auth";
 
 export default async function WorkEnvPage({
   params,
