@@ -1,7 +1,9 @@
+// src/app/work/[workId]/page.tsx
+
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/app/actions/auth";
 import CodeEditorPage from "@/app/editor-page/page";
-import { WorkController } from "@/controller/WorkController"; // Logic moved here
+import { WorkController } from "@/controller/WorkController";
+import { getCurrentUser } from "@/actions/auth";
 
 export default async function WorkEnvPage({
   params,
@@ -13,25 +15,24 @@ export default async function WorkEnvPage({
 
   if (!user?.email) return null;
 
-  // CONTROLLER CALL: Fetch the specific assignment
   const work = await WorkController.getWorkById(workId);
+
+  console.log("Fetched work:", work);
 
   if (!work || work.tasks.length === 0) notFound();
 
-  // Extract Data for the Editor
-  const task = work.tasks[0];
-  const starterCode = task.editors[0]?.solution || "";
-  const language = task.url || "python";
+  // Transform tasks to match the CodeEditorPage interface
+  const tasks = work.tasks.map((task) => ({
+    id: task.id,
+    title: task.title,
+    description: task.description || "No description provided.",
+    initialCode: task.editors[0].solution || "",
+    initialLanguage: task.url || "python",
+  }));
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#1a1a1a]">
-      <CodeEditorPage
-        initialCode={starterCode}
-        initialLanguage={language}
-        description={task.description || "No description provided."}
-        title={task.title}
-        workId={workId}
-      />
+      <CodeEditorPage tasks={tasks} workId={workId} />
     </div>
   );
 }

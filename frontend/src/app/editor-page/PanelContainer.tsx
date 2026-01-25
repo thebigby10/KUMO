@@ -1,3 +1,5 @@
+// src/app/editor-page/PanelContainer.tsx
+
 const PanelContainer = ({ 
   children, 
   className = "", 
