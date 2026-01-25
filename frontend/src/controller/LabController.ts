@@ -1,3 +1,4 @@
+
 import { LabRepository } from "@/repositories/LabRepository";
 import { EnrollmentRepository } from "@/repositories/EnrollmentRepository";
 import { InstructorRepository } from "@/repositories/InstructorRepository";

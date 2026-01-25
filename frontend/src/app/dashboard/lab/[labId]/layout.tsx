@@ -1,3 +1,5 @@
+//src/app/dashboard/lab/[labId]/layout.tsx
+
 
 import { notFound } from "next/navigation";
 import { LabController } from "@/controller/LabController";
@@ -18,7 +20,8 @@ export default async function LabLayout({
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="flex items-center justify-between px-6 py-3 border-b bg-white sticky top-0 z-50">
+      {/* Changed z-50 to z-10 so it's below navbar dropdowns but above content */}
+      <nav className="flex items-center justify-between px-6 py-3 border-b bg-white sticky top-0 z-10">
         <div className="">
           <NavTab href={`/dashboard/lab/${labId}`} labId={labId}>
             Stream
@@ -36,4 +39,3 @@ export default async function LabLayout({
     </div>
   );
 }
-
