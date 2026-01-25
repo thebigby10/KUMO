@@ -3,14 +3,14 @@ import { SubmissionStatus } from "@prisma/client";
 
 export class SubmissionRepository {
   // Find or create the container for a student's work
-  static async findOrCreate(labWorkId: string, userEmail: string) {
+  static async findOrCreate(workId: string, userEmail: string) {
     let submission = await db.submission.findUnique({
-      where: { labWorkId_userEmail: { labWorkId, userEmail } },
+      where: { workId_userEmail: { workId, userEmail } },
     });
 
     if (!submission) {
       submission = await db.submission.create({
-        data: { labWorkId, userEmail },
+        data: { workId, userEmail },
       });
     }
     return submission;
@@ -23,15 +23,14 @@ export class SubmissionRepository {
     });
   }
 
-  static async findAllByWorkId(labWorkId: string) {
+  static async findAllByWorkId(workId: string) {
     return await db.submission.findMany({
-      where: { labWorkId },
+      where: { workId },
       include: { user: true },
       orderBy: { user: { name: "asc" } },
     });
   }
 
-  // Update specific code for a task
   static async upsertRecord(
     submissionId: string,
     taskId: string,
