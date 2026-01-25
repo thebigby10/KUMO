@@ -19,6 +19,20 @@ export interface CreateWorkPayload {
   }>;
 }
 
+export interface UpdateWorkPayload extends CreateWorkPayload {
+  workId: string;
+  tasks: Array<{
+    id?: string; // Optional: If present, update. If missing, create.
+    title: string;
+    description: string;
+    pdfUrl?: string;
+    starterCode: string;
+    point: number;
+    testCases: { input: string; expectOutput: string }[];
+    hints: string[];
+  }>;
+}
+
 export class WorkRepository {
   static async createWithTasks(data: CreateWorkPayload): Promise<Work> {
     return await db.$transaction(async (tx) => {
@@ -154,6 +168,145 @@ export class WorkRepository {
       await tx.labMaterial.deleteMany({ where: { workId: id } });
       // Delete work
       return await tx.work.delete({ where: { id } });
+    });
+  }
+
+  static async updateWorkTransaction(data: UpdateWorkPayload) {
+    return await db.$transaction(async (tx) => {
+      // 1. Update Parent Work Fields
+      const updatedWork = await tx.work.update({
+        where: { id: data.workId },
+        data: {
+          title: data.title,
+          description: data.description,
+          totalPoints: data.totalPoints,
+          startTime: data.startTime,
+          endTime: data.endTime,
+        },
+      });
+
+      // 2. Handle Tasks Reconciliation
+
+      // A. Identify Task IDs coming from the form
+      const incomingTaskIds = data.tasks
+        .map((t) => t.id)
+        .filter((id): id is string => !!id);
+
+      // B. Delete Tasks not in the form (Cascading delete handles children)
+      await tx.task.deleteMany({
+        where: {
+          workId: data.workId,
+          id: { notIn: incomingTaskIds },
+        },
+      });
+
+      // C. Upsert Tasks (Update existing, Create new)
+      for (const taskData of data.tasks) {
+        let taskId = taskData.id;
+
+        if (taskId) {
+          // --- UPDATE EXISTING TASK ---
+          await tx.task.update({
+            where: { id: taskId },
+            data: {
+              title: taskData.title,
+              description: taskData.description,
+              point: taskData.point,
+              url: taskData.pdfUrl,
+            },
+          });
+
+          // Update Editor (Starter Code)
+          await tx.editor.updateMany({
+            where: { taskId: taskId },
+            data: { solution: taskData.starterCode },
+          });
+
+          // Re-create Test Cases (Easier than diffing)
+          await tx.testCase.deleteMany({ where: { taskId } });
+          if (taskData.testCases.length > 0) {
+            await tx.testCase.createMany({
+              data: taskData.testCases.map((tc) => ({
+                taskId: taskId!,
+                input: tc.input,
+                expectOutput: tc.expectOutput,
+              })),
+            });
+          }
+
+          // Re-create Hints
+          await tx.hint.deleteMany({ where: { taskId } });
+          if (taskData.hints.length > 0) {
+            await tx.hint.createMany({
+              data: taskData.hints.map((h) => ({
+                taskId: taskId!,
+                hint: h,
+              })),
+            });
+          }
+        } else {
+          // --- CREATE NEW TASK ---
+          const newTask = await tx.task.create({
+            data: {
+              workId: data.workId,
+              title: taskData.title,
+              description: taskData.description,
+              point: taskData.point,
+              url: taskData.pdfUrl,
+            },
+          });
+
+          taskId = newTask.id;
+
+          // Create Editor
+          await tx.editor.create({
+            data: {
+              taskId: newTask.id,
+              solution: taskData.starterCode,
+              url: "",
+            },
+          });
+
+          // Create Children
+          if (taskData.testCases.length > 0) {
+            await tx.testCase.createMany({
+              data: taskData.testCases.map((tc) => ({
+                taskId: newTask.id,
+                input: tc.input,
+                expectOutput: tc.expectOutput,
+              })),
+            });
+          }
+          if (taskData.hints.length > 0) {
+            await tx.hint.createMany({
+              data: taskData.hints.map((h) => ({
+                taskId: newTask.id,
+                hint: h,
+              })),
+            });
+          }
+
+          // Auto-create Submissions for new task
+          const enrollments = await tx.enrollment.findMany({
+            where: { labId: data.labId },
+            select: { userEmail: true },
+          });
+
+          if (enrollments.length > 0) {
+            await tx.submission.createMany({
+              data: enrollments.map((e) => ({
+                workId: data.workId,
+                taskId: newTask.id,
+                userEmail: e.userEmail,
+                code: taskData.starterCode,
+                status: "DRAFT",
+              })),
+            });
+          }
+        }
+      }
+
+      return updatedWork;
     });
   }
 }

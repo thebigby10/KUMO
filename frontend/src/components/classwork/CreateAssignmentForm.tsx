@@ -12,63 +12,89 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Editor from "@monaco-editor/react";
-import { createLabWork } from "@/actions/work";
-
-interface CreateAssignmentFormProps {
-  labId: string;
-  userEmail: string;
-}
-
-interface TestCase {
-  input: string;
-  expectOutput: string;
-}
+import { createLabWork, editLabWork } from "@/actions/work"; // Import edit action
 
 interface TaskData {
-  uiId: string;
+  id?: string; // DB ID (optional, only exists in edit mode)
+  uiId: string; // Internal React key
   title: string;
   description: string;
   pdfUrl: string;
   starterCode: string;
-  testCases: TestCase[];
+  testCases: { input: string; expectOutput: string }[];
   hints: string[];
   isExpanded: boolean;
+}
+
+interface CreateAssignmentFormProps {
+  labId: string;
+  userEmail: string;
+  initialData?: any; // New Prop for Edit Mode
 }
 
 export default function CreateAssignmentForm({
   labId,
   userEmail,
+  initialData,
 }: CreateAssignmentFormProps) {
   const router = useRouter();
+  const isEditMode = !!initialData;
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // General Details
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [points, setPoints] = useState(100);
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  // Helper to format Date for input
+  const formatDate = (dateString?: Date | string | null) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    // Format: YYYY-MM-DDThh:mm
+    return date.toISOString().slice(0, 16);
+  };
 
-  // Tasks List
-  const [tasks, setTasks] = useState<TaskData[]>([
-    {
-      uiId: crypto.randomUUID(),
-      title: "Problem 1",
-      description: "",
-      pdfUrl: "",
-      starterCode: `def main():\n    # Write your code here\n    pass\n\nif __name__ == "__main__":\n    main()`,
-      testCases: [],
-      hints: [],
-      isExpanded: true,
-    },
-  ]);
+  // --- State Initialization ---
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [description, setDescription] = useState(
+    initialData?.description || "",
+  );
+  const [points, setPoints] = useState(initialData?.totalPoints || 100);
+  const [startTime, setStartTime] = useState(
+    formatDate(initialData?.startTime),
+  );
+  const [endTime, setEndTime] = useState(formatDate(initialData?.endTime));
 
-  // --- Task Management Helpers ---
+  // Initialize Tasks from DB data or Default
+  const [tasks, setTasks] = useState<TaskData[]>(() => {
+    if (initialData?.tasks) {
+      return initialData.tasks.map((t: any, index: number) => ({
+        id: t.id,
+        uiId: t.id, // Use DB ID as UI ID for existing tasks
+        title: t.title,
+        description: t.description || "",
+        pdfUrl: t.url || "", // Map DB 'url' to 'pdfUrl'
+        starterCode: t.editors[0]?.solution || "",
+        testCases: t.testCases || [],
+        hints: t.hints?.map((h: any) => h.hint) || [],
+        isExpanded: index === 0,
+      }));
+    }
+    return [
+      {
+        uiId: crypto.randomUUID(),
+        title: "Problem 1",
+        description: "",
+        pdfUrl: "",
+        starterCode: `def main():\n    # Write your code here\n    pass\n\nif __name__ == "__main__":\n    main()`,
+        testCases: [],
+        hints: [],
+        isExpanded: true,
+      },
+    ];
+  });
 
+  // --- Helpers (Same as before) ---
   const addTask = () => {
     setTasks((prev) => [
-      ...prev.map((t) => ({ ...t, isExpanded: false })), // Collapse others
+      ...prev.map((t) => ({ ...t, isExpanded: false })),
       {
         uiId: crypto.randomUUID(),
         title: `Problem ${prev.length + 1}`,
@@ -105,8 +131,6 @@ export default function CreateAssignmentForm({
     setTasks(updated);
   };
 
-  // --- Nested Array Helpers (Test Cases & Hints) ---
-
   const addTestCase = (taskIndex: number) => {
     const updated = [...tasks];
     updated[taskIndex].testCases.push({ input: "", expectOutput: "" });
@@ -116,7 +140,7 @@ export default function CreateAssignmentForm({
   const updateTestCase = (
     taskIndex: number,
     tcIndex: number,
-    field: keyof TestCase,
+    field: "input" | "expectOutput",
     value: string,
   ) => {
     const updated = [...tasks];
@@ -153,7 +177,6 @@ export default function CreateAssignmentForm({
   };
 
   // --- Submit ---
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -166,7 +189,7 @@ export default function CreateAssignmentForm({
     }
 
     try {
-      const payload = {
+      const commonPayload = {
         labId,
         userEmail,
         title,
@@ -175,6 +198,7 @@ export default function CreateAssignmentForm({
         startTime,
         endTime,
         tasks: tasks.map((t) => ({
+          id: t.id, // Include ID for editing
           title: t.title,
           description: t.description,
           pdfUrl: t.pdfUrl,
@@ -184,13 +208,21 @@ export default function CreateAssignmentForm({
         })),
       };
 
-      const result = await createLabWork(payload);
+      let result;
+      if (isEditMode) {
+        result = await editLabWork({
+          ...commonPayload,
+          workId: initialData.id,
+        });
+      } else {
+        result = await createLabWork(commonPayload);
+      }
 
       if (result.success) {
         router.push(`/dashboard/lab/${labId}/work`);
         router.refresh();
       } else {
-        setError(result.error || "Failed to create assignment.");
+        setError(result.error || "Failed to save assignment.");
       }
     } catch (err) {
       console.error(err);
@@ -215,7 +247,7 @@ export default function CreateAssignmentForm({
       {/* 1. General Info */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
         <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
-          Assignment Details
+          {isEditMode ? "Edit Details" : "Assignment Details"}
         </h3>
         <div className="grid gap-6">
           <div>
@@ -341,7 +373,7 @@ export default function CreateAssignmentForm({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      PDF URL (Problem Statement)
+                      PDF URL
                     </label>
                     <input
                       type="url"
@@ -355,7 +387,7 @@ export default function CreateAssignmentForm({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description (Optional)
+                      Description
                     </label>
                     <textarea
                       rows={2}
@@ -511,10 +543,10 @@ export default function CreateAssignmentForm({
             className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium shadow-sm hover:bg-blue-700 disabled:opacity-50 transition flex items-center gap-2"
           >
             {loading ? (
-              "Creating..."
+              "Saving..."
             ) : (
               <>
-                <Save size={18} /> Assign Lab
+                <Save size={18} /> {isEditMode ? "Update" : "Assign"}
               </>
             )}
           </button>
