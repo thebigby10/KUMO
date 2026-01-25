@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { LabController } from "@/controller/LabController";
 import Link from "next/link";
 import { getCurrentUser } from "@/actions/auth";
+import LabCardActions from "@/components/LabCardActions";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -25,9 +26,7 @@ export default async function DashboardPage() {
           <h3 className="text-lg font-medium text-gray-900">
             It&apos;s quiet here...
           </h3>
-          <p className="text-gray-500">
-            Create or join a class to get started
-          </p>
+          <p className="text-gray-500">Create or join a class to get started</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl">
@@ -36,8 +35,7 @@ export default async function DashboardPage() {
             const isMyClass = owner?.email === user.email;
 
             return (
-              <Link
-                href={`/dashboard/lab/${lab.id}`}
+              <div
                 key={lab.id}
                 className="block group h-full"
               >
@@ -45,9 +43,9 @@ export default async function DashboardPage() {
                   {/* Banner */}
                   <div className="h-28 bg-blue-600 p-4 text-white relative bg-[url('https://gstatic.com/classroom/themes/img_read.jpg')] bg-cover">
                     <div className="flex justify-between items-start">
-                      <h2 className="text-xl font-medium hover:underline truncate w-10/12">
+                      <Link href={`/dashboard/lab/${lab?.id}`} className="text-xl font-medium hover:underline truncate w-10/12">
                         {lab.name}
-                      </h2>
+                      </Link>
                       <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/20 rounded-full transition">
                         ⋮
                       </button>
@@ -59,7 +57,9 @@ export default async function DashboardPage() {
                     {!isMyClass && owner && (
                       <div className="absolute bottom-3 right-3">
                         <div className="w-16 h-16 rounded-full bg-orange-500 text-white flex items-center justify-center text-2xl font-medium border-4 border-white">
-                          {owner.name ? owner.name.charAt(0).toUpperCase() : "M"}
+                          {owner.name
+                            ? owner.name.charAt(0).toUpperCase()
+                            : "M"}
                         </div>
                       </div>
                     )}
@@ -80,55 +80,9 @@ export default async function DashboardPage() {
                   </div>
 
                   {/* Footer Icons */}
-                  <div className="border-t p-3 flex justify-end gap-1 border-gray-100 bg-white">
-                    <button className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    </button>
-                    <button className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                        />
-                      </svg>
-                    </button>
-                    <button className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                        />
-                      </svg>
-                    </button>
-                  </div>
+                  <LabCardActions lab={lab} userEmail={user.email} />
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

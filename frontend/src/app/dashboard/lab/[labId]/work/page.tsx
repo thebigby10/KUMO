@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Plus, Calendar, FileCode } from "lucide-react";
-import { getCurrentUser } from "@/app/actions/auth";
 import { LabController } from "@/controller/LabController"; // Logic moved here
+import { getCurrentUser } from "@/actions/auth";
 
 export default async function ClassworkPage({
   params,

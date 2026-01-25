@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/app/actions/auth";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import CreateAssignmentForm from "@/app/components/classwork/CreateAssignmentForm";
 import { LabController } from "@/controller/LabController"; // Logic moved here
+import { getCurrentUser } from "@/actions/auth";
+import CreateAssignmentForm from "@/components/classwork/CreateAssignmentForm";
 
 export default async function CreateWorkPage({
   params,
