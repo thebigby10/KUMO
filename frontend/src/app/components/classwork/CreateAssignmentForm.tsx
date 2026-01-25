@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Save, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createLabWork } from "@/app/actions/work";
 import TaskEditor, { TaskData } from "./TaskEditor";
+import { createLabWork } from "@/app/actions/work";
 
 interface CreateAssignmentFormProps {
   labId: string;
