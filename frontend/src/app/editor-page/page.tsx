@@ -36,9 +36,9 @@ interface CodeEditorPageProps {
 
 const LANGUAGES = [
   { key: "python" as LanguageKey, label: "Python" },
-  { key: "cpp" as LanguageKey, label: "C++" },
-  { key: "c" as LanguageKey, label: "C" },
-  { key: "java" as LanguageKey, label: "Java" },
+  // { key: "cpp" as LanguageKey, label: "C++" },
+  // { key: "c" as LanguageKey, label: "C" },
+  // { key: "java" as LanguageKey, label: "Java" },
 ];
 
 const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
