@@ -2,20 +2,22 @@
 
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   Play,
   Activity,
   ChevronDown,
   CloudUpload,
-  CheckCircle,
-  XCircle,
+  Maximize,
+  AlertTriangle,
+  Lock,
 } from "lucide-react";
-import Editor from "@monaco-editor/react";
+import Editor, { OnMount } from "@monaco-editor/react";
 import PanelContainer from "./PanelContainer";
 import PanelHeader from "./PanelHeader";
 import ResizeHandle from "./ResizeHandle";
 import { submitTaskAction } from "@/actions/submission";
+import { useRouter } from "next/navigation";
 
 // --- Types ---
 type LanguageKey = "cpp" | "c" | "java" | "python";
@@ -42,6 +44,8 @@ const LANGUAGES = [
 ];
 
 const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
+  const router = useRouter();
+
   // Normalize DB language to our types
   const normalizeLang = (lang: string): LanguageKey => {
     if (lang === "c" || lang === "cpp" || lang === "java" || lang === "python")
@@ -49,11 +53,15 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
     return "python"; // Default fallback
   };
 
-  // Task Management State
+  // --- REFS ---
+  const editorRef = useRef<any>(null);
+  const internalClipboard = useRef<string>(""); // Stores text copied FROM the editor
+
+  // --- STATE ---
   const [activeTaskIndex, setActiveTaskIndex] = useState(0);
   const activeTask = tasks[activeTaskIndex];
 
-  // Task-specific state stored per task
+  // Task-specific state
   const [taskStates, setTaskStates] = useState(() =>
     tasks.map((task) => ({
       code: task.initialCode || "",
@@ -63,16 +71,19 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
     })),
   );
 
-  // Current task state
   const currentTaskState = taskStates[activeTaskIndex];
 
   // Global UI State
   const [status, setStatus] = useState<ServiceStatus>("checking");
   const [isRunning, setIsRunning] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // [NEW] Submission loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
 
-  // UI & Layout State
+  // KIOSK STATE
+  const [isKioskActive, setIsKioskActive] = useState(false);
+  const [warnings, setWarnings] = useState<string[]>([]);
+
+  // Layout State
   const [isDragging, setIsDragging] = useState(false);
   const [leftPanelWidth, setLeftPanelWidth] = useState<number | undefined>(
     undefined,
@@ -80,7 +91,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
   const [bottomPanelHeight, setBottomPanelHeight] = useState(256);
   const [inputWidth, setInputWidth] = useState(50);
 
-  // Update task state helper
+  // Helper to update state
   const updateCurrentTaskState = (
     updates: Partial<typeof currentTaskState>,
   ) => {
@@ -91,14 +102,123 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
     );
   };
 
-  // --- 1. Service Health Check ---
+  // ---------------------------------------------------------------------------
+  // KIOSK MODE LOGIC
+  // ---------------------------------------------------------------------------
+
+  const enterKioskMode = () => {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem
+        .requestFullscreen()
+        .then(() => {
+          setIsKioskActive(true);
+        })
+        .catch((err) => {
+          console.error("Error attempting to enable fullscreen:", err);
+        });
+    }
+  };
+
+  // 1. Detect Fullscreen Exit
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsKioskActive(false);
+        setWarnings((prev) => [...prev, "Exited Fullscreen Mode"]);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
+  // 2. Detect Tab Switching (Visibility API)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isKioskActive) {
+        setWarnings((prev) => [...prev, "Switched Tabs / Minimized Window"]);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isKioskActive]);
+
+  // 3. Prevent Right Click (Context Menu) globally
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      if (isKioskActive) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener("contextmenu", handleContextMenu);
+    return () => document.removeEventListener("contextmenu", handleContextMenu);
+  }, [isKioskActive]);
+
+  // ---------------------------------------------------------------------------
+  // COPY / PASTE LOGIC
+  // ---------------------------------------------------------------------------
+
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
+    editorRef.current = editor;
+
+    // Listen for keys to capture "Copy" or "Cut" actions specifically from this editor
+    editor.onKeyDown((e) => {
+      // Ctrl/Cmd + C or Ctrl/Cmd + X
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (e.code === "KeyC" || e.code === "KeyX")
+      ) {
+        const selection = editor.getSelection();
+        const model = editor.getModel();
+        if (selection && model) {
+          const text = model.getValueInRange(selection);
+          internalClipboard.current = text;
+          // console.log("Internal Copy Captured:", text);
+        }
+      }
+    });
+
+    // Add a custom paste handler to the editor's DOM node
+    const domNode = editor.getContainerDomNode();
+    domNode.addEventListener(
+      "paste",
+      (e: any) => {
+        const pastedData = e.clipboardData?.getData("text") || "";
+
+        // LOGIC: If pasted data matches strictly what we copied internally, allow it.
+        // Otherwise, block it.
+        if (
+          pastedData !== internalClipboard.current ||
+          internalClipboard.current === ""
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          setWarnings((prev) => [...prev, "External Paste Attempt Blocked"]);
+          // Optional: Show a toast or small alert
+        } else {
+          // console.log("Internal Paste Allowed");
+        }
+      },
+      true,
+    ); // Capture phase to preempt Monaco
+  };
+
+  // ---------------------------------------------------------------------------
+  // SERVICE & EXECUTION LOGIC
+  // ---------------------------------------------------------------------------
+
   useEffect(() => {
     const checkStatus = async () => {
       setStatus("checking");
       try {
         const healthResponse = await fetch("/api/code-execution/health");
         const data = await healthResponse.json();
-        // console.log(data);
         setStatus(data.status === "online" ? "online" : "offline");
       } catch {
         setStatus("down");
@@ -107,7 +227,6 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
     checkStatus();
   }, [currentTaskState.language]);
 
-  // --- 2. Code Execution Handler (Run) ---
   const handleRun = async () => {
     if (status === "down") return;
 
@@ -140,21 +259,18 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
       }
     } catch (err) {
       updateCurrentTaskState({
-        output:
-          "Error: Could not connect to execution server. Check if containers are running.",
+        output: "Error: Could not connect to execution server.",
       });
     } finally {
       setIsRunning(false);
     }
   };
 
-  // --- [NEW] 3. Code Submission Handler (Submit) ---
   const handleSubmit = async () => {
     if (!workId) {
       alert("Work ID missing. Cannot submit.");
       return;
     }
-
     setIsSubmitting(true);
     updateCurrentTaskState({ output: "Saving code & Running Test Cases..." });
 
@@ -169,44 +285,40 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
       if (result.error) {
         updateCurrentTaskState({ output: `Submission Error: ${result.error}` });
       } else {
-        // Format Test Results for Console
         const results = result.testResults || [];
-
         let outputLog = "--- Submission Results ---\n\n";
 
         if (results.length === 0) {
-          outputLog += "Code saved. (No test cases defined for this task).";
+          outputLog += "Code saved. (No test cases defined).";
         } else {
           let passedCount = 0;
           results.forEach((res: any, idx: number) => {
             const statusIcon = res.passed ? "✅ PASS" : "❌ FAIL";
             if (res.passed) passedCount++;
-
             outputLog += `Test Case ${idx + 1}: ${statusIcon}\n`;
             if (!res.passed) {
               outputLog += `   Input:    ${res.input}\n`;
               outputLog += `   Expected: ${res.expected}\n`;
               outputLog += `   Actual:   ${res.actual}\n`;
-              if (res.error) outputLog += `   Error:    ${res.error}\n`;
             }
             outputLog += "\n";
           });
           outputLog += `Summary: ${passedCount}/${results.length} Test Cases Passed.`;
         }
-
         updateCurrentTaskState({ output: outputLog });
       }
     } catch (err) {
       updateCurrentTaskState({
         output: "An unexpected error occurred during submission.",
       });
-      console.error(err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // --- 4. UI Resizing Logic ---
+  // ---------------------------------------------------------------------------
+  // LAYOUT RESIZING LOGIC
+  // ---------------------------------------------------------------------------
   const startResizing = useCallback(
     (
       type: "vertical" | "horizontal" | "input",
@@ -255,10 +367,68 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
     [bottomPanelHeight, leftPanelWidth],
   );
 
+  // ---------------------------------------------------------------------------
+  // RENDER
+  // ---------------------------------------------------------------------------
+
+  if (!isKioskActive) {
+    return (
+      <div className="flex flex-col items-center justify-center w-screen h-screen bg-[#1a1a1a] text-white space-y-6">
+        <div className="p-8 bg-[#262626] rounded-xl border border-gray-700 shadow-2xl text-center max-w-md">
+          <Lock className="w-16 h-16 mx-auto text-blue-500 mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Secure Exam Environment</h1>
+          <p className="text-gray-400 mb-6 text-sm">
+            This assessment requires Kiosk Mode.
+            <br />
+            Full screen will be enabled and external copy/paste is disabled.
+          </p>
+
+          {warnings.length > 0 && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded text-left">
+              <h3 className="text-red-500 font-bold text-sm mb-2 flex items-center gap-2">
+                <AlertTriangle size={16} /> Violations Detected (
+                {warnings.length})
+              </h3>
+              {/*<ul className="text-xs text-red-300 list-disc list-inside max-h-24 overflow-y-auto">
+                {warnings.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
+              </ul>*/}
+            </div>
+          )}
+
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => router.back()}
+              className="px-6 py-3 text-sm font-medium text-gray-400 hover:text-white transition"
+            >
+              Go Back
+            </button>
+            <button
+              onClick={enterKioskMode}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium flex items-center gap-2 transition"
+            >
+              <Maximize size={18} />
+              Enter Fullscreen
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`flex w-screen h-screen gap-1 p-2 overflow-hidden text-gray-100 bg-[#1a1a1a] ${isDragging ? "select-none" : ""}`}
     >
+      {/* Violations Badge (Top Right) */}
+      {warnings.length > 0 && (
+        <div className="absolute top-4 right-4 z-50 flex items-center gap-2 px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-full text-xs text-red-400 font-mono pointer-events-none">
+          <AlertTriangle size={12} />
+          {warnings.length}
+        </div>
+      )}
+
       {/* LEFT PANEL: Description */}
       <div
         className="flex flex-col"
@@ -266,7 +436,6 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
       >
         <PanelContainer className="h-full">
           <PanelHeader>
-            {/* Task Tabs */}
             <div className="flex gap-2">
               {tasks.map((task, index) => (
                 <button
@@ -287,7 +456,8 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
             <span className="text-sm font-medium">{activeTask.title}</span>
           </div>
           <hr className="border-gray-600" />
-          <div className="flex-1 bg-[#262626] p-6 overflow-y-auto whitespace-pre-wrap text-gray-300 font-sans leading-relaxed">
+          <div className="flex-1 bg-[#262626] p-6 overflow-y-auto whitespace-pre-wrap text-gray-300 font-sans leading-relaxed select-none">
+            {/* select-none helps prevent copying description out, optional */}
             {activeTask.description || "No description provided."}
           </div>
         </PanelContainer>
@@ -315,7 +485,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
                 <span className="text-gray-400 uppercase">{status}</span>
               </div>
 
-              {/* Language Selector Dropdown */}
+              {/* Language Selector */}
               <div className="relative">
                 <button
                   onClick={() => setShowLangDropdown(!showLangDropdown)}
@@ -327,7 +497,6 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
                   }
                   <ChevronDown size={14} />
                 </button>
-
                 {showLangDropdown && (
                   <div className="absolute top-full mt-1 left-0 bg-[#2a2a2a] border border-gray-600 rounded shadow-lg z-10 min-w-[120px]">
                     {LANGUAGES.map((lang) => (
@@ -361,11 +530,13 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
             }
             value={currentTaskState.code}
             theme="vs-dark"
+            onMount={handleEditorDidMount} // Hooking up our custom logic
             onChange={(v) => updateCurrentTaskState({ code: v || "" })}
             options={{
               minimap: { enabled: false },
               automaticLayout: true,
               fontSize: 14,
+              contextmenu: false, // Disables right-click menu in Editor
             }}
           />
         </PanelContainer>
@@ -380,9 +551,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
             <div className="text-sm font-medium text-white border-b-2 border-green-500 px-2 pb-1">
               Console
             </div>
-
             <div className="flex items-center gap-2">
-              {/* RUN BUTTON */}
               <button
                 onClick={handleRun}
                 disabled={isRunning || isSubmitting}
@@ -400,7 +569,6 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
                 {isRunning ? "Running..." : "Run Code"}
               </button>
 
-              {/* [NEW] SUBMIT BUTTON */}
               <button
                 onClick={handleSubmit}
                 disabled={isRunning || isSubmitting}
