@@ -1,5 +1,4 @@
 // src/app/editor-page/page.tsx
-
 "use client";
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
@@ -36,32 +35,28 @@ interface CodeEditorPageProps {
   workId?: string;
 }
 
-const LANGUAGES = [
-  { key: "python" as LanguageKey, label: "Python" },
-  // { key: "cpp" as LanguageKey, label: "C++" },
-  // { key: "c" as LanguageKey, label: "C" },
-  // { key: "java" as LanguageKey, label: "Java" },
-];
+const LANGUAGES = [{ key: "python" as LanguageKey, label: "Python" }];
 
 const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
   const router = useRouter();
 
-  // Normalize DB language to our types
+  // Normalize DB language
   const normalizeLang = (lang: string): LanguageKey => {
     if (lang === "c" || lang === "cpp" || lang === "java" || lang === "python")
       return lang;
-    return "python"; // Default fallback
+    return "python";
   };
 
   // --- REFS ---
   const editorRef = useRef<any>(null);
-  const internalClipboard = useRef<string>(""); // Stores text copied FROM the editor
+
+  // Stores the text we KNOW was copied from inside the app
+  const internalClipboard = useRef<string>("");
 
   // --- STATE ---
   const [activeTaskIndex, setActiveTaskIndex] = useState(0);
   const activeTask = tasks[activeTaskIndex];
 
-  // Task-specific state
   const [taskStates, setTaskStates] = useState(() =>
     tasks.map((task) => ({
       code: task.initialCode || "",
@@ -103,24 +98,95 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
   };
 
   // ---------------------------------------------------------------------------
+  // ROBUST COPY/PASTE DEBUGGING & LOGIC
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    // 1. GLOBAL PASTE INTERCEPTOR
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      // Get the data trying to be pasted
+      const pastedData = e.clipboardData?.getData("text") || "";
+      const internalData = internalClipboard.current;
+
+      // DEBUGGING LOGS (Check your browser console!)
+      console.log("--- PASTE ATTEMPT ---");
+      console.log("Clipboard Data:", JSON.stringify(pastedData));
+      console.log("Internal Memory:", JSON.stringify(internalData));
+
+      // Logic: If the pasted text DOES NOT match what we recorded internally, block it.
+      // Exception: If internal memory is empty, we assume it's external and block it.
+      if (pastedData !== internalData) {
+        console.warn("🚫 BLOCKED: External paste detected.");
+        e.preventDefault();
+        e.stopPropagation(); // Stop it from reaching Monaco or Inputs
+        setWarnings((prev) => [...prev, "External Paste Blocked"]);
+      } else {
+        console.log("✅ ALLOWED: Internal paste detected.");
+      }
+    };
+
+    // 2. GLOBAL COPY INTERCEPTOR (For non-Monaco elements like the Input Textarea)
+    const handleGlobalCopy = (e: ClipboardEvent) => {
+      const selection = document.getSelection();
+      if (selection) {
+        const text = selection.toString();
+        if (text) {
+          internalClipboard.current = text;
+          console.log("📋 Internal Copy Recorded (Global):", text);
+        }
+      }
+    };
+
+    // Attach with useCapture=true to run BEFORE other handlers
+    window.addEventListener("paste", handleGlobalPaste, true);
+    window.addEventListener("copy", handleGlobalCopy, true);
+    window.addEventListener("cut", handleGlobalCopy, true);
+
+    return () => {
+      window.removeEventListener("paste", handleGlobalPaste, true);
+      window.removeEventListener("copy", handleGlobalCopy, true);
+      window.removeEventListener("cut", handleGlobalCopy, true);
+    };
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // MONACO SPECIFIC HANDLERS
+  // ---------------------------------------------------------------------------
+
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
+    editorRef.current = editor;
+
+    const domNode = editor.getContainerDomNode();
+
+    // We need to listen for COPY/CUT specifically on Monaco's DOM node
+    // because Monaco handles selections differently than the global document.
+    const handleMonacoCopy = (e: any) => {
+      const selection = editor.getSelection();
+      const model = editor.getModel();
+
+      if (selection && model) {
+        const text = model.getValueInRange(selection);
+        internalClipboard.current = text;
+        console.log("📋 Internal Copy Recorded (Monaco):", text);
+      }
+    };
+
+    // Listen for both Copy and Cut events
+    domNode.addEventListener("copy", handleMonacoCopy);
+    domNode.addEventListener("cut", handleMonacoCopy);
+  };
+
+  // ---------------------------------------------------------------------------
   // KIOSK MODE LOGIC
   // ---------------------------------------------------------------------------
 
   const enterKioskMode = () => {
     const elem = document.documentElement;
     if (elem.requestFullscreen) {
-      elem
-        .requestFullscreen()
-        .then(() => {
-          setIsKioskActive(true);
-        })
-        .catch((err) => {
-          console.error("Error attempting to enable fullscreen:", err);
-        });
+      elem.requestFullscreen().then(() => setIsKioskActive(true));
     }
   };
 
-  // 1. Detect Fullscreen Exit
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement) {
@@ -128,86 +194,29 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
         setWarnings((prev) => [...prev, "Exited Fullscreen Mode"]);
       }
     };
-
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => {
+    return () =>
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
   }, []);
 
-  // 2. Detect Tab Switching (Visibility API)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && isKioskActive) {
         setWarnings((prev) => [...prev, "Switched Tabs / Minimized Window"]);
       }
     };
-
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
+    return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
   }, [isKioskActive]);
 
-  // 3. Prevent Right Click (Context Menu) globally
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
-      if (isKioskActive) {
-        e.preventDefault();
-      }
+      if (isKioskActive) e.preventDefault();
     };
     document.addEventListener("contextmenu", handleContextMenu);
     return () => document.removeEventListener("contextmenu", handleContextMenu);
   }, [isKioskActive]);
-
-  // ---------------------------------------------------------------------------
-  // COPY / PASTE LOGIC
-  // ---------------------------------------------------------------------------
-
-  const handleEditorDidMount: OnMount = (editor, monaco) => {
-    editorRef.current = editor;
-
-    // Listen for keys to capture "Copy" or "Cut" actions specifically from this editor
-    editor.onKeyDown((e) => {
-      // Ctrl/Cmd + C or Ctrl/Cmd + X
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        (e.code === "KeyC" || e.code === "KeyX")
-      ) {
-        const selection = editor.getSelection();
-        const model = editor.getModel();
-        if (selection && model) {
-          const text = model.getValueInRange(selection);
-          internalClipboard.current = text;
-          // console.log("Internal Copy Captured:", text);
-        }
-      }
-    });
-
-    // Add a custom paste handler to the editor's DOM node
-    const domNode = editor.getContainerDomNode();
-    domNode.addEventListener(
-      "paste",
-      (e: any) => {
-        const pastedData = e.clipboardData?.getData("text") || "";
-
-        // LOGIC: If pasted data matches strictly what we copied internally, allow it.
-        // Otherwise, block it.
-        if (
-          pastedData !== internalClipboard.current ||
-          internalClipboard.current === ""
-        ) {
-          e.preventDefault();
-          e.stopPropagation();
-          setWarnings((prev) => [...prev, "External Paste Attempt Blocked"]);
-          // Optional: Show a toast or small alert
-        } else {
-          // console.log("Internal Paste Allowed");
-        }
-      },
-      true,
-    ); // Capture phase to preempt Monaco
-  };
 
   // ---------------------------------------------------------------------------
   // SERVICE & EXECUTION LOGIC
@@ -229,7 +238,6 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
 
   const handleRun = async () => {
     if (status === "down") return;
-
     setIsRunning(true);
     updateCurrentTaskState({ output: "Executing code..." });
 
@@ -248,13 +256,11 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
       if (response.ok) {
         let outputText =
           data.output || data.stdout || "Program finished (no output).";
-        if (data.stderr) {
-          outputText += "\n" + data.stderr;
-        }
+        if (data.stderr) outputText += "\n" + data.stderr;
         updateCurrentTaskState({ output: outputText });
       } else {
         updateCurrentTaskState({
-          output: `Error: ${data.error || data.message || "Execution failed"}`,
+          output: `Error: ${data.error || "Execution failed"}`,
         });
       }
     } catch (err) {
@@ -297,9 +303,9 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
             if (res.passed) passedCount++;
             outputLog += `Test Case ${idx + 1}: ${statusIcon}\n`;
             if (!res.passed) {
-              outputLog += `   Input:    ${res.input}\n`;
-              outputLog += `   Expected: ${res.expected}\n`;
-              outputLog += `   Actual:   ${res.actual}\n`;
+              outputLog += `    Input:    ${res.input}\n`;
+              outputLog += `    Expected: ${res.expected}\n`;
+              outputLog += `    Actual:    ${res.actual}\n`;
             }
             outputLog += "\n";
           });
@@ -389,11 +395,6 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
                 <AlertTriangle size={16} /> Violations Detected (
                 {warnings.length})
               </h3>
-              {/*<ul className="text-xs text-red-300 list-disc list-inside max-h-24 overflow-y-auto">
-                {warnings.map((w, i) => (
-                  <li key={i}>{w}</li>
-                ))}
-              </ul>*/}
             </div>
           )}
 
@@ -419,9 +420,8 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
 
   return (
     <div
-      className={`flex w-screen h-screen gap-1 p-2 overflow-hidden text-gray-100 bg-[#1a1a1a] ${isDragging ? "select-none" : ""}`}
+      className={`flex w-screen h-screen gap-1 p-2 overflow-hidden text-gray-100 bg-[#1a1a1a] select-none ${isDragging ? "select-none" : ""}`}
     >
-      {/* Violations Badge (Top Right) */}
       {warnings.length > 0 && (
         <div className="absolute top-4 right-4 z-50 flex items-center gap-2 px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-full text-xs text-red-400 font-mono pointer-events-none">
           <AlertTriangle size={12} />
@@ -429,7 +429,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
         </div>
       )}
 
-      {/* LEFT PANEL: Description */}
+      {/* LEFT PANEL */}
       <div
         className="flex flex-col"
         style={{ width: leftPanelWidth ?? "calc(50% - 4px)" }}
@@ -456,8 +456,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
             <span className="text-sm font-medium">{activeTask.title}</span>
           </div>
           <hr className="border-gray-600" />
-          <div className="flex-1 bg-[#262626] p-6 overflow-y-auto whitespace-pre-wrap text-gray-300 font-sans leading-relaxed select-none">
-            {/* select-none helps prevent copying description out, optional */}
+          <div className="flex-1 bg-[#262626] p-6 overflow-y-auto whitespace-pre-wrap text-gray-300 font-sans leading-relaxed">
             {activeTask.description || "No description provided."}
           </div>
         </PanelContainer>
@@ -468,7 +467,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
         onMouseDown={(e) => startResizing("horizontal", e)}
       />
 
-      {/* RIGHT PANEL: Code & Terminal */}
+      {/* RIGHT PANEL */}
       <div className="flex flex-col flex-1 min-w-0 gap-3">
         <PanelContainer
           style={{ height: `calc(100vh - ${bottomPanelHeight}px - 24px)` }}
@@ -484,8 +483,6 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
                 />
                 <span className="text-gray-400 uppercase">{status}</span>
               </div>
-
-              {/* Language Selector */}
               <div className="relative">
                 <button
                   onClick={() => setShowLangDropdown(!showLangDropdown)}
@@ -530,13 +527,13 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
             }
             value={currentTaskState.code}
             theme="vs-dark"
-            onMount={handleEditorDidMount} // Hooking up our custom logic
+            onMount={handleEditorDidMount}
             onChange={(v) => updateCurrentTaskState({ code: v || "" })}
             options={{
               minimap: { enabled: false },
               automaticLayout: true,
               fontSize: 14,
-              contextmenu: false, // Disables right-click menu in Editor
+              contextmenu: false,
             }}
           />
         </PanelContainer>
@@ -568,7 +565,6 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
                 )}
                 {isRunning ? "Running..." : "Run Code"}
               </button>
-
               <button
                 onClick={handleSubmit}
                 disabled={isRunning || isSubmitting}
@@ -593,7 +589,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
               onChange={(e) =>
                 updateCurrentTaskState({ input: e.target.value })
               }
-              className="p-3 font-mono text-sm text-gray-300 bg-[#1a1a1a] border border-[#444] rounded outline-none resize-none"
+              className="p-3 font-mono text-sm text-gray-300 bg-[#1a1a1a] border border-[#444] rounded outline-none resize-none select-text"
               style={{ width: `${inputWidth}%` }}
               placeholder="Stdin..."
             />
@@ -601,7 +597,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
               onMouseDown={(e) => startResizing("input", e)}
               className="w-1 cursor-ew-resize hover:bg-blue-500/20"
             />
-            <pre className="flex-1 p-3 font-mono text-sm text-gray-300 bg-[#1e1e1e] border border-[#444] rounded overflow-auto whitespace-pre-wrap">
+            <pre className="flex-1 p-3 font-mono text-sm text-gray-300 bg-[#1e1e1e] border border-[#444] rounded overflow-auto whitespace-pre-wrap select-text">
               {currentTaskState.output || "Run code to see output..."}
             </pre>
           </div>
