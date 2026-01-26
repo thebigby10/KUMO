@@ -3,11 +3,19 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
-import { Play, Activity, ChevronDown } from "lucide-react";
+import {
+  Play,
+  Activity,
+  ChevronDown,
+  CloudUpload,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import Editor from "@monaco-editor/react";
 import PanelContainer from "./PanelContainer";
 import PanelHeader from "./PanelHeader";
 import ResizeHandle from "./ResizeHandle";
+import { submitTaskAction } from "@/actions/submission";
 
 // --- Types ---
 type LanguageKey = "cpp" | "c" | "java" | "python";
@@ -28,9 +36,9 @@ interface CodeEditorPageProps {
 
 const LANGUAGES = [
   { key: "python" as LanguageKey, label: "Python" },
-  // { key: "cpp" as LanguageKey, label: "C++" },
-  // { key: "c" as LanguageKey, label: "C" },
-  // { key: "java" as LanguageKey, label: "Java" },
+  { key: "cpp" as LanguageKey, label: "C++" },
+  { key: "c" as LanguageKey, label: "C" },
+  { key: "java" as LanguageKey, label: "Java" },
 ];
 
 const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
@@ -61,6 +69,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
   // Global UI State
   const [status, setStatus] = useState<ServiceStatus>("checking");
   const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // [NEW] Submission loading state
   const [showLangDropdown, setShowLangDropdown] = useState(false);
 
   // UI & Layout State
@@ -89,7 +98,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
       try {
         const healthResponse = await fetch("/api/code-execution/health");
         const data = await healthResponse.json();
-        console.log(data);
+        // console.log(data);
         setStatus(data.status === "online" ? "online" : "offline");
       } catch {
         setStatus("down");
@@ -98,7 +107,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
     checkStatus();
   }, [currentTaskState.language]);
 
-  // --- 2. Code Execution Handler ---
+  // --- 2. Code Execution Handler (Run) ---
   const handleRun = async () => {
     if (status === "down") return;
 
@@ -139,7 +148,65 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
     }
   };
 
-  // --- 3. UI Resizing Logic ---
+  // --- [NEW] 3. Code Submission Handler (Submit) ---
+  const handleSubmit = async () => {
+    if (!workId) {
+      alert("Work ID missing. Cannot submit.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    updateCurrentTaskState({ output: "Saving code & Running Test Cases..." });
+
+    try {
+      const result = await submitTaskAction(
+        workId,
+        activeTask.id,
+        currentTaskState.code,
+        currentTaskState.language,
+      );
+
+      if (result.error) {
+        updateCurrentTaskState({ output: `Submission Error: ${result.error}` });
+      } else {
+        // Format Test Results for Console
+        const results = result.testResults || [];
+
+        let outputLog = "--- Submission Results ---\n\n";
+
+        if (results.length === 0) {
+          outputLog += "Code saved. (No test cases defined for this task).";
+        } else {
+          let passedCount = 0;
+          results.forEach((res: any, idx: number) => {
+            const statusIcon = res.passed ? "✅ PASS" : "❌ FAIL";
+            if (res.passed) passedCount++;
+
+            outputLog += `Test Case ${idx + 1}: ${statusIcon}\n`;
+            if (!res.passed) {
+              outputLog += `   Input:    ${res.input}\n`;
+              outputLog += `   Expected: ${res.expected}\n`;
+              outputLog += `   Actual:   ${res.actual}\n`;
+              if (res.error) outputLog += `   Error:    ${res.error}\n`;
+            }
+            outputLog += "\n";
+          });
+          outputLog += `Summary: ${passedCount}/${results.length} Test Cases Passed.`;
+        }
+
+        updateCurrentTaskState({ output: outputLog });
+      }
+    } catch (err) {
+      updateCurrentTaskState({
+        output: "An unexpected error occurred during submission.",
+      });
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --- 4. UI Resizing Logic ---
   const startResizing = useCallback(
     (
       type: "vertical" | "horizontal" | "input",
@@ -313,18 +380,44 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
             <div className="text-sm font-medium text-white border-b-2 border-green-500 px-2 pb-1">
               Console
             </div>
-            <button
-              onClick={handleRun}
-              disabled={isRunning}
-              className={`flex items-center gap-2 px-4 py-1 rounded text-sm font-medium ${isRunning ? "bg-gray-600 cursor-not-allowed" : "bg-[#2cbb5d] hover:bg-[#26a351]"}`}
-            >
-              {isRunning ? (
-                <Activity size={14} className="animate-spin" />
-              ) : (
-                <Play size={14} />
-              )}{" "}
-              {isRunning ? "Running" : "Run"}
-            </button>
+
+            <div className="flex items-center gap-2">
+              {/* RUN BUTTON */}
+              <button
+                onClick={handleRun}
+                disabled={isRunning || isSubmitting}
+                className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm font-medium transition-colors ${
+                  isRunning
+                    ? "bg-gray-600 cursor-not-allowed text-gray-300"
+                    : "bg-[#2cbb5d] hover:bg-[#26a351] text-white"
+                }`}
+              >
+                {isRunning ? (
+                  <Activity size={14} className="animate-spin" />
+                ) : (
+                  <Play size={14} />
+                )}
+                {isRunning ? "Running..." : "Run Code"}
+              </button>
+
+              {/* [NEW] SUBMIT BUTTON */}
+              <button
+                onClick={handleSubmit}
+                disabled={isRunning || isSubmitting}
+                className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm font-medium transition-colors ${
+                  isSubmitting
+                    ? "bg-gray-600 cursor-not-allowed text-gray-300"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
+              >
+                {isSubmitting ? (
+                  <CloudUpload size={14} className="animate-bounce" />
+                ) : (
+                  <CloudUpload size={14} />
+                )}
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </button>
+            </div>
           </PanelHeader>
           <div className="flex flex-1 gap-1 p-2 overflow-hidden bg-[#262626]">
             <textarea
@@ -340,7 +433,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
               onMouseDown={(e) => startResizing("input", e)}
               className="w-1 cursor-ew-resize hover:bg-blue-500/20"
             />
-            <pre className="flex-1 p-3 font-mono text-sm text-gray-300 bg-[#1e1e1e] border border-[#444] rounded overflow-auto">
+            <pre className="flex-1 p-3 font-mono text-sm text-gray-300 bg-[#1e1e1e] border border-[#444] rounded overflow-auto whitespace-pre-wrap">
               {currentTaskState.output || "Run code to see output..."}
             </pre>
           </div>
