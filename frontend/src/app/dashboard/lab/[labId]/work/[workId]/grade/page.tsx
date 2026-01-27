@@ -47,30 +47,31 @@ export default async function GradingPage({
   const submissions = await SubmissionRepository.findAllByWorkId(workId);
 
   return (
-    <div className="flex flex-col h-screen bg-white">
-      {/* Custom Header for Grading Mode */}
-      <header className="h-16 px-6 border-b flex items-center justify-between bg-white z-20 shadow-sm shrink-0">
-        <div className="flex items-center gap-4">
+    <div className="fixed inset-0 z-50 flex flex-col bg-slate-50">
+      {/* Compact Header for Grading Mode */}
+      <header className="h-14 px-4 border-b flex items-center justify-between bg-white shadow-sm shrink-0">
+        <div className="flex items-center gap-3">
           <Link
             href={`/dashboard/lab/${labId}/work`}
-            className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition"
+            className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition"
             title="Back to Classwork"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} />
           </Link>
+          <div className="h-8 w-px bg-slate-200" />
           <div>
-            <h1 className="text-lg font-semibold text-gray-800 leading-tight">
+            <h1 className="text-sm font-semibold text-slate-800 leading-tight">
               {work.title}
             </h1>
-            <p className="text-xs text-gray-500">Grading Dashboard</p>
+            <p className="text-xs text-slate-400">Grading Dashboard</p>
           </div>
         </div>
-        <div className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-          {submissions.length} Tasks Found
+        <div className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+          {submissions.length} Submissions
         </div>
       </header>
 
-      {/* Main Interface */}
+      {/* Main Interface - Full Width */}
       <div className="flex-1 overflow-hidden">
         <GradingInterface
           submissions={submissions}
