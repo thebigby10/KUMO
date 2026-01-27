@@ -1,5 +1,5 @@
 import { db } from "@/models/models";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 
 export class TaskRepository {
   static async create(data: Prisma.TaskCreateInput) {
@@ -40,7 +40,7 @@ export class TaskRepository {
       db.editor.deleteMany({ where: { taskId: id } }),
       db.testCase.deleteMany({ where: { taskId: id } }),
       db.hint.deleteMany({ where: { taskId: id } }),
-      db.submissionRecord.deleteMany({ where: { taskId: id } }),
+      db.submission.deleteMany({ where: { taskId: id } }),
       db.task.delete({ where: { id } }),
     ]);
   }

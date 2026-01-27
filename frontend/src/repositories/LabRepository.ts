@@ -1,5 +1,5 @@
 import { db } from "@/models/models";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 
 export class LabRepository {
   // --- CREATE ---
@@ -66,7 +66,7 @@ export class LabRepository {
       db.enrollment.deleteMany({ where: { labId: id } }),
       db.instructor.deleteMany({ where: { labId: id } }),
       db.announcement.deleteMany({ where: { labId: id } }),
-      db.labWork.deleteMany({ where: { labId: id } }), // This will likely fail without cascading deletes on tasks
+      db.work.deleteMany({ where: { labId: id } }), // This will likely fail without cascading deletes on tasks
       db.lab.delete({ where: { id } }),
     ]);
   }
