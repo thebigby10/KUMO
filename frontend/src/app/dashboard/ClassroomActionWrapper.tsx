@@ -1,9 +1,11 @@
+//src/app/dashboard/ClassroomActionWrapper.tsx
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
 import { Plus } from "lucide-react";
-import CreateLabModal from "../components/CreateLabModal";
-import JoinLabModal from "../components/JoinLabModal";
+import CreateLabModal from "@/components/modals/CreateLabModal";
+import JoinLabModal from "@/components/modals/JoinLabModal";
 
 export default function ClassroomActionWrapper({ userEmail }: { userEmail: string }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -12,7 +14,6 @@ export default function ClassroomActionWrapper({ userEmail }: { userEmail: strin
   
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown if clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -35,18 +36,17 @@ export default function ClassroomActionWrapper({ userEmail }: { userEmail: strin
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* The Plus Button */}
       <button 
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className={`p-2 rounded-full transition duration-200 ${isDropdownOpen ? 'bg-gray-100 rotate-90' : 'hover:bg-gray-100 text-gray-600'}`}
+        className={`p-2 rounded-full transition duration-200 ${isDropdownOpen ? 'bg-gray-100 rotate-45 text-gray-600' : 'hover:bg-gray-100 text-gray-600'}`}
         title="Create or join a class"
       >
         <Plus size={24} />
       </button>
 
-      {/* The Dropdown Menu */}
+      {/* Dropdown with z-[60] to appear above tabs */}
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-100 z-[60] animate-in fade-in zoom-in-95 duration-100 origin-top-right">
           <button
             onClick={openJoin}
             className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
@@ -62,7 +62,6 @@ export default function ClassroomActionWrapper({ userEmail }: { userEmail: strin
         </div>
       )}
 
-      {/* The Modals (Hidden by default) */}
       <CreateLabModal 
         isOpen={isCreateModalOpen} 
         onClose={() => setIsCreateModalOpen(false)} 

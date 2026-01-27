@@ -2,12 +2,12 @@ import { LabRepository } from "@/repositories/LabRepository";
 import { EnrollmentRepository } from "@/repositories/EnrollmentRepository";
 import { InstructorRepository } from "@/repositories/InstructorRepository";
 import { AnnouncementRepository } from "@/repositories/AnnouncementRepository";
-import { LabWorkRepository } from "@/repositories/LabWorkRepository";
+import { WorkRepository } from "@/repositories/WorkRepository"; // Updated import
 import { generateLabCode } from "@/lib/utils";
-import { db } from "@/models/models";
 
 export class LabController {
-  // --- CREATE ---
+  // ... create, getAllForUser, join, removeStudent remain the same ...
+
   static async create(
     data: { name: string; section?: string; subject?: string; room?: string },
     userEmail: string,
@@ -22,7 +22,6 @@ export class LabController {
       subject: data.subject,
       room: data.room,
       labCode: generateLabCode(),
-      // We create the relation here atomically using Prisma's nested write
       instructors: {
         create: {
           userEmail: userEmail,
@@ -34,18 +33,14 @@ export class LabController {
     return await LabRepository.create(labData);
   }
 
-  // --- READ ---
   static async getById(labId: string) {
-    // We fetch the basic lab info
     const lab = await LabRepository.findById(labId);
     if (!lab) return null;
 
-    // We fetch related data using specific repositories
     const announcements = await AnnouncementRepository.findAllByLabId(labId);
     const instructors = await InstructorRepository.findAllByLabId(labId);
     const enrollments = await EnrollmentRepository.findAllByLabId(labId);
 
-    // Combine data for the view
     return {
       ...lab,
       announcements,
@@ -59,17 +54,23 @@ export class LabController {
     if (!lab) return null;
 
     const instructors = await InstructorRepository.findAllByLabId(labId);
-    const labWorks = await LabWorkRepository.findAllByLabId(labId);
+    // Updated to use WorkRepository
+    const works = await WorkRepository.findAllByLabId(labId);
 
     return {
       ...lab,
       instructors,
-      labWorks,
+      works, // Renamed from labWorks for consistency with new schema, check UI usage
     };
   }
 
+  // ... rest of the existing methods (join, removeStudent, etc) ...
   static async getAllForUser(email: string) {
     return await LabRepository.findAllRelatedToUser(email);
+  }
+
+  static async findById(labId: string) {
+    return LabRepository.findById(labId);
   }
 
   static async getPeople(labId: string) {
@@ -83,8 +84,6 @@ export class LabController {
       students: enrollments.map((enroll) => enroll.user),
     };
   }
-
-  // --- UPDATE (JOIN) ---
   static async join(labCode: string, userEmail: string) {
     if (!labCode || !userEmail) throw new Error("Class code is required");
 
@@ -128,10 +127,6 @@ export class LabController {
 
     return await EnrollmentRepository.delete(studentEmail, labId);
   }
-  static async findById(labId: string) {
-    return LabRepository.findById(labId);
-  }
-  // [Missing] updateLab
   static async updateLab(
     labId: string,
     userEmail: string,
@@ -139,6 +134,7 @@ export class LabController {
       name?: string;
       room?: string;
       section?: string;
+      subject?: string;
       isArchived?: boolean;
     },
   ) {
