@@ -1,3 +1,5 @@
+// src/app/dashboard/lab/[labId]/page.tsx
+
 import { notFound } from "next/navigation";
 import { FiMoreVertical, FiCopy, FiCalendar } from "react-icons/fi";
 import { LabController } from "@/controller/LabController";
