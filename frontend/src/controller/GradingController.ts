@@ -1,11 +1,11 @@
 import { SubmissionRepository } from "@/repositories/SubmissionRepository";
 import { InstructorRepository } from "@/repositories/InstructorRepository";
-import { LabWorkRepository } from "@/repositories/LabWorkRepository";
+import { LabRepository } from "@/repositories/LabRepository";
 
 export class GradingController {
   // [Missing] getSubmissionsForWork
   static async getSubmissionsForWork(workId: string, userEmail: string) {
-    const work = await LabWorkRepository.findById(workId);
+    const work = await LabRepository.findById(workId);
     if (!work) throw new Error("Work not found");
 
     // Auth check
