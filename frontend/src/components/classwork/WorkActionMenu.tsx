@@ -1,7 +1,9 @@
+// src/components/classwork/WorkActionMenu.tsx
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, Trash2, Edit, LayoutDashboard } from "lucide-react";
+import { FiMoreVertical, FiTrash2, FiEdit, FiBarChart2 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { deleteWorkAction } from "@/actions/work";
 
@@ -30,7 +32,7 @@ export default function WorkActionMenu({ workId, labId }: WorkActionMenuProps) {
   const handleDelete = async () => {
     if (
       !confirm(
-        "Are you sure you want to delete this assignment? This cannot be undone.",
+        "Are you sure you want to delete this assignment? This action cannot be undone.",
       )
     )
       return;
@@ -43,7 +45,6 @@ export default function WorkActionMenu({ workId, labId }: WorkActionMenuProps) {
       setIsDeleting(false);
     } else {
       setIsOpen(false);
-      // Router refresh handled by server action revalidatePath, but safe to verify
     }
   };
 
@@ -57,30 +58,30 @@ export default function WorkActionMenu({ workId, labId }: WorkActionMenuProps) {
 
   return (
     <div
-      className="relative ml-2"
+      className="relative"
       ref={menuRef}
-      onClick={(e) => e.preventDefault()} // Prevent clicking the parent Link
+      onClick={(e) => e.preventDefault()}
     >
       <button
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition"
+        className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
       >
-        <MoreVertical size={20} />
+        <FiMoreVertical size={20} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+        <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleDashboard();
             }}
-            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+            className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700 flex items-center gap-3 transition-colors"
           >
-            <LayoutDashboard size={16} />
+            <FiBarChart2 size={16} />
             View Dashboard
           </button>
 
@@ -89,9 +90,9 @@ export default function WorkActionMenu({ workId, labId }: WorkActionMenuProps) {
               e.stopPropagation();
               handleEdit();
             }}
-            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
+            className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700 flex items-center gap-3 border-t border-slate-700/50 transition-colors"
           >
-            <Edit size={16} />
+            <FiEdit size={16} />
             Edit Assignment
           </button>
 
@@ -101,9 +102,9 @@ export default function WorkActionMenu({ workId, labId }: WorkActionMenuProps) {
               handleDelete();
             }}
             disabled={isDeleting}
-            className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-100"
+            className="w-full text-left px-4 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 flex items-center gap-3 border-t border-slate-700/50 transition-colors disabled:opacity-50"
           >
-            <Trash2 size={16} />
+            <FiTrash2 size={16} />
             {isDeleting ? "Deleting..." : "Delete"}
           </button>
         </div>
