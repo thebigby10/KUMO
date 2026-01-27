@@ -2,71 +2,74 @@ import { db } from "@/models/models";
 import { SubmissionStatus } from "@prisma/client";
 
 export class SubmissionRepository {
-  // Find or create the container for a student's work
-  static async findOrCreate(labWorkId: string, userEmail: string) {
-    let submission = await db.submission.findUnique({
-      where: { labWorkId_userEmail: { labWorkId, userEmail } },
-    });
-
-    if (!submission) {
-      submission = await db.submission.create({
-        data: { labWorkId, userEmail },
-      });
-    }
-    return submission;
-  }
-
-  static async findById(id: string) {
+  /**
+   * Find a specific submission for a specific task and user
+   */
+  static async findByTask(taskId: string, userEmail: string) {
     return await db.submission.findUnique({
-      where: { id },
-      include: { records: true, user: true },
-    });
-  }
-
-  static async findAllByWorkId(labWorkId: string) {
-    return await db.submission.findMany({
-      where: { labWorkId },
-      include: { user: true },
-      orderBy: { user: { name: "asc" } },
-    });
-  }
-
-  // Update specific code for a task
-  static async upsertRecord(
-    submissionId: string,
-    taskId: string,
-    code: string,
-    language: string,
-  ) {
-    return await db.submissionRecord.upsert({
       where: {
-        submissionId_taskId: { submissionId, taskId },
+        taskId_userEmail: { taskId, userEmail },
       },
-      update: { code, language },
-      create: { submissionId, taskId, code, language },
+      include: { task: true },
     });
   }
 
-  static async getRecord(submissionId: string, taskId: string) {
-    return await db.submissionRecord.findUnique({
-      where: { submissionId_taskId: { submissionId, taskId } },
+  /**
+   * Get all submissions for a specific work (Assignment) for a specific user.
+   * Use this to load the "Work Environment" which might have tabs for Task 1, Task 2, etc.
+   */
+  static async findAllForWork(workId: string, userEmail: string) {
+    return await db.submission.findMany({
+      where: {
+        workId,
+        userEmail,
+      },
+      include: {
+        task: {
+          include: { testCases: true }, // Need test cases for execution context
+        },
+      },
+      orderBy: { task: { createdAt: "asc" } },
+    });
+  }
+
+  /**
+   * Save code (Upsert logic is handled by findByTask + update, or ensure creation in WorkRepo)
+   * Since we auto-create drafts, we can usually just update.
+   */
+  static async updateCode(taskId: string, userEmail: string, code: string) {
+    return await db.submission.update({
+      where: {
+        taskId_userEmail: { taskId, userEmail },
+      },
+      data: { code },
     });
   }
 
   static async updateStatus(
-    id: string,
+    taskId: string,
+    userEmail: string,
     status: SubmissionStatus,
     submittedAt?: Date,
   ) {
     return await db.submission.update({
-      where: { id },
+      where: {
+        taskId_userEmail: { taskId, userEmail },
+      },
       data: { status, submittedAt },
     });
   }
 
-  static async grade(id: string, grade: number, feedback?: string) {
+  static async grade(
+    taskId: string,
+    userEmail: string,
+    grade: number,
+    feedback?: string,
+  ) {
     return await db.submission.update({
-      where: { id },
+      where: {
+        taskId_userEmail: { taskId, userEmail },
+      },
       data: {
         grade,
         feedback,

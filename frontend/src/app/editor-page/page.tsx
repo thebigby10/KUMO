@@ -1,125 +1,423 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
-import { Play, FileText, Activity } from "lucide-react";
-import Editor from "@monaco-editor/react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Play,
+  Activity,
+  ChevronDown,
+  CloudUpload,
+  Maximize,
+  AlertTriangle,
+  Lock,
+  Clock,
+  CheckCircle2,
+  RefreshCw,
+  WifiOff,
+} from "lucide-react";
+import Editor, { OnMount } from "@monaco-editor/react";
 import PanelContainer from "./PanelContainer";
 import PanelHeader from "./PanelHeader";
 import ResizeHandle from "./ResizeHandle";
+import {
+  submitTaskAction,
+  autoSaveCode,
+  logViolationAction,
+} from "@/actions/submission";
 
 // --- Types ---
 type LanguageKey = "cpp" | "c" | "java" | "python";
 type ServiceStatus = "checking" | "online" | "offline" | "down";
+type SaveStatus = "saved" | "saving" | "unsaved" | "error";
 
-interface CodeEditorPageProps {
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
   initialCode?: string;
   initialLanguage?: string;
-  description?: string;
-  title?: string;
-  workId?: string;
 }
 
-const CodeEditorPage = ({ 
-  initialCode = "", 
-  initialLanguage = "python", 
-  description = "No description provided.",
-  title = "Lab Work"
-}: CodeEditorPageProps) => {
+interface CodeEditorPageProps {
+  tasks: Task[];
+  workId: string;
+  endTime: string | null;
+}
 
-  // Normalize DB language to our types
+const LANGUAGES = [{ key: "python" as LanguageKey, label: "Python" }];
+
+const CodeEditorPage = ({ tasks, workId, endTime }: CodeEditorPageProps) => {
+  const router = useRouter();
+
+  // Normalize DB language
   const normalizeLang = (lang: string): LanguageKey => {
-    if (lang === "c" || lang === "cpp" || lang === "java" || lang === "python") return lang;
-    return "python"; // Default fallback
+    if (lang === "c" || lang === "cpp" || lang === "java" || lang === "python")
+      return lang;
+    return "python";
   };
 
-  // Logic & Execution State
-  const [language, setLanguage] = useState<LanguageKey>(normalizeLang(initialLanguage));
-  const [code, setCode] = useState(initialCode);
-  const [input, setInput] = useState("");
-  const [output, setOutput] = useState("");
+  // --- REFS ---
+  const editorRef = useRef<any>(null);
+  const internalClipboard = useRef<string>("");
+  const violationCountRef = useRef(0); // Tracks sent violations to avoid dupes
+
+  // --- STATE ---
+  const [activeTaskIndex, setActiveTaskIndex] = useState(0);
+  const activeTask = tasks[activeTaskIndex];
+
+  const [taskStates, setTaskStates] = useState(() =>
+    tasks.map((task) => ({
+      code: task.initialCode || "",
+      language: normalizeLang(task.initialLanguage || "python"),
+      input: "",
+      output: "",
+    })),
+  );
+
+  const currentTaskState = taskStates[activeTaskIndex];
+
+  // Global UI State
   const [status, setStatus] = useState<ServiceStatus>("checking");
   const [isRunning, setIsRunning] = useState(false);
-  
-  // UI & Layout State
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLangDropdown, setShowLangDropdown] = useState(false);
+
+  // Sync & Timer State
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
+  const [timeLeft, setTimeLeft] = useState<string | null>(null);
+  const [isUrgent, setIsUrgent] = useState(false);
+
+  // KIOSK STATE
+  const [isKioskActive, setIsKioskActive] = useState(false);
+  const [warnings, setWarnings] = useState<string[]>([]);
+
+  // Layout State
   const [isDragging, setIsDragging] = useState(false);
-  const [leftPanelWidth, setLeftPanelWidth] = useState<number | undefined>(undefined);
+  const [leftPanelWidth, setLeftPanelWidth] = useState<number | undefined>(
+    undefined,
+  );
   const [bottomPanelHeight, setBottomPanelHeight] = useState(256);
   const [inputWidth, setInputWidth] = useState(50);
 
-  // --- 1. Service Health Check ---
+  // Helper to update state
+  const updateCurrentTaskState = (
+    updates: Partial<typeof currentTaskState>,
+  ) => {
+    setTaskStates((prev) =>
+      prev.map((state, idx) =>
+        idx === activeTaskIndex ? { ...state, ...updates } : state,
+      ),
+    );
+    // Mark as unsaved when code changes
+    if (updates.code !== undefined) {
+      setSaveStatus("unsaved");
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // 1. TIMER & AUTO SUBMIT
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (!endTime) return;
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const end = new Date(endTime).getTime();
+      const distance = end - now;
+
+      if (distance < 0) {
+        clearInterval(interval);
+        setTimeLeft("00:00:00");
+        handleForceSubmit();
+      } else {
+        const hours = Math.floor(
+          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+        );
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Format to HH:MM:SS
+        const formatted = `${hours.toString().padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+        setTimeLeft(formatted);
+
+        // Urgent if less than 5 minutes
+        if (distance < 5 * 60 * 1000) setIsUrgent(true);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [endTime]);
+
+  const handleForceSubmit = async () => {
+    // Force submit active task (ideally should loop all tasks)
+    await submitTaskAction(
+      workId,
+      activeTask.id,
+      currentTaskState.code,
+      currentTaskState.language,
+      true, // force flag
+    );
+    alert("Time is up! Your work has been submitted automatically.");
+    router.push("/dashboard");
+  };
+
+  // ---------------------------------------------------------------------------
+  // 2. AUTO SAVE (Every 15s)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const autoSaveInterval = setInterval(async () => {
+      // Only save if status is 'unsaved' to prevent unnecessary calls
+      if (saveStatus === "unsaved") {
+        setSaveStatus("saving");
+        const res = await autoSaveCode(activeTask.id, currentTaskState.code);
+        if (res.success) {
+          setSaveStatus("saved");
+        } else {
+          setSaveStatus("error");
+        }
+      }
+    }, 15000); // 15 seconds
+    console.log(activeTask);
+    return () => clearInterval(autoSaveInterval);
+  }, [saveStatus, activeTask.id, currentTaskState.code]);
+
+  // ---------------------------------------------------------------------------
+  // 3. VIOLATION LOGGING (Server Sync)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const logNewViolations = async () => {
+      // If we have more warnings locally than we've sent to server
+      if (warnings.length > violationCountRef.current) {
+        const newViolationCount = warnings.length;
+        // Get the latest warning description
+        const latestWarning = warnings[warnings.length - 1];
+
+        // Update ref immediately to prevent loops
+        violationCountRef.current = newViolationCount;
+
+        // Send to server
+        await logViolationAction(activeTask.id, latestWarning);
+      }
+    };
+
+    logNewViolations();
+  }, [warnings, activeTask.id]);
+
+  // ---------------------------------------------------------------------------
+  // KIOSK MODE LOGIC (Existing + Updates)
+  // ---------------------------------------------------------------------------
+
+  // ... (Paste Interceptor, Fullscreen handlers - kept from previous version) ...
+  // Re-implementing briefly for completeness context
+
+  useEffect(() => {
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      const pastedData = e.clipboardData?.getData("text") || "";
+      const internalData = internalClipboard.current;
+      if (pastedData !== internalData) {
+        e.preventDefault();
+        e.stopPropagation();
+        setWarnings((prev) => [...prev, "External Paste Blocked"]);
+      }
+    };
+    const handleGlobalCopy = () => {
+      const selection = document.getSelection();
+      if (selection) internalClipboard.current = selection.toString();
+    };
+    window.addEventListener("paste", handleGlobalPaste, true);
+    window.addEventListener("copy", handleGlobalCopy, true);
+    return () => {
+      window.removeEventListener("paste", handleGlobalPaste, true);
+      window.removeEventListener("copy", handleGlobalCopy, true);
+    };
+  }, []);
+
+  const enterKioskMode = () => {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen().then(() => setIsKioskActive(true));
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsKioskActive(false);
+        setWarnings((prev) => [...prev, "Exited Fullscreen Mode"]);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isKioskActive) {
+        setWarnings((prev) => [...prev, "Tab Switch / Minimized"]);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [isKioskActive]);
+
+  const handleEditorDidMount: OnMount = (editor) => {
+    editorRef.current = editor;
+    const domNode = editor.getContainerDomNode();
+    const handleMonacoCopy = () => {
+      const selection = editor.getSelection();
+      const model = editor.getModel();
+      if (selection && model)
+        internalClipboard.current = model.getValueInRange(selection);
+    };
+    domNode.addEventListener("copy", handleMonacoCopy);
+    domNode.addEventListener("cut", handleMonacoCopy);
+  };
+
+  // ---------------------------------------------------------------------------
+  // EXECUTION LOGIC
+  // ---------------------------------------------------------------------------
   useEffect(() => {
     const checkStatus = async () => {
       setStatus("checking");
       try {
-        // Use your existing health check endpoint
-        // (Ensure this endpoint exists in your backend, otherwise this might just spin)
-        // For now, let's assume if we can reach it, it's good.
-        // Or simply set to 'online' if you trust your docker setup.
-        setStatus("online"); 
+        const healthResponse = await fetch("/api/code-execution/health");
+        const data = await healthResponse.json();
+        setStatus(data.status === "online" ? "online" : "offline");
       } catch {
         setStatus("down");
       }
     };
     checkStatus();
-  }, [language]);
+  }, [currentTaskState.language]);
 
-  // --- 2. Code Execution Handler ---
   const handleRun = async () => {
-    // Basic optimistic check
-    if (status === "down") return; 
-    
+    if (status === "down") return;
     setIsRunning(true);
-    setOutput("Executing code...");
+    updateCurrentTaskState({ output: "Executing code..." });
 
     try {
-      // Using Next.js API route proxy to avoid CORS issues and work in prod
-      const response = await fetch("/api/code-exection/execute", {
+      const response = await fetch("/api/code-execution/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          language: language, 
-          sourceCode: code, // Next.js API route expects camelCase 'sourceCode'
-          stdin: input 
+        body: JSON.stringify({
+          language: currentTaskState.language,
+          sourceCode: currentTaskState.code,
+          stdin: currentTaskState.input,
         }),
       });
-
       const data = await response.json();
-      if (response.ok) {
-        setOutput(data.output || data.stdout || "Program finished (no output).");
-        if (data.stderr) {
-          setOutput((prev) => prev + "\n" + data.stderr);
-        }
-      } else {
-        setOutput(`Error: ${data.error || data.message || "Execution failed"}`);
-      }
-    } catch (err) {
-      setOutput("Error: Could not connect to execution server. Check if containers are running.");
+      const outputText = response.ok
+        ? (data.output || data.stdout || "Program finished.") +
+          (data.stderr ? "\n" + data.stderr : "")
+        : `Error: ${data.error || "Execution failed"}`;
+      updateCurrentTaskState({ output: outputText });
+    } catch {
+      updateCurrentTaskState({ output: "Error: Connection failed." });
     } finally {
       setIsRunning(false);
     }
   };
 
-  // --- 3. UI Resizing Logic (Kept exactly as you wrote it) ---
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSaveStatus("saving"); // Submit implies save
+    updateCurrentTaskState({ output: "Saving & Running Tests..." });
+
+    try {
+      const result = await submitTaskAction(
+        workId,
+        activeTask.id,
+        currentTaskState.code,
+        currentTaskState.language,
+      );
+
+      setSaveStatus("saved"); // Force saved status after submit
+
+      if (result.error) {
+        updateCurrentTaskState({ output: `Submission Error: ${result.error}` });
+      } else {
+        const results = result.testResults || [];
+        let outputLog = "--- Submission Results ---\n\n";
+        let passedCount = 0;
+
+        results.forEach((res: any, idx: number) => {
+          if (res.passed) passedCount++;
+          outputLog += `Test Case ${idx + 1}: ${res.passed ? "✅ PASS" : "❌ FAIL"}\n`;
+          if (!res.passed) {
+            outputLog += `    Input: ${res.input}\n    Expected: ${res.expected}\n    Actual: ${res.actual}\n`;
+          }
+        });
+
+        outputLog +=
+          results.length === 0
+            ? "Code saved. (No tests defined)."
+            : `\nSummary: ${passedCount}/${results.length} Passed.`;
+
+        updateCurrentTaskState({ output: outputLog });
+      }
+    } catch {
+      updateCurrentTaskState({ output: "Submission failed unexpectedly." });
+      setSaveStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // LAYOUT RESIZING (Same as before)
+  // ---------------------------------------------------------------------------
   const startResizing = useCallback(
-    (type: "vertical" | "horizontal" | "input", startEvent: React.MouseEvent) => {
+    (
+      type: "vertical" | "horizontal" | "input",
+      startEvent: React.MouseEvent,
+    ) => {
       startEvent.preventDefault();
       setIsDragging(true);
       const startX = startEvent.clientX;
       const startY = startEvent.clientY;
       const startLeftWidth = leftPanelWidth ?? window.innerWidth / 2;
       const startBottomHeight = bottomPanelHeight;
-      const containerRect = type === "input" ? (startEvent.currentTarget.parentElement?.getBoundingClientRect()) : null;
+      const containerRect =
+        type === "input"
+          ? startEvent.currentTarget.parentElement?.getBoundingClientRect()
+          : null;
 
       const handleMouseMove = (e: MouseEvent) => {
         if (type === "vertical") {
-          const newHeight = startBottomHeight + (startY - e.clientY);
-          if (newHeight >= 100 && newHeight <= window.innerHeight - 150) setBottomPanelHeight(newHeight);
+          setBottomPanelHeight(
+            Math.max(
+              100,
+              Math.min(
+                window.innerHeight - 150,
+                startBottomHeight + (startY - e.clientY),
+              ),
+            ),
+          );
         } else if (type === "horizontal") {
-          const newWidth = startLeftWidth + (e.clientX - startX);
-          if (newWidth >= 200 && newWidth <= window.innerWidth - 200) setLeftPanelWidth(newWidth);
+          setLeftPanelWidth(
+            Math.max(
+              200,
+              Math.min(
+                window.innerWidth - 200,
+                startLeftWidth + (e.clientX - startX),
+              ),
+            ),
+          );
         } else if (type === "input" && containerRect) {
-          const newWidthPercent = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-          if (newWidthPercent >= 10 && newWidthPercent <= 90) setInputWidth(newWidthPercent);
+          setInputWidth(
+            Math.max(
+              10,
+              Math.min(
+                90,
+                ((e.clientX - containerRect.left) / containerRect.width) * 100,
+              ),
+            ),
+          );
         }
       };
 
@@ -132,80 +430,290 @@ const CodeEditorPage = ({
 
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = type === "vertical" ? "ns-resize" : "ew-resize";
+      document.body.style.cursor =
+        type === "vertical" ? "ns-resize" : "ew-resize";
     },
-    [bottomPanelHeight, leftPanelWidth]
+    [bottomPanelHeight, leftPanelWidth],
   );
 
+  // ---------------------------------------------------------------------------
+  // RENDER
+  // ---------------------------------------------------------------------------
+
+  if (!isKioskActive) {
+    return (
+      <div className="flex flex-col items-center justify-center w-screen h-screen bg-[#1a1a1a] text-white space-y-6">
+        <div className="p-8 bg-[#262626] rounded-xl border border-gray-700 shadow-2xl text-center max-w-md">
+          <Lock className="w-16 h-16 mx-auto text-blue-500 mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Secure Exam Environment</h1>
+          <p className="text-gray-400 mb-6 text-sm">
+            This assessment requires Kiosk Mode.
+            <br />
+            Full screen will be enabled and external copy/paste is disabled.
+          </p>
+          {warnings.length > 0 && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded text-left">
+              <h3 className="text-red-500 font-bold text-sm mb-2 flex items-center gap-2">
+                <AlertTriangle size={16} /> Violations Detected (
+                {warnings.length})
+              </h3>
+              {/*<ul className="mt-2 space-y-1">
+                {warnings.slice(-3).map((w, i) => (
+                  <li key={i} className="text-xs text-red-300">
+                    • {w}
+                  </li>
+                ))}
+                {warnings.length > 3 && (
+                  <li className="text-xs text-red-300">
+                    ...and {warnings.length - 3} more
+                  </li>
+                )}
+              </ul>*/}
+            </div>
+          )}
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => router.back()}
+              className="px-6 py-3 text-sm font-medium text-gray-400 hover:text-white transition"
+            >
+              Go Back
+            </button>
+            <button
+              onClick={enterKioskMode}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium flex items-center gap-2 transition"
+            >
+              <Maximize size={18} /> Enter Fullscreen
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex w-screen h-screen gap-1 p-2 overflow-hidden text-gray-100 bg-[#1a1a1a] ${isDragging ? "select-none" : ""}`}>
-      {/* LEFT PANEL: Description */}
-      <div className="flex flex-col" style={{ width: leftPanelWidth ?? "calc(50% - 4px)" }}>
+    <div
+      className={`flex w-screen h-screen gap-1 p-2 overflow-hidden text-gray-100 bg-[#1a1a1a] select-none ${isDragging ? "select-none" : ""}`}
+    >
+      {/* Violation Badge */}
+      {warnings.length > 0 && (
+        <div className="absolute top-4 right-4 z-50 flex items-center gap-2 px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-full text-xs text-red-400 font-mono pointer-events-none">
+          <AlertTriangle size={12} />
+          {warnings.length}
+        </div>
+      )}
+
+      {/* LEFT PANEL: Task Description */}
+      <div
+        className="flex flex-col"
+        style={{ width: leftPanelWidth ?? "calc(50% - 4px)" }}
+      >
         <PanelContainer className="h-full">
           <PanelHeader>
-            <div className="flex items-center gap-2">
-                <FileText size={16} className="text-blue-500"/>
-                <span className="text-sm font-medium">{title}</span>
+            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              {tasks.map((task, index) => (
+                <button
+                  key={task.id}
+                  onClick={() => setActiveTaskIndex(index)}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-t transition-colors whitespace-nowrap ${
+                    activeTaskIndex === index
+                      ? "bg-[#262626] text-green-500 border-b-2 border-green-500"
+                      : "bg-[#1a1a1a] text-gray-400 hover:text-gray-200 hover:bg-[#222]"
+                  }`}
+                >
+                  {task.title}
+                </button>
+              ))}
             </div>
           </PanelHeader>
-          {/* Display DB Description here */}
-          <div className="flex-1 bg-[#262626] p-6 overflow-y-auto whitespace-pre-wrap text-gray-300 font-sans leading-relaxed">
-            {description}
+          <div className="w-ful h-full bg-[#111]">
+            {/* Primary PDF preview using <object> with an iframe fallback */}
+            <object
+              data={activeTask.url}
+              type="application/pdf"
+              width="100%"
+              height="100%"
+              className="block"
+            >
+              <iframe
+                src={activeTask.url}
+                className="w-full h-full"
+                title="PDF Preview"
+              />
+            </object>
           </div>
         </PanelContainer>
       </div>
 
-      <ResizeHandle direction="horizontal" onMouseDown={(e) => startResizing("horizontal", e)} />
+      <ResizeHandle
+        direction="horizontal"
+        onMouseDown={(e) => startResizing("horizontal", e)}
+      />
 
-      {/* RIGHT PANEL: Code & Terminal */}
+      {/* RIGHT PANEL: Editor & Console */}
       <div className="flex flex-col flex-1 min-w-0 gap-3">
-        <PanelContainer style={{ height: `calc(100vh - ${bottomPanelHeight}px - 24px)` }}>
+        {/* Code Editor */}
+        <PanelContainer
+          style={{ height: `calc(100vh - ${bottomPanelHeight}px - 24px)` }}
+        >
           <PanelHeader>
-            <div className="flex items-center gap-4">
-              <span className="font-mono text-sm text-green-500">&lt;/&gt; Code</span>
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#333] text-[10px] font-bold">
-                <div className={`w-2 h-2 rounded-full ${status === "online" ? "bg-green-500" : "bg-red-500"}`} />
-                <span className="text-gray-400 uppercase">{status}</span>
+            <div className="flex items-center justify-between w-full">
+              {/* Left Side of Header: Lang Selector */}
+              <div className="flex items-center gap-4">
+                <span className="font-mono text-sm text-green-500">
+                  &lt;/&gt; Code
+                </span>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLangDropdown(!showLangDropdown)}
+                    className="flex items-center gap-2 px-3 py-1 text-xs font-bold uppercase text-gray-300 bg-[#333] border border-gray-600 rounded hover:bg-[#3a3a3a] transition-colors"
+                  >
+                    {
+                      LANGUAGES.find((l) => l.key === currentTaskState.language)
+                        ?.label
+                    }
+                    <ChevronDown size={14} />
+                  </button>
+                  {showLangDropdown && (
+                    <div className="absolute top-full mt-1 left-0 bg-[#2a2a2a] border border-gray-600 rounded shadow-lg z-10 min-w-[120px]">
+                      {LANGUAGES.map((lang) => (
+                        <button
+                          key={lang.key}
+                          onClick={() => {
+                            updateCurrentTaskState({ language: lang.key });
+                            setShowLangDropdown(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-[#3a3a3a] transition-colors ${currentTaskState.language === lang.key ? "bg-[#3a3a3a] text-green-500" : "text-gray-300"}`}
+                        >
+                          {lang.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              <span className="text-xs uppercase text-gray-400 font-bold ml-2 border border-gray-600 px-2 rounded">
-                {language}
-              </span>
+
+              {/* Right Side of Header: Status Indicators */}
+              <div className="flex items-center gap-3">
+                {/* Timer */}
+                {timeLeft && (
+                  <div
+                    className={`flex items-center gap-2 px-3 py-1 rounded border text-xs font-mono transition-colors ${
+                      isUrgent
+                        ? "bg-red-900/40 border-red-500/50 text-red-400 animate-pulse"
+                        : "bg-[#333] border-[#444] text-gray-300"
+                    }`}
+                  >
+                    <Clock size={13} />
+                    <span>{timeLeft}</span>
+                  </div>
+                )}
+
+                {/* Save Status */}
+                <div className="flex items-center gap-2 px-3 py-1 rounded bg-[#333] border border-[#444] min-w-[90px] justify-center">
+                  {saveStatus === "saving" && (
+                    <RefreshCw
+                      size={13}
+                      className="animate-spin text-blue-400"
+                    />
+                  )}
+                  {saveStatus === "saved" && (
+                    <CheckCircle2 size={13} className="text-green-500" />
+                  )}
+                  {saveStatus === "unsaved" && (
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+                  )}
+                  {saveStatus === "error" && (
+                    <WifiOff size={13} className="text-red-500" />
+                  )}
+
+                  <span className="text-[10px] font-bold uppercase text-gray-400 tracking-wide">
+                    {saveStatus === "unsaved" ? "Unsaved" : saveStatus}
+                  </span>
+                </div>
+              </div>
             </div>
           </PanelHeader>
-          <Editor 
-            height="100%" 
-            language={language === "c" || language === "cpp" ? "cpp" : language} 
-            value={code} 
-            theme="vs-dark" 
-            onChange={(v) => setCode(v || "")} 
-            options={{ minimap: { enabled: false }, automaticLayout: true, fontSize: 14 }} 
+
+          <Editor
+            height="100%"
+            language={
+              currentTaskState.language === "c" ||
+              currentTaskState.language === "cpp"
+                ? "cpp"
+                : currentTaskState.language
+            }
+            value={currentTaskState.code}
+            theme="vs-dark"
+            onMount={handleEditorDidMount}
+            onChange={(v) => updateCurrentTaskState({ code: v || "" })}
+            options={{
+              minimap: { enabled: false },
+              automaticLayout: true,
+              fontSize: 14,
+              contextmenu: false,
+            }}
           />
         </PanelContainer>
 
-        <ResizeHandle direction="vertical" onMouseDown={(e) => startResizing("vertical", e)} />
+        <ResizeHandle
+          direction="vertical"
+          onMouseDown={(e) => startResizing("vertical", e)}
+        />
 
+        {/* Console / Output */}
         <PanelContainer style={{ height: `${bottomPanelHeight}px` }}>
           <PanelHeader>
-            <div className="text-sm font-medium text-white border-b-2 border-green-500 px-2 pb-1">Console</div>
-            <button 
-                onClick={handleRun} 
-                disabled={isRunning} 
-                className={`flex items-center gap-2 px-4 py-1 rounded text-sm font-medium ${isRunning ? "bg-gray-600 cursor-not-allowed" : "bg-[#2cbb5d] hover:bg-[#26a351]"}`}
-            >
-              {isRunning ? <Activity size={14} className="animate-spin" /> : <Play size={14} />} {isRunning ? "Running" : "Run"}
-            </button>
+            <div className="flex items-center gap-2 text-sm font-medium text-white px-2">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#333] text-[10px] font-bold border border-[#444]">
+                <div
+                  className={`w-2 h-2 rounded-full ${status === "online" ? "bg-green-500" : "bg-red-500"}`}
+                />
+                <span className="text-gray-400 uppercase">{status}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRun}
+                disabled={isRunning || isSubmitting}
+                className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm font-medium transition-colors ${isRunning ? "bg-gray-600 cursor-not-allowed text-gray-300" : "bg-[#2cbb5d] hover:bg-[#26a351] text-white"}`}
+              >
+                {isRunning ? (
+                  <Activity size={14} className="animate-spin" />
+                ) : (
+                  <Play size={14} />
+                )}
+                {isRunning ? "Running..." : "Run"}
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={isRunning || isSubmitting}
+                className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm font-medium transition-colors ${isSubmitting ? "bg-gray-600 cursor-not-allowed text-gray-300" : "bg-blue-600 hover:bg-blue-700 text-white"}`}
+              >
+                {isSubmitting ? (
+                  <CloudUpload size={14} className="animate-bounce" />
+                ) : (
+                  <CloudUpload size={14} />
+                )}
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </button>
+            </div>
           </PanelHeader>
           <div className="flex flex-1 gap-1 p-2 overflow-hidden bg-[#262626]">
-            <textarea 
-                value={input} 
-                onChange={(e) => setInput(e.target.value)} 
-                className="p-3 font-mono text-sm text-gray-300 bg-[#1a1a1a] border border-[#444] rounded outline-none resize-none" 
-                style={{ width: `${inputWidth}%` }} 
-                placeholder="Stdin..." 
+            <textarea
+              value={currentTaskState.input}
+              onChange={(e) =>
+                updateCurrentTaskState({ input: e.target.value })
+              }
+              className="p-3 font-mono text-sm text-gray-300 bg-[#1a1a1a] border border-[#444] rounded outline-none resize-none select-text"
+              style={{ width: `${inputWidth}%` }}
+              placeholder="Stdin (Input)..."
             />
-            <div onMouseDown={(e) => startResizing("input", e)} className="w-1 cursor-ew-resize hover:bg-blue-500/20" />
-            <pre className="flex-1 p-3 font-mono text-sm text-gray-300 bg-[#1e1e1e] border border-[#444] rounded overflow-auto">
-                {output || "Run code to see output..."}
+            <div
+              onMouseDown={(e) => startResizing("input", e)}
+              className="w-1 cursor-ew-resize hover:bg-blue-500/20"
+            />
+            <pre className="flex-1 p-3 font-mono text-sm text-gray-300 bg-[#1e1e1e] border border-[#444] rounded overflow-auto whitespace-pre-wrap select-text">
+              {currentTaskState.output || "Run code to see output..."}
             </pre>
           </div>
         </PanelContainer>

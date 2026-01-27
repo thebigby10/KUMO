@@ -1,7 +1,8 @@
 import os
+
 import httpx
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware # 1. Import CORS
+from fastapi.middleware.cors import CORSMiddleware  # 1. Import CORS
 from pydantic import BaseModel
 
 app = FastAPI(title="Piston Execution API")
@@ -9,7 +10,9 @@ app = FastAPI(title="Piston Execution API")
 # 2. Add CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins (change to ["http://localhost:3000"] for production)
+    allow_origins=[
+        "*"
+    ],  # Allows all origins (change to ["http://localhost:3000"] for production)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -17,16 +20,19 @@ app.add_middleware(
 
 PISTON_URL = os.getenv("PISTON_URL", "http://piston:2000")
 
+
 class ExecuteRequest(BaseModel):
     language: str
-    version: str = "*" 
+    version: str = "*"
     source_code: str  # 3. Rename 'code' to 'source_code' to match Frontend
     stdin: str = ""
     args: list[str] = []
 
+
 @app.get("/")
 async def health_check():
     return {"status": "online", "engine": "piston"}
+
 
 @app.get("/runtimes")
 async def get_runtimes():
@@ -37,12 +43,13 @@ async def get_runtimes():
         except httpx.RequestError:
             raise HTTPException(status_code=503, detail="Piston engine unavailable")
 
+
 @app.post("/execute")
 async def execute_code(req: ExecuteRequest):
     payload = {
         "language": req.language,
         "version": req.version,
-        "files": [{"content": req.source_code}], # 4. Use the new field name here
+        "files": [{"content": req.source_code}],  # 4. Use the new field name here
         "stdin": req.stdin,
         "args": req.args,
         "compile_timeout": 10000,
@@ -53,7 +60,7 @@ async def execute_code(req: ExecuteRequest):
     async with httpx.AsyncClient() as client:
         try:
             resp = await client.post(f"{PISTON_URL}/api/v2/execute", json=payload)
-            
+
             # 5. Handle Piston Errors Gracefully
             if resp.status_code != 200:
                 return resp.json()

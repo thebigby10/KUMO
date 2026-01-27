@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/app/actions/auth";
 import { MoreVertical, Copy } from "lucide-react";
-import AnnouncementInput from "@/app/components/stream/AnnouncementInput";
 import { LabController } from "@/controller/LabController"; // Logic moved here
+import { getCurrentUser } from "@/actions/auth";
+import AnnouncementInput from "@/components/stream/AnnouncementInput";
 
 export default async function LabStreamPage({
   params,
