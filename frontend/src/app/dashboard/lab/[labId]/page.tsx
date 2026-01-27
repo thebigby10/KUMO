@@ -5,6 +5,7 @@ import { FiMoreVertical, FiCopy, FiCalendar } from "react-icons/fi";
 import { LabController } from "@/controller/LabController";
 import { getCurrentUser } from "@/actions/auth";
 import AnnouncementInput from "@/components/stream/AnnouncementInput";
+import CopyLabCodeButton from "@/components/CopyLabCodeButton";
 
 export default async function LabStreamPage({
   params,
@@ -68,12 +69,7 @@ export default async function LabStreamPage({
                 <span className="text-3xl font-bold font-mono text-blue-400 tracking-wider">
                   {lab.labCode}
                 </span>
-                <button 
-                  className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
-                  title="Copy code"
-                >
-                  <FiCopy size={18} />
-                </button>
+                <CopyLabCodeButton code={lab.labCode} />
               </div>
               <p className="text-xs text-slate-500 mt-3">
                 Share this code with students to join
