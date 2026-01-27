@@ -234,8 +234,13 @@ model Submission {
   grade       Int? // The grade given by instructor
   feedback    String? // Instructor feedback
   submittedAt DateTime?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+
+  violationCount Int      @default(0)
+  violationLogs  String?  @db.Text // Stored as JSON stringified array
+  lastSavedAt    DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   work Work @relation(fields: [workId], references: [id])
   task Task @relation(fields: [taskId], references: [id])

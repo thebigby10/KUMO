@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "submissions" ADD COLUMN     "lastSavedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "violationCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "violationLogs" TEXT;
