@@ -5,6 +5,7 @@ import { FaEllipsisVertical } from "react-icons/fa6";
 import { LabType } from "@/types/labType";
 import { deleteLab } from "@/actions/classroom-actions/lab";
 import EditLabModal from "./modals/EditLabModal";
+import { createPortal } from "react-dom";
 
 export default function LabActionMenu({
   lab,
@@ -14,11 +15,9 @@ export default function LabActionMenu({
   userEmail: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const [isOpenEditModal, setIsOpenEditModal] = useState(false);
-
-  // Close when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -29,55 +28,60 @@ export default function LabActionMenu({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleDeleteLab = async (labId: string, userEmail: string) => {
-    await deleteLab(labId, userEmail);
-  };
+  async function handleDelete() {
+    setOpen(false);
+    await deleteLab(lab.id, userEmail);
+  }
 
   return (
     <>
       <div ref={ref} className="relative" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="p-2 rounded-full hover:bg-gray-200"
+          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors"
         >
-          <FaEllipsisVertical />
+          <FaEllipsisVertical size={16} />
         </button>
 
         {open && (
-          <div className="absolute right-0 bottom-10 w-36 bg-white border border-gray-100 rounded-md shadow-lg z-50">
-            <div
-              onClick={() => {
-                console.log("Open edit lab modal");
-                setIsOpenEditModal(true);
-              }}
-              className="block px-4 py-2 text-sm hover:bg-gray-100"
-            >
-              Edit
-            </div>
-
+          <div className="absolute right-0 bottom-12 w-40 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
             <button
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
               onClick={() => {
                 setOpen(false);
-                // hook delete modal / action here
-                handleDeleteLab(lab.id, userEmail);
+                setIsEditOpen(true);
               }}
+              className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-800 transition-colors"
+            >
+              Edit
+            </button>
+
+            <button
+              onClick={handleDelete}
+              className="w-full px-4 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors"
             >
               Delete
             </button>
 
-            <button className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
+            <button
+              className="w-full px-4 py-2.5 text-left text-sm text-slate-400 hover:bg-slate-800 transition-colors"
+            >
               Archive
             </button>
           </div>
         )}
       </div>
 
-      {
-        isOpenEditModal && (
-          <EditLabModal isOpen={isOpenEditModal} onClose={() => setIsOpenEditModal(false)} lab={lab} userEmail={userEmail}/>
-        )
-      }
+      {/* 🔥 PORTAL FIX */}
+      {isEditOpen &&
+        createPortal(
+          <EditLabModal
+            isOpen={isEditOpen}
+            onClose={() => setIsEditOpen(false)}
+            lab={lab}
+            userEmail={userEmail}
+          />,
+          document.body
+        )}
     </>
   );
 }
