@@ -199,6 +199,7 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
+  // EXISTING: Tab Visibility Change (Tab Hiding)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && isKioskActive) {
@@ -208,6 +209,90 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [isKioskActive]);
+
+  // NEW: 1. Window Focus Loss (Blur)
+  // Handles dual monitors or clicking outside browser while still visible
+  useEffect(() => {
+    const handleBlur = () => {
+      if (isKioskActive) {
+        setWarnings((prev) => [
+          ...prev,
+          "Window Focus Lost (Alt-Tab / External Click)",
+        ]);
+      }
+    };
+    window.addEventListener("blur", handleBlur);
+    return () => window.removeEventListener("blur", handleBlur);
+  }, [isKioskActive]);
+
+  // NEW: 2. Mouse Leaving the Window
+  useEffect(() => {
+    const handleMouseLeave = () => {
+      if (isKioskActive) {
+        setWarnings((prev) => [...prev, "Mouse Left Window Boundary"]);
+      }
+    };
+    // Use document to catch leaving the viewport
+    document.addEventListener("mouseleave", handleMouseLeave);
+    return () => document.removeEventListener("mouseleave", handleMouseLeave);
+  }, [isKioskActive]);
+
+  // NEW: 3. Forbidden Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isKioskActive) return;
+
+      const isCtrl = e.ctrlKey || e.metaKey; // Windows Ctrl or Mac Cmd
+      const isShift = e.shiftKey;
+      const key = e.key.toLowerCase();
+
+      // List of forbidden keys/combos
+      const forbidden = [
+        // Print: Ctrl+P
+        isCtrl && key === "p",
+        // Save: Ctrl+S
+        isCtrl && key === "s",
+        // Reload: Ctrl+R or F5
+        (isCtrl && key === "r") || e.key === "F5",
+        // DevTools: F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J
+        e.key === "F12",
+        isCtrl && isShift && key === "i",
+        isCtrl && isShift && key === "c",
+        isCtrl && isShift && key === "j",
+        // View Source: Ctrl+U
+        isCtrl && key === "u",
+      ];
+
+      if (forbidden.some(Boolean)) {
+        e.preventDefault();
+        e.stopPropagation();
+        setWarnings((prev) => [...prev, `Forbidden Shortcut Detected`]);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isKioskActive]);
+
+  // NEW: 4. Window Resizing (DevTools detection)
+  useEffect(() => {
+    const handleResize = () => {
+      if (!isKioskActive) return;
+
+      // In Kiosk/Fullscreen, window.innerWidth should match screen width.
+      // If DevTools opens (docked), innerWidth shrinks significantly.
+      const widthDiff = Math.abs(window.outerWidth - window.innerWidth);
+      const heightDiff = Math.abs(window.outerHeight - window.innerHeight);
+
+      // Threshold of 100px accounts for OS specific bars, but DevTools usually takes more.
+      if (widthDiff > 100 || heightDiff > 100) {
+        setWarnings((prev) => [...prev, "Window Resized (DevTools Detected)"]);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isKioskActive]);
 
   useEffect(() => {
@@ -395,6 +480,14 @@ const CodeEditorPage = ({ tasks, workId }: CodeEditorPageProps) => {
                 <AlertTriangle size={16} /> Violations Detected (
                 {warnings.length})
               </h3>
+              <ul className="mt-2 space-y-2">
+                {warnings.map((w, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <AlertTriangle size={14} className="text-red-400 mt-1" />
+                    <div className="text-sm text-red-200 break-words">{w}</div>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
