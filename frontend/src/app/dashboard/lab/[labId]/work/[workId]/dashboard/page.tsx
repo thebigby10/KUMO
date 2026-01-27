@@ -335,7 +335,7 @@ export default async function TeacherDashboardPage({
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Submitted</p>
+                <p className="text-sm font-medium text-gray-500">Turned In</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">
                   {stats.studentsStarted}
                 </p>
@@ -346,7 +346,7 @@ export default async function TeacherDashboardPage({
             </div>
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-gray-500">Submission Rate</span>
+                <span className="text-gray-500">Turn-in Rate</span>
                 <span className="font-semibold text-gray-700">
                   {submissionRate}%
                 </span>
@@ -447,16 +447,16 @@ export default async function TeacherDashboardPage({
                 <p className="text-2xl font-bold text-gray-900">
                   {stats.statusCounts.draft}
                 </p>
-                <p className="text-sm text-gray-500">Draft</p>
+                <p className="text-sm text-gray-500">Not Turned In</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
-              <div className="w-3 h-3 rounded-full bg-blue-500" />
+            <div className="flex items-center gap-4 p-4 bg-yellow-50 rounded-lg">
+              <div className="w-3 h-3 rounded-full bg-yellow-500" />
               <div>
                 <p className="text-2xl font-bold text-gray-900">
                   {stats.statusCounts.submitted}
                 </p>
-                <p className="text-sm text-gray-500">Submitted</p>
+                <p className="text-sm text-gray-500">Awaiting Grade</p>
               </div>
             </div>
             <div className="flex items-center gap-4 p-4 bg-green-50 rounded-lg">
