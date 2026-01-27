@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FiUsers, FiMoreVertical } from "react-icons/fi";
+import { FiUsers } from "react-icons/fi";
 import LabActionMenu from "./LabActionMenu";
 import { LabType } from "@/types/labType";
 
