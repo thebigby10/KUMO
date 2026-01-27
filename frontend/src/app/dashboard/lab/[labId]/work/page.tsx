@@ -162,9 +162,9 @@ export default async function ClassworkPage({
             const isLockedForStudent =
               !isInstructor && lifecycle === "SCHEDULED";
 
-            // Link Destination
+            // Link Destination - Instructors go to dashboard, students go to work
             const linkHref = isInstructor
-              ? `/dashboard/lab/${labId}/work/${work.id}/edit`
+              ? `/dashboard/lab/${labId}/work/${work.id}/dashboard`
               : `/work/${work.id}`;
 
             return (

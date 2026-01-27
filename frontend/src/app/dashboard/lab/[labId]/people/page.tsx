@@ -1,16 +1,13 @@
 import { getPeople } from "@/actions/classroom-actions/lab";
 
-const page = async ({ params }: { params: { labId: string } }) => {
-  let labId = "";
-  try {
-    labId = await params.labId;
-  } catch (error) {
-    console.error("Error fetching lab ID:", error);
+const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
+  const { labId } = await params;
+
+  if (!labId) {
+    return <div className="p-6 text-red-500">Invalid lab ID</div>;
   }
 
   const peoples = await getPeople(labId);
-
-  console.log("Peoples data:", peoples?.students);
 
   // Extract teachers and students from the response
   const teachers = peoples?.instructors || [];
@@ -51,25 +48,25 @@ const page = async ({ params }: { params: { labId: string } }) => {
         </div>
 
         <div className="border-t border-gray-200">
-          {teachers.map((teacher: any, index: number) => (
+          {teachers.map((teacher: any) => (
             <div
-              key={teacher.id || index}
+              key={teacher.email}
               className="flex items-center gap-4 py-4 border-b border-gray-200 hover:bg-gray-50 transition-colors"
             >
               {teacher.avatar ? (
                 <img
                   src={teacher.avatar}
-                  alt={teacher.name}
+                  alt={teacher.name || teacher.email}
                   className="w-10 h-10 rounded-full object-cover"
                 />
               ) : (
                 <div
-                  className={`w-10 h-10 rounded-full ${getAvatarColor(teacher.name)} flex items-center justify-center text-white font-medium`}
+                  className={`w-10 h-10 rounded-full ${getAvatarColor(teacher.name || teacher.email)} flex items-center justify-center text-white font-medium`}
                 >
-                  {getInitials(teacher.name)}
+                  {getInitials(teacher.name || teacher.email)}
                 </div>
               )}
-              <span className="text-gray-800 text-sm">{teacher.name}</span>
+              <span className="text-gray-800 text-sm">{teacher.name || teacher.email}</span>
             </div>
           ))}
         </div>
@@ -86,25 +83,25 @@ const page = async ({ params }: { params: { labId: string } }) => {
         </div>
 
         <div className="border-t border-gray-200">
-          {students.map((student: any, index: number) => (
+          {students.map((student: any) => (
             <div
-              key={student.id || index}
+              key={student.email}
               className="flex items-center gap-4 py-4 border-b border-gray-200 hover:bg-gray-50 transition-colors"
             >
               {student.avatar ? (
                 <img
-                  src={student?.avatar}
-                  alt={student.name}
+                  src={student.avatar}
+                  alt={student.name || student.email}
                   className="w-10 h-10 rounded-full object-cover"
                 />
               ) : (
                 <div
-                  className={`w-10 h-10 rounded-full ${getAvatarColor(student.name)} flex items-center justify-center text-white font-medium`}
+                  className={`w-10 h-10 rounded-full ${getAvatarColor(student.name || student.email)} flex items-center justify-center text-white font-medium`}
                 >
-                  {getInitials(student.name)}
+                  {getInitials(student.name || student.email)}
                 </div>
               )}
-              <span className="text-gray-800 text-sm">{student.name}</span>
+              <span className="text-gray-800 text-sm">{student.name || student.email}</span>
             </div>
           ))}
         </div>

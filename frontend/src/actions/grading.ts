@@ -23,10 +23,11 @@ export async function gradeTaskAction(
   if (!instructor) return { error: "Only instructors can grade." };
 
   try {
-    await SubmissionRepository.grade(submissionId, grade, feedback);
+    await SubmissionRepository.gradeById(submissionId, grade, feedback || undefined);
 
     // Revalidate the grading page so UI updates cleanly
     revalidatePath(`/dashboard/lab/${labId}/work/${workId}/grade`);
+    revalidatePath(`/dashboard/lab/${labId}/work/${workId}/dashboard`);
     return { success: true };
   } catch (error) {
     console.error("Grading failed:", error);

@@ -1,5 +1,5 @@
 import { db } from "@/models/models";
-import { SubmissionStatus } from "@prisma/client";
+import { SubmissionStatus } from "../../generated/prisma/client";
 
 export class SubmissionRepository {
   /**
@@ -76,5 +76,130 @@ export class SubmissionRepository {
         status: "RETURNED",
       },
     });
+  }
+
+  /**
+   * Grade a submission by its ID (used by grading interface)
+   */
+  static async gradeById(
+    submissionId: string,
+    grade: number,
+    feedback?: string,
+  ) {
+    return await db.submission.update({
+      where: { id: submissionId },
+      data: {
+        grade,
+        feedback,
+        status: "RETURNED",
+      },
+    });
+  }
+
+  /**
+   * Get all submissions for a specific work (for instructor grading/dashboard view)
+   */
+  static async findAllByWorkId(workId: string) {
+    return await db.submission.findMany({
+      where: { workId },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        task: {
+          select: {
+            id: true,
+            title: true,
+            point: true,
+          },
+        },
+      },
+      orderBy: [{ task: { createdAt: "asc" } }, { userEmail: "asc" }],
+    });
+  }
+
+  /**
+   * Get submission statistics for a work (for teacher dashboard)
+   */
+  static async getWorkStats(workId: string) {
+    const submissions = await db.submission.findMany({
+      where: { workId },
+      select: {
+        status: true,
+        grade: true,
+        userEmail: true,
+        taskId: true,
+        submittedAt: true,
+      },
+    });
+
+    // Get unique students
+    const uniqueStudents = new Set(submissions.map((s) => s.userEmail));
+    const totalStudents = uniqueStudents.size;
+
+    // Get unique tasks
+    const uniqueTasks = new Set(submissions.map((s) => s.taskId));
+    const totalTasks = uniqueTasks.size;
+
+    // Count by status
+    const statusCounts = {
+      draft: submissions.filter((s) => s.status === "DRAFT").length,
+      submitted: submissions.filter((s) => s.status === "SUBMITTED").length,
+      returned: submissions.filter((s) => s.status === "RETURNED").length,
+    };
+
+    // Students who have submitted at least one task
+    const studentsWithSubmissions = new Set(
+      submissions
+        .filter((s) => s.status !== "DRAFT")
+        .map((s) => s.userEmail)
+    );
+
+    // Students who have all tasks graded
+    const studentTaskGrades = new Map<string, number>();
+    const studentTaskCount = new Map<string, number>();
+    
+    submissions.forEach((s) => {
+      const count = studentTaskCount.get(s.userEmail) || 0;
+      studentTaskCount.set(s.userEmail, count + 1);
+      
+      if (s.status === "RETURNED") {
+        const graded = studentTaskGrades.get(s.userEmail) || 0;
+        studentTaskGrades.set(s.userEmail, graded + 1);
+      }
+    });
+
+    let fullyGradedStudents = 0;
+    studentTaskGrades.forEach((gradedCount, email) => {
+      const totalForStudent = studentTaskCount.get(email) || 0;
+      if (gradedCount === totalForStudent && totalForStudent > 0) {
+        fullyGradedStudents++;
+      }
+    });
+
+    // Average grade (only for graded submissions)
+    const gradedSubmissions = submissions.filter(
+      (s) => s.status === "RETURNED" && s.grade !== null
+    );
+    const averageGrade =
+      gradedSubmissions.length > 0
+        ? gradedSubmissions.reduce((sum, s) => sum + (s.grade || 0), 0) /
+          gradedSubmissions.length
+        : null;
+
+    return {
+      totalStudents,
+      totalTasks,
+      totalSubmissions: submissions.length,
+      statusCounts,
+      studentsStarted: studentsWithSubmissions.size,
+      studentsNotStarted: totalStudents - studentsWithSubmissions.size,
+      fullyGradedStudents,
+      averageGrade,
+    };
   }
 }

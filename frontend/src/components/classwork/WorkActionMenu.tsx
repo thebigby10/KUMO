@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, Trash2, Edit } from "lucide-react";
+import { MoreVertical, Trash2, Edit, LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { deleteWorkAction } from "@/actions/work";
 
@@ -51,6 +51,10 @@ export default function WorkActionMenu({ workId, labId }: WorkActionMenuProps) {
     router.push(`/dashboard/lab/${labId}/work/${workId}/edit`);
   };
 
+  const handleDashboard = () => {
+    router.push(`/dashboard/lab/${labId}/work/${workId}/dashboard`);
+  };
+
   return (
     <div
       className="relative ml-2"
@@ -68,16 +72,27 @@ export default function WorkActionMenu({ workId, labId }: WorkActionMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+        <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDashboard();
+            }}
+            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+          >
+            <LayoutDashboard size={16} />
+            View Dashboard
+          </button>
+
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleEdit();
             }}
-            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
           >
             <Edit size={16} />
-            Edit
+            Edit Assignment
           </button>
 
           <button
