@@ -1,3 +1,5 @@
+// src/app/dashboard/lab/[labId]/work/page.tsx
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
