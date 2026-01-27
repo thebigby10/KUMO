@@ -234,6 +234,7 @@ model Submission {
   grade       Int? // The grade given by instructor
   feedback    String? // Instructor feedback
   submittedAt DateTime?
+  language    String
 
   violationCount Int      @default(0)
   violationLogs  String?  @db.Text // Stored as JSON stringified array
