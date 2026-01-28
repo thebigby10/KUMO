@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { WorkRepository } from "@/repositories/WorkRepository"; // Use repository directly to fetch all nested data
+import { FiChevronLeft } from "react-icons/fi";
+import { WorkRepository } from "@/repositories/WorkRepository";
 import { LabController } from "@/controller/LabController";
 import { getCurrentUser } from "@/actions/auth";
 import CreateAssignmentForm from "@/components/classwork/CreateAssignmentForm";
@@ -29,7 +29,23 @@ export default async function EditWorkPage({
 
   if (!isInstructor) {
     return (
-      <div className="p-10 text-center text-red-600">Unauthorized Access</div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
+        <div className="w-20 h-20 bg-red-500/10 rounded-2xl flex items-center justify-center">
+          <span className="text-4xl">🔒</span>
+        </div>
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-bold text-white">Unauthorized Access</h2>
+          <p className="text-slate-400 max-w-md">
+            You do not have permission to edit assignments for this lab.
+          </p>
+        </div>
+        <Link
+          href={`/dashboard/lab/${labId}`}
+          className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors font-medium"
+        >
+          Return to Lab Stream
+        </Link>
+      </div>
     );
   }
 
@@ -38,25 +54,27 @@ export default async function EditWorkPage({
   if (!work) notFound();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 z-20">
+    <div className="min-h-screen bg-slate-900">
+      {/* Header */}
+      <header className="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-20 backdrop-blur-sm">
         <div className="flex items-center gap-4">
           <Link
             href={`/dashboard/lab/${labId}/work`}
-            className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition"
+            className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"
             title="Back to Classwork"
           >
-            <ChevronLeft size={24} />
+            <FiChevronLeft size={24} />
           </Link>
           <div>
-            <h1 className="text-xl font-semibold text-gray-800">
+            <h1 className="text-xl font-bold text-white">
               Edit Assignment
             </h1>
-            <p className="text-xs text-gray-500">{lab.name}</p>
+            <p className="text-sm text-slate-400">{lab.name}</p>
           </div>
         </div>
       </header>
 
+      {/* Main Content Form */}
       <div className="max-w-5xl mx-auto py-8 px-6">
         <CreateAssignmentForm
           labId={labId}
