@@ -23,21 +23,19 @@ export default async function DashboardLayout({
   const labs : LabType[] = await LabController.getAllForUser(user.email);
 
   const navbar = (
-    <nav className="flex items-center justify-between px-6 py-3 border-b bg-white sticky top-0 z-10">
-      <div className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-green-600 rounded flex items-center justify-center text-white">
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z" />
-          </svg>
+    <nav className="flex items-center justify-between px-8 py-4 bg-slate-950 border-b border-slate-800 sticky top-0 z-40">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <span className="text-lg font-bold font-mono text-white">K</span>
         </div>
-        <span className="text-xl font-normal text-gray-700 ml-2">
-          Classroom
+        <span className="text-xl font-bold tracking-tight font-mono text-white">
+          KUMO
         </span>
       </div>
 
       <div className="flex items-center gap-4">
         <ClassroomActionWrapper userEmail={user.email} />
-        <div className="pl-2">
+        <div className="pl-2 border-l border-slate-700">
           <UserMenu email={user.email} name={user.name} />
         </div>
       </div>
