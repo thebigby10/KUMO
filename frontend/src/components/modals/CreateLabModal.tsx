@@ -76,7 +76,7 @@ export default function CreateLabModal({ isOpen, onClose, userEmail }: CreateLab
                 required
                 type="text"
                 placeholder="e.g., Introduction to Python"
-                className="w-full text-slate-100 px-4 py-3 placeholder-slate-500 bg-slate-800 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                className="w-full px-4 py-3 text-white placeholder-slate-500 bg-slate-800 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all autofill:bg-slate-800 autofill:text-white"
               />
             </div>
 
@@ -88,7 +88,7 @@ export default function CreateLabModal({ isOpen, onClose, userEmail }: CreateLab
                 name="section"
                 type="text"
                 placeholder="e.g., Section A, Fall 2024"
-                className="w-full px-4 py-3 text-white placeholder-slate-500 bg-slate-800 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                className="w-full px-4 py-3 text-white placeholder-slate-500 bg-slate-800 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all autofill:bg-slate-800 autofill:text-white"
               />
             </div>
 
@@ -100,7 +100,7 @@ export default function CreateLabModal({ isOpen, onClose, userEmail }: CreateLab
                 name="subject"
                 type="text"
                 placeholder="e.g., Computer Science"
-                className="w-full px-4 py-3 text-white placeholder-slate-500 bg-slate-800 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                className="w-full px-4 py-3 text-white placeholder-slate-500 bg-slate-800 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all autofill:bg-slate-800 autofill:text-white"
               />
             </div>
 
@@ -112,7 +112,7 @@ export default function CreateLabModal({ isOpen, onClose, userEmail }: CreateLab
                 name="room"
                 type="text"
                 placeholder="e.g., Lab 101"
-                className="w-full px-4 py-3 text-white placeholder-slate-500 bg-slate-800 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                className="w-full px-4 py-3 text-white placeholder-slate-500 bg-slate-800 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all autofill:bg-slate-800 autofill:text-white"
               />
             </div>
 
