@@ -154,19 +154,17 @@ export class SubmissionRepository {
 
     // Students who have submitted at least one task
     const studentsWithSubmissions = new Set(
-      submissions
-        .filter((s) => s.status !== "DRAFT")
-        .map((s) => s.userEmail)
+      submissions.filter((s) => s.status !== "DRAFT").map((s) => s.userEmail),
     );
 
     // Students who have all tasks graded
     const studentTaskGrades = new Map<string, number>();
     const studentTaskCount = new Map<string, number>();
-    
+
     submissions.forEach((s) => {
       const count = studentTaskCount.get(s.userEmail) || 0;
       studentTaskCount.set(s.userEmail, count + 1);
-      
+
       if (s.status === "RETURNED") {
         const graded = studentTaskGrades.get(s.userEmail) || 0;
         studentTaskGrades.set(s.userEmail, graded + 1);
@@ -183,7 +181,7 @@ export class SubmissionRepository {
 
     // Average grade (only for graded submissions)
     const gradedSubmissions = submissions.filter(
-      (s) => s.status === "RETURNED" && s.grade !== null
+      (s) => s.status === "RETURNED" && s.grade !== null,
     );
     const averageGrade =
       gradedSubmissions.length > 0
