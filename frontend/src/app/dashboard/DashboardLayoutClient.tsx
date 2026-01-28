@@ -1,26 +1,23 @@
-// ============================================
-// 1. DashboardLayoutClient.tsx - Updated z-index
-// ============================================
 "use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
-  Calendar,
-  Users,
-  GraduationCap,
-  Archive,
-  Settings,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
+  FiHome,
+  FiCalendar,
+  FiArchive,
+  FiSettings,
+  FiChevronDown,
+  FiChevronRight,
+  FiBook,
+  FiUsers,
+} from "react-icons/fi";
 import { LabType } from "@/types/labType";
 
 const navItems = [
-  { href: "/dashboard", icon: Home, label: "Home" },
-  { href: "/dashboard/calendar", icon: Calendar, label: "Calendar" },
+  { href: "/dashboard", icon: FiHome, label: "Dashboard" },
+  { href: "/dashboard/calendar", icon: FiCalendar, label: "Calendar" },
 ];
 
 export default function DashboardLayoutClient({
@@ -49,11 +46,12 @@ export default function DashboardLayoutClient({
   const labID = pathname.split('/dashboard/lab/')[1]?.split('/')[0];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar - z-30 */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 fixed h-full overflow-y-auto z-30">
-        <div className="py-2">
-          <nav className="px-2 space-y-1">
+    <div className="flex min-h-screen bg-slate-900">
+      {/* Modern Sidebar */}
+      <aside className="w-72 bg-slate-950 border-r border-slate-800 flex-shrink-0 fixed h-full overflow-y-auto z-30">
+        <div className="py-6">
+          {/* Primary Navigation */}
+          <nav className="px-4 space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -61,112 +59,143 @@ export default function DashboardLayoutClient({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-4 px-4 py-3 rounded-full text-sm font-medium transition ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                     isActive
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-700 hover:bg-gray-100"
+                      ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                      : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border border-transparent"
                   }`}
                 >
-                  <Icon size={20} />
+                  <Icon size={18} />
                   <span>{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="my-2 border-t border-gray-200"></div>
+          <div className="my-6 border-t border-slate-800"></div>
 
-          <div className="px-2">
+          {/* Teaching Labs Section */}
+          <div className="px-4">
             <button
               onClick={() => setTeachingOpen(!teachingOpen)}
-              className="flex items-center gap-2 px-4 py-2 w-full text-sm font-medium text-gray-700 hover:bg-gray-100 rounded transition"
+              className="flex items-center gap-3 px-4 py-2.5 w-full text-sm font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/50 transition-all"
             >
-              <GraduationCap size={20} />
+              <FiBook size={18} />
               <span className="flex-1 text-left">Teaching</span>
               {teachingOpen ? (
-                <ChevronDown size={16} className="text-gray-500" />
+                <FiChevronDown size={16} className="text-slate-500" />
               ) : (
-                <ChevronRight size={16} className="text-gray-500" />
+                <FiChevronRight size={16} className="text-slate-500" />
               )}
             </button>
             {teachingOpen && (
-              <div className="ml-1 mt-1 space-y-1">
-                {teachingLabs.map((lab) => (
-                  <Link
-                    key={lab?.id}
-                    href={`/dashboard/lab/${lab?.id}`}
-                    className={`px-4 py-2 flex gap-4 items-center text-gray-600 hover:bg-gray-100 rounded-full transition ${ labID === lab?.id ? "bg-blue-100 text-blue-700" : "" }`}
-                  >
-                    <div className="w-8 h-8 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center font-medium">
-                      {lab?.name[0].toUpperCase()}
-                    </div>
-                    <div className="flex flex-col">
-                      <h1 className="font-semibold text-sm">{lab?.name}</h1>
-                      <p className="text-sm">{lab?.section}</p>
-                    </div>
-                  </Link>
-                ))}
+              <div className="mt-2 space-y-1">
+                {teachingLabs.length === 0 ? (
+                  <div className="px-4 py-3 text-xs text-slate-500 italic">
+                    No teaching labs yet
+                  </div>
+                ) : (
+                  teachingLabs.map((lab) => (
+                    <Link
+                      key={lab?.id}
+                      href={`/dashboard/lab/${lab?.id}`}
+                      className={`px-3 py-2.5 flex gap-3 items-center rounded-lg transition-all ${
+                        labID === lab?.id 
+                          ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" 
+                          : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border border-transparent"
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-xs ${
+                        labID === lab?.id
+                          ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white"
+                          : "bg-slate-800 text-slate-400"
+                      }`}>
+                        {lab?.name[0].toUpperCase()}
+                      </div>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <h3 className="font-medium text-sm truncate">{lab?.name}</h3>
+                        <p className="text-xs text-slate-500 truncate">{lab?.section}</p>
+                      </div>
+                    </Link>
+                  ))
+                )}
               </div>
             )}
           </div>
 
-          <div className="px-2 mt-2">
+          {/* Enrolled Labs Section */}
+          <div className="px-4 mt-4">
             <button
               onClick={() => setEnrolledOpen(!enrolledOpen)}
-              className="flex items-center gap-4 px-4 py-2 w-full text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-full transition"
+              className="flex items-center gap-3 px-4 py-2.5 w-full text-sm font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/50 transition-all"
             >
-              <Users size={20} />
+              <FiUsers size={18} />
               <span className="flex-1 text-left">Enrolled</span>
               {enrolledOpen ? (
-                <ChevronDown size={16} className="text-gray-500" />
+                <FiChevronDown size={16} className="text-slate-500" />
               ) : (
-                <ChevronRight size={16} className="text-gray-500" />
+                <FiChevronRight size={16} className="text-slate-500" />
               )}
             </button>
             {enrolledOpen && (
-              <div className="ml-1 mt-1 space-y-1">
-                {enrolledLabs.map((lab) => (
-                  <Link
-                    key={lab?.id}
-                    href={`/dashboard/lab/${lab?.id}`}
-                    className={`px-4 py-2 flex gap-4 items-center text-gray-600 hover:bg-gray-100 rounded-full transition ${ labID === lab?.id ? "bg-blue-100 text-blue-700" : "" }`}
-                  >
-                    <div className="w-8 h-8 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center font-medium">
-                      {lab?.name[0].toUpperCase()}
-                    </div>
-                    <div className="flex flex-col">
-                      <h1 className="font-semibold text-sm">{lab?.name}</h1>
-                      <p className="text-sm">{lab?.section}</p>
-                    </div>
-                  </Link>
-                ))}
+              <div className="mt-2 space-y-1">
+                {enrolledLabs.length === 0 ? (
+                  <div className="px-4 py-3 text-xs text-slate-500 italic">
+                    No enrolled labs yet
+                  </div>
+                ) : (
+                  enrolledLabs.map((lab) => (
+                    <Link
+                      key={lab?.id}
+                      href={`/dashboard/lab/${lab?.id}`}
+                      className={`px-3 py-2.5 flex gap-3 items-center rounded-lg transition-all ${
+                        labID === lab?.id 
+                          ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
+                          : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border border-transparent"
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-xs ${
+                        labID === lab?.id
+                          ? "bg-gradient-to-br from-blue-500 to-cyan-600 text-white"
+                          : "bg-slate-800 text-slate-400"
+                      }`}>
+                        {lab?.name[0].toUpperCase()}
+                      </div>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <h3 className="font-medium text-sm truncate">{lab?.name}</h3>
+                        <p className="text-xs text-slate-500 truncate">{lab?.section}</p>
+                      </div>
+                    </Link>
+                  ))
+                )}
               </div>
             )}
           </div>
 
-          <div className="my-2 border-t border-gray-200"></div>
+          <div className="my-6 border-t border-slate-800"></div>
 
-          <nav className="px-2 space-y-1">
+          {/* Secondary Navigation */}
+          <nav className="px-4 space-y-1">
             <Link
               href="/dashboard/archived"
-              className="flex items-center gap-4 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-full transition"
+              className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 rounded-lg transition-all"
             >
-              <Archive size={20} />
-              <span>Archived classes</span>
+              <FiArchive size={18} />
+              <span>Archived Labs</span>
             </Link>
             <Link
               href="/dashboard/settings"
-              className="flex items-center gap-4 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-full transition"
+              className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 rounded-lg transition-all"
             >
-              <Settings size={20} />
+              <FiSettings size={18} />
               <span>Settings</span>
             </Link>
           </nav>
         </div>
       </aside>
 
-      <div className="flex-1 ml-64">
-        {/* Navbar - z-40 */}
+      {/* Main Content Area */}
+      <div className="flex-1 ml-72">
         <div className="sticky top-0 z-40">
           {navbar}
         </div>
@@ -175,5 +204,3 @@ export default function DashboardLayoutClient({
     </div>
   );
 }
-
-

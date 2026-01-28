@@ -1,4 +1,4 @@
-//src/app/dashboard/ClassroomActionWrapper.tsx
+// src/app/dashboard/ClassroomActionWrapper.tsx
 
 "use client";
 
@@ -7,21 +7,29 @@ import { Plus } from "lucide-react";
 import CreateLabModal from "@/components/modals/CreateLabModal";
 import JoinLabModal from "@/components/modals/JoinLabModal";
 
-export default function ClassroomActionWrapper({ userEmail }: { userEmail: string }) {
+export default function ClassroomActionWrapper({
+  userEmail,
+}: {
+  userEmail: string;
+}) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const openCreate = () => {
@@ -36,41 +44,71 @@ export default function ClassroomActionWrapper({ userEmail }: { userEmail: strin
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button 
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className={`p-2 rounded-full transition duration-200 ${isDropdownOpen ? 'bg-gray-100 rotate-45 text-gray-600' : 'hover:bg-gray-100 text-gray-600'}`}
-        title="Create or join a class"
+      {/* Trigger Button */}
+      <button
+        onClick={() => setIsDropdownOpen((v) => !v)}
+        title="Create or join a lab"
+        className={`
+          p-2 rounded-xl transition-all duration-200
+          ${
+            isDropdownOpen
+              ? "bg-slate-800 text-white rotate-45"
+              : "text-slate-400 hover:text-white hover:bg-slate-800"
+          }
+        `}
       >
-        <Plus size={24} />
+        <Plus size={22} />
       </button>
 
-      {/* Dropdown with z-[60] to appear above tabs */}
+      {/* Dropdown */}
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-100 z-[60] animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+        <div
+          className="
+            absolute right-0 mt-3 w-48
+            bg-slate-900 border border-slate-700
+            rounded-xl shadow-xl
+            z-[60]
+            overflow-hidden
+            animate-in fade-in zoom-in-95 duration-150
+            origin-top-right
+          "
+        >
           <button
             onClick={openJoin}
-            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            className="
+              w-full text-left px-4 py-3 text-sm
+              text-slate-300
+              hover:bg-slate-800 hover:text-white
+              transition-colors
+            "
           >
-            Join class
+            Join lab
           </button>
+
           <button
             onClick={openCreate}
-            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            className="
+              w-full text-left px-4 py-3 text-sm
+              text-slate-300
+              hover:bg-slate-800 hover:text-white
+              transition-colors
+            "
           >
-            Create class
+            Create lab
           </button>
         </div>
       )}
 
-      <CreateLabModal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
+      {/* Modals (unchanged) */}
+      <CreateLabModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
         userEmail={userEmail}
       />
-      
-      <JoinLabModal 
-        isOpen={isJoinModalOpen} 
-        onClose={() => setIsJoinModalOpen(false)} 
+
+      <JoinLabModal
+        isOpen={isJoinModalOpen}
+        onClose={() => setIsJoinModalOpen(false)}
         userEmail={userEmail}
       />
     </div>

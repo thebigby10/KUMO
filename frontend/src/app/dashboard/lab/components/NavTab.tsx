@@ -1,16 +1,16 @@
-// Client component to handle active state
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-function NavTab({
+export default function NavTab({
   href,
   children,
+  labId,
 }: {
   href: string;
-  labId: string;
   children: React.ReactNode;
+  labId: string;
 }) {
   const pathname = usePathname();
   const isActive = pathname === href;
@@ -18,16 +18,16 @@ function NavTab({
   return (
     <Link
       href={href}
-      className={`px-6 py-3 text-sm font-medium hover:bg-gray-50 ${
+      className={`relative px-6 py-3 text-sm font-medium rounded-lg transition-all ${
         isActive
-          ? "text-gray-900 border-b-4 border-blue-600"
-          : "text-gray-600 hover:text-gray-900"
+          ? "text-blue-400 bg-blue-500/10"
+          : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
       }`}
     >
       {children}
+      {isActive && (
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full" />
+      )}
     </Link>
   );
 }
-
-
-export default NavTab;

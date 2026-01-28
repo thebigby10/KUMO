@@ -1,7 +1,9 @@
+// src/components/stream/AnnouncementInput.tsx
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, X, Paperclip } from "lucide-react";
+import { FiSend, FiPaperclip } from "react-icons/fi";
 import { createAnnouncement } from "@/actions/stream";
 
 interface AnnouncementInputProps {
@@ -50,38 +52,50 @@ export default function AnnouncementInput({ labId, userEmail, userAvatarChar }: 
 
   if (isExpanded) {
     return (
-      <div ref={containerRef} className="bg-white border rounded-lg shadow-md p-4 animate-in fade-in zoom-in-95 duration-200">
+      <div ref={containerRef} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl shadow-xl p-5">
         <div className="flex gap-4">
-           {/* Not showing avatar in expanded mode to save space, purely aesthetic choice */}
            <div className="flex-1">
              <textarea
                value={content}
                onChange={(e) => setContent(e.target.value)}
-               placeholder="Announce something to your class"
-               className="w-full h-32 p-3 bg-gray-50 border-b-2 border-blue-500 focus:bg-gray-100 outline-none resize-none transition-colors text-gray-800"
+               placeholder="Announce something to your class..."
+               className="w-full h-36 p-4 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all text-white placeholder-slate-500"
                autoFocus
              />
            </div>
         </div>
 
-        <div className="flex justify-between items-center mt-4 pt-2">
-          <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition">
-            <Paperclip size={20} />
+        <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-700">
+          <button className="p-2.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors">
+            <FiPaperclip size={20} />
           </button>
           
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button 
               onClick={() => setIsExpanded(false)}
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded transition"
+              className="px-5 py-2.5 text-sm font-medium text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button 
               onClick={handlePost}
               disabled={!content.trim() || isPosting}
-              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded shadow-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
+              className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-lg shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
             >
-              {isPosting ? "Posting..." : "Post"}
+              {isPosting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Posting...
+                </>
+              ) : (
+                <>
+                  <FiSend size={16} />
+                  Post
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -89,16 +103,16 @@ export default function AnnouncementInput({ labId, userEmail, userAvatarChar }: 
     );
   }
 
-  // Collapsed State (What you see initially)
+  // Collapsed State
   return (
     <div 
       onClick={() => setIsExpanded(true)}
-      className="bg-white border rounded-lg p-4 shadow-sm flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition shadow-sm hover:shadow-md"
+      className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-5 flex items-center gap-4 cursor-pointer hover:border-slate-600 hover:bg-slate-800/70 transition-all shadow-lg"
     >
-      <div className="w-10 h-10 bg-purple-700 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+      <div className="w-11 h-11 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold shrink-0 shadow-lg">
          {userAvatarChar}
       </div>
-      <p className="text-gray-500 text-sm truncate hover:text-gray-600">
+      <p className="text-slate-400 text-sm flex-1">
         Announce something to your class...
       </p>
     </div>
