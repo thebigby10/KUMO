@@ -205,4 +205,87 @@ export class SubmissionRepository {
       averageGrade,
     };
   }
+
+  static async findAllByStudentAndLab(userEmail: string, labId: string) {
+    return await db.submission.findMany({
+      where: {
+        userEmail,
+        work: { labId },
+      },
+      include: {
+        work: {
+          select: {
+            id: true,
+            title: true,
+            totalPoints: true,
+            startTime: true,
+            endTime: true,
+          },
+        },
+        task: {
+          select: {
+            id: true,
+            title: true,
+            point: true,
+          },
+        },
+      },
+      orderBy: [{ work: { createdAt: "desc" } }, { task: { createdAt: "asc" } }],
+    });
+  }
+
+  static async getStudentLabStats(userEmail: string, labId: string) {
+    const submissions = await db.submission.findMany({
+      where: {
+        userEmail,
+        work: { labId },
+      },
+      include: {
+        task: { select: { point: true } },
+        work: { select: { id: true } },
+      },
+    });
+
+    const workMap = new Map<
+      string,
+      { total: number; earned: number; submitted: number; graded: number }
+    >();
+
+    submissions.forEach((sub) => {
+      const workId = sub.work.id;
+      if (!workMap.has(workId)) {
+        workMap.set(workId, { total: 0, earned: 0, submitted: 0, graded: 0 });
+      }
+      const stats = workMap.get(workId)!;
+      stats.total += sub.task.point;
+      if (sub.status !== "DRAFT") stats.submitted++;
+      if (sub.status === "RETURNED") {
+        stats.graded++;
+        stats.earned += sub.grade || 0;
+      }
+    });
+
+    let totalPoints = 0;
+    let earnedPoints = 0;
+    let totalTasks = submissions.length;
+    let submittedTasks = 0;
+    let gradedTasks = 0;
+
+    workMap.forEach((stats) => {
+      totalPoints += stats.total;
+      earnedPoints += stats.earned;
+      submittedTasks += stats.submitted;
+      gradedTasks += stats.graded;
+    });
+
+    return {
+      totalWorks: workMap.size,
+      totalTasks,
+      submittedTasks,
+      gradedTasks,
+      totalPoints,
+      earnedPoints,
+      percentage: totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0,
+    };
+  }
 }
