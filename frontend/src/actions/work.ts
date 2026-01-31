@@ -59,7 +59,7 @@ export async function createLabWork(payload: CreateWorkFormPayload) {
     revalidatePath(`/dashboard/lab/${labId}/work`);
     return { success: true };
   } catch (error) {
-    console.error("Failed to create assignment:", error);
+    // console.error("Failed to create assignment:", error);
     if (error instanceof Error) {
       return { error: error.message };
     }
