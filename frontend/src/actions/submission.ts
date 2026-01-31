@@ -41,6 +41,7 @@ export async function initializeWorkSession(workId: string) {
             userEmail: user.email,
             code: task.editors[0]?.solution || "", // Starter code
             status: "DRAFT",
+            language: "python",
           },
         });
       }
@@ -138,13 +139,13 @@ export async function submitTaskAction(
     // Save Code
     await prisma.submission.update({
       where: { id: submission.id },
-      data: { code, status: "SUBMITTED", submittedAt: new Date() },
+      data: { code, language, status: "SUBMITTED", submittedAt: new Date() },
     });
 
     // You can keep the test running logic here if you want grading on submit
 
     revalidatePath(`/work/${workId}`);
-    return { success: true };
+    return { success: true, testResults: [] as Array<unknown> };
   } catch (e) {
     return { error: "Submit failed" };
   }

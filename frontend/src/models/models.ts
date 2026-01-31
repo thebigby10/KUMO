@@ -2,7 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import {
   PrismaClient as PrismaClientConstructor,
   type PrismaClient as PrismaClientType,
-} from "../../generated/prisma/client";
+} from "../../generated/prisma/client/client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClientType;
