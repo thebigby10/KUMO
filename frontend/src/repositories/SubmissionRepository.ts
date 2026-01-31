@@ -1,5 +1,4 @@
-import { db } from "@/models/models";
-import { SubmissionStatus } from "../../generated/prisma/client/client";
+import { db, SubmissionStatus } from "@/lib/prisma";
 
 export class SubmissionRepository {
   static async findById(id: string) {

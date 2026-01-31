@@ -1,5 +1,4 @@
-import { db } from "@/models/models";
-import { Prisma, Work } from "../../generated/prisma/client/client";
+import { db, Prisma, Work } from "@/lib/prisma";
 
 export interface CreateWorkPayload {
   labId: string;
