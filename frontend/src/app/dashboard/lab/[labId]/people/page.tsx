@@ -1,7 +1,10 @@
 // src/app/dashboard/lab/[labId]/people/page.tsx
 
 import { getPeople } from "@/actions/classroom-actions/lab";
-import { FiUser, FiUsers } from "react-icons/fi";
+import { getCurrentUser } from "@/actions/auth";
+import { InstructorRepository } from "@/repositories/InstructorRepository";
+import { FiUser, FiUsers, FiChevronRight } from "react-icons/fi";
+import Link from "next/link";
 
 const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
   const { labId } = await params;
@@ -9,6 +12,11 @@ const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
   if (!labId) {
     return <div className="p-6 text-red-500">Invalid lab ID</div>;
   }
+
+  const user = await getCurrentUser();
+  const isInstructor = user?.email
+    ? await InstructorRepository.findByUserAndLab(user.email, labId)
+    : null;
 
   const peoples = await getPeople(labId);
 
@@ -129,36 +137,55 @@ const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
             </div>
           ) : (
             <div className="divide-y divide-slate-700/50">
-              {students.map((student: any) => (
-                <div
-                  key={student.email}
-                  className="flex items-center gap-4 p-4 hover:bg-slate-700/30 transition-colors"
-                >
-                  {student.avatar ? (
-                    <img
-                      src={student.avatar}
-                      alt={student.name || student.email}
-                      className="w-11 h-11 rounded-full object-cover ring-2 ring-slate-600"
-                    />
-                  ) : (
-                    <div
-                      className={`w-11 h-11 rounded-full bg-gradient-to-br ${getAvatarGradient(
-                        student.name || student.email
-                      )} flex items-center justify-center text-white font-bold shadow-lg`}
-                    >
-                      {getInitials(student.name || student.email)}
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <p className="text-white font-medium">
-                      {student.name || student.email}
-                    </p>
-                    {student.name && (
-                      <p className="text-sm text-slate-400">{student.email}</p>
+              {students.map((student: any) => {
+                const studentCard = (
+                  <>
+                    {student.avatar ? (
+                      <img
+                        src={student.avatar}
+                        alt={student.name || student.email}
+                        className="w-11 h-11 rounded-full object-cover ring-2 ring-slate-600"
+                      />
+                    ) : (
+                      <div
+                        className={`w-11 h-11 rounded-full bg-gradient-to-br ${getAvatarGradient(
+                          student.name || student.email
+                        )} flex items-center justify-center text-white font-bold shadow-lg`}
+                      >
+                        {getInitials(student.name || student.email)}
+                      </div>
                     )}
+                    <div className="flex-1">
+                      <p className="text-white font-medium">
+                        {student.name || student.email}
+                      </p>
+                      {student.name && (
+                        <p className="text-sm text-slate-400">{student.email}</p>
+                      )}
+                    </div>
+                    {isInstructor && (
+                      <FiChevronRight className="w-5 h-5 text-slate-500 group-hover:text-white transition-colors" />
+                    )}
+                  </>
+                );
+
+                return isInstructor ? (
+                  <Link
+                    key={student.email}
+                    href={`/dashboard/lab/${labId}/student/${encodeURIComponent(student.email)}`}
+                    className="group flex items-center gap-4 p-4 hover:bg-slate-700/30 transition-colors cursor-pointer"
+                  >
+                    {studentCard}
+                  </Link>
+                ) : (
+                  <div
+                    key={student.email}
+                    className="flex items-center gap-4 p-4"
+                  >
+                    {studentCard}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
