@@ -40,12 +40,14 @@ export class LabController {
     const announcements = await AnnouncementRepository.findAllByLabId(labId);
     const instructors = await InstructorRepository.findAllByLabId(labId);
     const enrollments = await EnrollmentRepository.findAllByLabId(labId);
+    const works = await WorkRepository.findAllByLabId(labId);
 
     return {
       ...lab,
       announcements,
       instructors,
       enrollments,
+      works,
     };
   }
 

@@ -1,5 +1,5 @@
 import { db } from "@/models/models";
-import { Prisma } from "../../generated/prisma/client";
+import { Prisma } from "../../generated/prisma/client/client";
 
 export class TaskRepository {
   static async create(data: Prisma.TaskCreateInput) {

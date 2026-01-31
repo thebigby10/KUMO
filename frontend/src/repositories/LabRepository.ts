@@ -1,11 +1,9 @@
 import { db } from "@/models/models";
-import { Prisma } from "../../generated/prisma/client";
+import { Prisma } from "../../generated/prisma/client/client";
 
 export class LabRepository {
   // --- CREATE ---
   static async create(data: Prisma.LabCreateInput) {
-    // Prisma allows nested writes (creating instructor with lab).
-    // This is still a Lab creation operation.
     return await db.lab.create({ data });
   }
 

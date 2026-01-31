@@ -16,15 +16,15 @@ export interface Lab {
 export interface LabType {
     id: string;
     name: string;
-    section: string;
-    subject: string;
-    room: string;
+    section: string | null;
+    subject: string | null;
+    room: string | null;
     banner: string | null;
     description: string | null;
     labCode: string;
     isArchived: boolean;
-    createdAt: string;
-    updatedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
     instructors: {
         id: string;
         labId: string;
@@ -33,14 +33,14 @@ export interface LabType {
         user: {
             id: string;
             email: string;
-            name: string;
+            name: string | null;
             password: string | null;
             avatar: string | null;
             googleId: string | null;
             isEmailVerified: boolean;
             provider: string;
-            createdAt: string;
-            updatedAt: string;
+            createdAt: Date;
+            updatedAt: Date;
         };
     }[];
 }
