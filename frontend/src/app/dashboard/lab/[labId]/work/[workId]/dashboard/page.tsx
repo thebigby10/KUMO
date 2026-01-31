@@ -33,7 +33,7 @@ export default async function TeacherDashboardPage({
   // 1. Permission Check - Must be Instructor
   const instructor = await InstructorRepository.findByUserAndLab(
     user.email,
-    labId
+    labId,
   );
 
   if (!instructor) {
@@ -68,16 +68,16 @@ export default async function TeacherDashboardPage({
 
   // Get instructor emails to filter them out
   const instructorEmails = new Set(instructors.map((i) => i.userEmail));
-  
+
   // Filter submissions to only include enrolled students (not instructors)
   const submissions = allSubmissions.filter(
-    (sub) => !instructorEmails.has(sub.userEmail)
+    (sub) => !instructorEmails.has(sub.userEmail),
   );
 
   // Calculate stats from filtered submissions only
   const totalStudents = enrollments.length;
   const uniqueStudentsWithSubmissions = new Set(
-    submissions.filter((s) => s.status !== "DRAFT").map((s) => s.userEmail)
+    submissions.filter((s) => s.status !== "DRAFT").map((s) => s.userEmail),
   );
   const studentsStarted = uniqueStudentsWithSubmissions.size;
   const studentsNotStarted = totalStudents - studentsStarted;
@@ -91,11 +91,11 @@ export default async function TeacherDashboardPage({
   // Calculate fully graded students
   const studentTaskGrades = new Map<string, number>();
   const studentTaskCount = new Map<string, number>();
-  
+
   submissions.forEach((s) => {
     const count = studentTaskCount.get(s.userEmail) || 0;
     studentTaskCount.set(s.userEmail, count + 1);
-    
+
     if (s.status === "RETURNED") {
       const graded = studentTaskGrades.get(s.userEmail) || 0;
       studentTaskGrades.set(s.userEmail, graded + 1);
@@ -112,7 +112,7 @@ export default async function TeacherDashboardPage({
 
   // Average grade (only for graded submissions)
   const gradedSubmissions = submissions.filter(
-    (s) => s.status === "RETURNED" && s.grade !== null
+    (s) => s.status === "RETURNED" && s.grade !== null,
   );
   const averageGrade =
     gradedSubmissions.length > 0
@@ -133,9 +133,10 @@ export default async function TeacherDashboardPage({
 
   // 3. Calculate Additional Metrics
   const now = new Date();
-  const isActive = work.startTime && work.endTime 
-    ? now >= work.startTime && now <= work.endTime 
-    : true;
+  const isActive =
+    work.startTime && work.endTime
+      ? now >= work.startTime && now <= work.endTime
+      : true;
   const isClosed = work.endTime ? now > work.endTime : false;
   const isScheduled = work.startTime ? now < work.startTime : false;
 
@@ -195,18 +196,20 @@ export default async function TeacherDashboardPage({
 
   // Convert to array and sort
   const studentList = Array.from(studentSubmissions.values()).sort((a, b) =>
-    (a.user.name || a.user.email).localeCompare(b.user.name || b.user.email)
+    (a.user.name || a.user.email).localeCompare(b.user.name || b.user.email),
   );
 
   // Calculate submission rate
-  const submissionRate = stats.totalStudents > 0 
-    ? Math.round((stats.studentsStarted / stats.totalStudents) * 100)
-    : 0;
+  const submissionRate =
+    stats.totalStudents > 0
+      ? Math.round((stats.studentsStarted / stats.totalStudents) * 100)
+      : 0;
 
   // Calculate grading progress
-  const gradingProgress = stats.totalSubmissions > 0
-    ? Math.round((stats.statusCounts.returned / stats.totalSubmissions) * 100)
-    : 0;
+  const gradingProgress =
+    stats.totalSubmissions > 0
+      ? Math.round((stats.statusCounts.returned / stats.totalSubmissions) * 100)
+      : 0;
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -223,9 +226,7 @@ export default async function TeacherDashboardPage({
             </Link>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-xl font-bold text-white">
-                  {work.title}
-                </h1>
+                <h1 className="text-xl font-bold text-white">{work.title}</h1>
                 {isScheduled && (
                   <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-orange-500/10 text-orange-400 border border-orange-500/20">
                     SCHEDULED
@@ -331,9 +332,7 @@ export default async function TeacherDashboardPage({
                 <FiUsers className="text-blue-400" size={24} />
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-3">
-              Enrolled in this lab
-            </p>
+            <p className="text-xs text-slate-500 mt-3">Enrolled in this lab</p>
           </div>
 
           {/* Submitted */}
@@ -369,7 +368,9 @@ export default async function TeacherDashboardPage({
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-5 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-400">Not Started</p>
+                <p className="text-sm font-medium text-slate-400">
+                  Not Started
+                </p>
                 <p className="text-3xl font-bold text-white mt-2">
                   {stats.studentsNotStarted}
                 </p>
@@ -479,9 +480,7 @@ export default async function TeacherDashboardPage({
         {/* Student List */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl shadow-xl">
           <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white">
-              Student Progress
-            </h2>
+            <h2 className="text-lg font-bold text-white">Student Progress</h2>
             <span className="text-sm text-slate-400">
               {studentList.length} students
             </span>
@@ -536,8 +535,11 @@ export default async function TeacherDashboardPage({
                           ))}
                         </div>
                         <p className="text-xs text-slate-500 mt-1">
-                          {student.tasks.filter((t) => t.status !== "DRAFT").length}/
-                          {student.tasks.length} submitted
+                          {
+                            student.tasks.filter((t) => t.status !== "DRAFT")
+                              .length
+                          }
+                          /{student.tasks.length} submitted
                         </p>
                       </div>
 
@@ -546,7 +548,9 @@ export default async function TeacherDashboardPage({
                         {student.allGraded ? (
                           <p className="text-lg font-bold text-white">
                             {student.totalGrade}
-                            <span className="text-slate-500">/{student.maxPossible}</span>
+                            <span className="text-slate-500">
+                              /{student.maxPossible}
+                            </span>
                           </p>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 text-sm text-slate-400">
@@ -586,24 +590,35 @@ export default async function TeacherDashboardPage({
         {/* Tasks Overview */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl shadow-xl">
           <div className="px-6 py-4 border-b border-slate-700">
+<<<<<<< HEAD
             <h2 className="text-lg font-bold text-white">
               Tasks Overview
             </h2>
+=======
+            <h2 className="text-lg font-bold text-white">Tasks Overview</h2>
+>>>>>>> main
           </div>
           <div className="divide-y divide-slate-700/50">
             {work.tasks.map((task, index) => {
               const taskSubmissions = submissions.filter(
-                (s) => s.taskId === task.id
+                (s) => s.taskId === task.id,
               );
               const submitted = taskSubmissions.filter(
-                (s) => s.status !== "DRAFT"
+                (s) => s.status !== "DRAFT",
               ).length;
               const graded = taskSubmissions.filter(
-                (s) => s.status === "RETURNED"
+                (s) => s.status === "RETURNED",
               ).length;
 
               return (
+<<<<<<< HEAD
                 <div key={task.id} className="px-6 py-4 hover:bg-slate-700/30 transition-colors">
+=======
+                <div
+                  key={task.id}
+                  className="px-6 py-4 hover:bg-slate-700/30 transition-colors"
+                >
+>>>>>>> main
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-300">
@@ -618,7 +633,9 @@ export default async function TeacherDashboardPage({
                     </div>
                     <div className="flex items-center gap-8 text-sm">
                       <div className="text-center">
-                        <p className="font-bold text-white text-lg">{submitted}</p>
+                        <p className="font-bold text-white text-lg">
+                          {submitted}
+                        </p>
                         <p className="text-xs text-slate-500">Submitted</p>
                       </div>
                       <div className="text-center">
