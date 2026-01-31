@@ -40,7 +40,6 @@ input:-webkit-autofill:active {
     -webkit-text-fill-color: #ffffff !important;
     caret-color: #ffffff;
 }
-*/
 
 /* Fix autofill background and text color */
 input:-webkit-autofill,
