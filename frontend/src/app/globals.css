@@ -7,55 +7,227 @@
     --font-mono: var(--font-geist-mono);
 }
 
+/* ============================================================
+   KUMO Light Theme Design Tokens
+   ============================================================ */
 :root {
+    /* Backgrounds */
     --background: #ffffff;
-    --foreground: #171717;
+    --background-secondary: #F9FAFB;
+    --surface: #ffffff;
+    --surface-hover: #F3F4F6;
+
+    /* Text */
+    --foreground: #1F2937;
+    --foreground-secondary: #6B7280;
+    --foreground-muted: #9CA3AF;
+
+    /* Primary Accent – Pink */
+    --primary: #EC4899;
+    --primary-hover: #DB2777;
+    --primary-soft: #FBCFE8;
+    --primary-foreground: #ffffff;
+
+    /* Borders */
+    --border: #E5E7EB;
+    --border-strong: #D1D5DB;
+
+    /* Status */
+    --success: #10B981;
+    --success-soft: #D1FAE5;
+    --warning: #F59E0B;
+    --warning-soft: #FEF3C7;
+    --error: #EF4444;
+    --error-soft: #FEE2E2;
+    --info: #3B82F6;
+    --info-soft: #DBEAFE;
+
+    /* Shadow */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-pink: 0 4px 14px 0 rgb(236 72 153 / 0.25);
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #0a0a0a;
-        --foreground: #ededed;
-    }
+/* ============================================================
+   Base Reset
+   ============================================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 body {
     background: var(--background);
     color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* REMOVE THIS BLOCK - It's forcing black text on all inputs!
-input, textarea, select {
-  color: #1a1a1a;
-}
-*/
-
-/* Fix autofill background and text color */
+/* ============================================================
+   Input Autofill – Light Theme Fix
+   ============================================================ */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
-    -webkit-text-fill-color: #ffffff !important;
-    caret-color: #ffffff;
+    -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+    -webkit-text-fill-color: #1F2937 !important;
+    caret-color: #1F2937;
 }
 
-/* Fix autofill background and text color */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
-  -webkit-text-fill-color: #ffffff !important;
-  caret-color: #ffffff;
+input,
+textarea,
+select {
+    color: #1F2937;
 }
 
-/* Only apply dark text in light mode */
-@media (prefers-color-scheme: light) {
-    input,
-    textarea,
-    select {
-        color: #1a1a1a;
-    }
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes fade-in-fast {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes slide-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes slide-in-down {
+    from { transform: translateY(-10px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-8px); }
+}
+
+@keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-pink {
+    0%, 100% { box-shadow: 0 0 0 0 rgb(236 72 153 / 0.4); }
+    50%       { box-shadow: 0 0 0 8px rgb(236 72 153 / 0); }
+}
+
+@keyframes gradient-shift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(16px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.6s ease-out both;
+}
+.animate-fade-in-fast {
+    animation: fade-in-fast 0.3s ease-out both;
+}
+.animate-slide-up {
+    animation: slide-up 0.6s ease-out both;
+}
+.animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out both;
+}
+.animate-slide-in-down {
+    animation: slide-in-down 0.2s ease-out both;
+}
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+.animate-scale-in {
+    animation: scale-in 0.2s ease-out both;
+}
+.animate-toast-in {
+    animation: toast-in 0.3s ease-out both;
+}
+.animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
+}
+.animate-pulse-pink {
+    animation: pulse-pink 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   Skeleton Loader
+   ============================================================ */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        #F3F4F6 25%,
+        #E5E7EB 50%,
+        #F3F4F6 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-radius: 6px;
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+}
+
+/* no-scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ============================================================
+   Focus Visible
+   ============================================================ */
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ============================================================
+   Stagger animation delays utility
+   ============================================================ */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-800 { animation-delay: 0.8s; }
