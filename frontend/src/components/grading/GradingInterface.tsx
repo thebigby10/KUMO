@@ -14,10 +14,19 @@ import {
   FiMessageSquare,
   FiUser,
   FiLoader,
+  FiAlertTriangle,
+  FiChevronDown,
+  FiChevronUp,
+  FiShield,
 } from "react-icons/fi";
 import { gradeTaskAction } from "@/actions/grading";
 
 // Types matching the Prisma include result from SubmissionRepository
+interface ViolationLog {
+  time: string;
+  description: string;
+}
+
 interface SubmissionData {
   id: string;
   code: string;
@@ -27,6 +36,8 @@ interface SubmissionData {
   feedback: string | null;
   taskId: string;
   userEmail: string;
+  violationCount: number;
+  violationLogs: string | null;
   user: {
     name: string | null;
     email: string;
@@ -72,6 +83,7 @@ export default function GradingInterface({
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [violationsExpanded, setViolationsExpanded] = useState(false);
 
   // Derived State based on search
   const filteredStudents = students.filter(
@@ -92,6 +104,7 @@ export default function GradingInterface({
     setSelectedStudentIndex(studentIdx);
     setSelectedTaskIndex(taskIdx);
     setSaveSuccess(false);
+    setViolationsExpanded(false);
 
     const sub = filteredStudents[studentIdx]?.tasks[taskIdx];
     if (sub) {
@@ -238,6 +251,11 @@ export default function GradingInterface({
               0,
             );
 
+            const totalViolations = student.tasks.reduce(
+              (sum, t) => sum + t.violationCount,
+              0,
+            );
+
             return (
               <button
                 key={student.user.email}
@@ -282,6 +300,12 @@ export default function GradingInterface({
                         size={14}
                         className="text-green-400 shrink-0"
                       />
+                    )}
+                    {totalViolations > 0 && (
+                      <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/20 shrink-0">
+                        <FiAlertTriangle size={10} />
+                        {totalViolations}
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
@@ -421,6 +445,64 @@ export default function GradingInterface({
                     </div>
                   </div>
                 </div>
+
+                {/* Violations Section */}
+                {(() => {
+                  const logs: ViolationLog[] = activeSubmission.violationLogs
+                    ? JSON.parse(activeSubmission.violationLogs)
+                    : [];
+                  const count = activeSubmission.violationCount;
+
+                  if (count === 0) return null;
+
+                  return (
+                    <div className="border-b border-slate-800">
+                      <button
+                        onClick={() => setViolationsExpanded(!violationsExpanded)}
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-800/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FiShield size={14} className="text-red-400" />
+                          <span className="text-xs font-semibold text-red-400 uppercase tracking-wide">
+                            Violations
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+                            {count}
+                          </span>
+                        </div>
+                        {violationsExpanded ? (
+                          <FiChevronUp size={14} className="text-slate-400" />
+                        ) : (
+                          <FiChevronDown size={14} className="text-slate-400" />
+                        )}
+                      </button>
+
+                      {violationsExpanded && (
+                        <div className="px-4 pb-3 space-y-2 max-h-48 overflow-y-auto">
+                          {logs.map((log, i) => (
+                            <div
+                              key={i}
+                              className="flex items-start gap-2 p-2 bg-red-500/5 border border-red-500/10 rounded-lg"
+                            >
+                              <FiAlertTriangle
+                                size={12}
+                                className="text-red-400 mt-0.5 shrink-0"
+                              />
+                              <div className="min-w-0">
+                                <p className="text-xs text-red-300">
+                                  {log.description}
+                                </p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">
+                                  {new Date(log.time).toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Grading Form */}
                 <div className="flex-1 p-4 overflow-y-auto space-y-4">
