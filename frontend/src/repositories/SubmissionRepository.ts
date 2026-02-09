@@ -206,6 +206,17 @@ export class SubmissionRepository {
     };
   }
 
+  static async findViolationsBySubmissionId(submissionId: string) {
+    return await db.submission.findUnique({
+      where: { id: submissionId },
+      select: {
+        id: true,
+        violationCount: true,
+        violationLogs: true,
+      },
+    });
+  }
+
   static async findAllByStudentAndLab(userEmail: string, labId: string) {
     return await db.submission.findMany({
       where: {
