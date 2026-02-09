@@ -1,4 +1,4 @@
-import { db } from "@/models/models";
+import { db } from "@/lib/prisma";
 
 export class AnnouncementRepository {
   // --- CREATE ---
@@ -22,7 +22,7 @@ export class AnnouncementRepository {
   static async findAllByLabId(labId: string) {
     return await db.announcement.findMany({
       where: { labId },
-      include: { user: true },
+      include: { user: true, materials: true },
       orderBy: { createdAt: "desc" },
     });
   }
