@@ -42,4 +42,32 @@ export class GradingController {
 
     return await SubmissionRepository.gradeById(submissionId, grade, feedback);
   }
+
+  static async getSubmissionViolations(
+    submissionId: string,
+    userEmail: string,
+  ) {
+    const submission = await SubmissionRepository.findById(submissionId);
+    if (!submission) throw new Error("Submission not found");
+
+    const work = await WorkRepository.findById(submission.workId);
+    if (!work) throw new Error("Work not found");
+
+    const instructor = await InstructorRepository.findByUserAndLab(
+      userEmail,
+      work.labId,
+    );
+    if (!instructor) throw new Error("Unauthorized");
+
+    const violations =
+      await SubmissionRepository.findViolationsBySubmissionId(submissionId);
+    if (!violations) throw new Error("Submission not found");
+
+    return {
+      violationCount: violations.violationCount,
+      violationLogs: violations.violationLogs
+        ? JSON.parse(violations.violationLogs)
+        : [],
+    };
+  }
 }
