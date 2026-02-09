@@ -34,6 +34,7 @@ interface Task {
   id: string;
   title: string;
   description?: string;
+  url?: string | null;
   initialCode?: string;
   initialLanguage?: string;
 }
@@ -46,7 +47,7 @@ interface CodeEditorPageProps {
 
 const LANGUAGES = [{ key: "python" as LanguageKey, label: "Python" }];
 
-const CodeEditorPage = ({ tasks, workId, endTime }: CodeEditorPageProps) => {
+const CodeEditorPageInner = ({ tasks, workId, endTime }: CodeEditorPageProps) => {
   const router = useRouter();
 
   // Normalize DB language
@@ -527,19 +528,25 @@ const CodeEditorPage = ({ tasks, workId, endTime }: CodeEditorPageProps) => {
           </PanelHeader>
           <div className="w-ful h-full bg-[#111]">
             {/* Primary PDF preview using <object> with an iframe fallback */}
-            <object
-              data={activeTask.url}
-              type="application/pdf"
-              width="100%"
-              height="100%"
-              className="block"
-            >
-              <iframe
-                src={activeTask.url}
-                className="w-full h-full"
-                title="PDF Preview"
-              />
-            </object>
+            {activeTask.url ? (
+              <object
+                data={activeTask.url}
+                type="application/pdf"
+                width="100%"
+                height="100%"
+                className="block"
+              >
+                <iframe
+                  src={activeTask.url}
+                  className="w-full h-full"
+                  title="PDF Preview"
+                />
+              </object>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
+                No PDF provided.
+              </div>
+            )}
           </div>
         </PanelContainer>
       </div>
@@ -720,6 +727,22 @@ const CodeEditorPage = ({ tasks, workId, endTime }: CodeEditorPageProps) => {
       </div>
     </div>
   );
+};
+
+const CodeEditorPage = (props: Partial<CodeEditorPageProps> = {}) => {
+  const tasks = props.tasks;
+  const workId = props.workId;
+  const endTime = props.endTime ?? null;
+
+  if (!tasks || tasks.length === 0 || !workId) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-[#1a1a1a] text-gray-400">
+        Open an assignment to start coding.
+      </div>
+    );
+  }
+
+  return <CodeEditorPageInner tasks={tasks} workId={workId} endTime={endTime} />;
 };
 
 export default CodeEditorPage;

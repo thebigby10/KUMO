@@ -1,8 +1,11 @@
 import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient as PrismaClientConstructor, type PrismaClient as PrismaClientType } from '../../generated/prisma/client'
+import { PrismaClient as PrismaClientConstructor } from '@/generated/prisma'
+
+// Re-export all types from the generated Prisma client for consistent imports
+export * from '@/generated/prisma'
 
 const globalForPrisma = globalThis as unknown as {
-  prisma?: PrismaClientType
+  prisma?: PrismaClientConstructor
 }
 
 const adapter = new PrismaPg({
@@ -15,4 +18,6 @@ const prisma = globalForPrisma.prisma || new PrismaClientConstructor({
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
+// Export both as default and named for flexibility
 export default prisma
+export { prisma, prisma as db }

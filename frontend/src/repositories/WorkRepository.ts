@@ -1,5 +1,4 @@
-import { db } from "@/models/models";
-import { Prisma, Work } from "../../generated/prisma/client";
+import { db, Prisma, Work } from "@/lib/prisma";
 
 export interface CreateWorkPayload {
   labId: string;
@@ -300,6 +299,7 @@ export class WorkRepository {
                 userEmail: e.userEmail,
                 code: taskData.starterCode,
                 status: "DRAFT",
+                language: "python",
               })),
             });
           }

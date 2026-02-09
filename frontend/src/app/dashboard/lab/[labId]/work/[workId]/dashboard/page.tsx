@@ -590,13 +590,7 @@ export default async function TeacherDashboardPage({
         {/* Tasks Overview */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl shadow-xl">
           <div className="px-6 py-4 border-b border-slate-700">
-<<<<<<< HEAD
-            <h2 className="text-lg font-bold text-white">
-              Tasks Overview
-            </h2>
-=======
             <h2 className="text-lg font-bold text-white">Tasks Overview</h2>
->>>>>>> main
           </div>
           <div className="divide-y divide-slate-700/50">
             {work.tasks.map((task, index) => {
@@ -611,14 +605,10 @@ export default async function TeacherDashboardPage({
               ).length;
 
               return (
-<<<<<<< HEAD
-                <div key={task.id} className="px-6 py-4 hover:bg-slate-700/30 transition-colors">
-=======
                 <div
                   key={task.id}
                   className="px-6 py-4 hover:bg-slate-700/30 transition-colors"
                 >
->>>>>>> main
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-300">

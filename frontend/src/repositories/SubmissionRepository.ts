@@ -1,7 +1,12 @@
-import { db } from "@/models/models";
-import { SubmissionStatus } from "../../generated/prisma/client";
+import { db, SubmissionStatus } from "@/lib/prisma";
 
 export class SubmissionRepository {
+  static async findById(id: string) {
+    return await db.submission.findUnique({
+      where: { id },
+    });
+  }
+
   /**
    * Find a specific submission for a specific task and user
    */
