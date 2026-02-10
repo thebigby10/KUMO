@@ -130,6 +130,20 @@ services:
     networks:
       - kumo-network
 
+  # ==========================================
+  # 7. AI DETECTION SERVICE
+  # ==========================================
+  ai-detection-service:
+    build:
+      context: ./ai-detection-service
+    container_name: ai_detection_service
+    ports:
+      - "8004:8000" # Maps Host 8004 -> Container 8000
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - kumo-network
+
 volumes:
   postgres_data:
   piston_packages:
