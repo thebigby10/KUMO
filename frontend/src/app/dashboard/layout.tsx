@@ -20,29 +20,32 @@ export default async function DashboardLayout({
     redirect("/");
   }
 
-  const labs : LabType[] = await LabController.getAllForUser(user.email);
+  const labs: LabType[] = await LabController.getAllForUser(user.email);
 
   const navbar = (
-    <nav className="flex items-center justify-between px-8 py-4 bg-slate-950 border-b border-slate-800 sticky top-0 z-40">
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
-          <span className="text-lg font-bold font-mono text-white">K</span>
+    <nav className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200">
+      {/* Logo */}
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center shadow-sm">
+          <span className="text-white text-sm font-bold font-mono">K</span>
         </div>
-        <span className="text-xl font-bold tracking-tight font-mono text-white">
+        <span className="text-lg font-bold tracking-tight font-mono text-gray-900">
           KUMO
         </span>
       </div>
 
-      <div className="flex items-center gap-4">
+      {/* Right side */}
+      <div className="flex items-center gap-3">
         <ClassroomActionWrapper userEmail={user.email} />
-        <div className="pl-2 border-l border-slate-700">
-          <UserMenu email={user.email} name={user.name} />
-        </div>
+        <div className="w-px h-6 bg-gray-200" />
+        <UserMenu email={user.email} name={user.name} />
       </div>
     </nav>
   );
 
   return (
-    <DashboardLayoutClient navbar={navbar} labs={labs} userEmail={user.email}>{children}</DashboardLayoutClient>
+    <DashboardLayoutClient navbar={navbar} labs={labs} userEmail={user.email}>
+      {children}
+    </DashboardLayoutClient>
   );
 }
