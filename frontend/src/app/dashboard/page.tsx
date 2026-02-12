@@ -63,7 +63,6 @@ export default async function DashboardPage() {
                 <div className="relative bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-pink-200 transition-all duration-200 flex flex-col h-72 hover:-translate-y-0.5">
                   {/* Card Header */}
                   <div className="relative h-28 overflow-hidden">
-<<<<<<< HEAD
                     {/* Gradient background */}
                     <div
                       className={`absolute inset-0 ${
@@ -72,7 +71,6 @@ export default async function DashboardPage() {
                           : "bg-gradient-to-br from-blue-400 via-indigo-400 to-blue-600"
                       }`}
                     />
-=======
                     {/* Gradient or Image background */}
                     {lab.banner?.startsWith("http") ? (
                       <div
@@ -92,7 +90,6 @@ export default async function DashboardPage() {
                         }`}
                       />
                     )}
->>>>>>> main
                     {/* Subtle grid */}
                     <div
                       className="absolute inset-0 opacity-20"
@@ -127,7 +124,7 @@ export default async function DashboardPage() {
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-5 flex-1 flex flex-col gap-2">
+                  <div className="p-5 flex-1 flex flex-col gap-3">
                     {/* Instructor info for enrolled */}
                     {!isMyClass && owner && (
                       <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
@@ -137,7 +134,7 @@ export default async function DashboardPage() {
                     )}
 
                     {/* Lab details */}
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {lab.subject && (
                         <div className="flex items-center gap-2 text-xs text-gray-500">
                           <FiCode className="w-3.5 h-3.5 shrink-0 text-gray-400" />
