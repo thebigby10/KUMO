@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { FaEllipsisVertical } from "react-icons/fa6";
+import { FiMoreVertical, FiEdit2, FiTrash2, FiArchive } from "react-icons/fi";
 import { LabType } from "@/types/labType";
 import { deleteLab } from "@/actions/classroom-actions/lab";
 import EditLabModal from "./modals/EditLabModal";
@@ -38,40 +38,46 @@ export default function LabActionMenu({
       <div ref={ref} className="relative" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors"
+          className={`p-2 rounded-lg transition-colors ${
+            open
+              ? "bg-gray-100 text-gray-700"
+              : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+          }`}
+          aria-label="Lab actions"
         >
-          <FaEllipsisVertical size={16} />
+          <FiMoreVertical size={15} />
         </button>
 
         {open && (
-          <div className="absolute right-0 bottom-12 w-40 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+          <div className="absolute right-0 bottom-10 w-40 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden animate-slide-in-down">
             <button
               onClick={() => {
                 setOpen(false);
                 setIsEditOpen(true);
               }}
-              className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-800 transition-colors"
+              className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
             >
+              <FiEdit2 size={13} className="text-gray-400" />
               Edit
             </button>
-
+            <button
+              className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
+            >
+              <FiArchive size={13} className="text-gray-400" />
+              Archive
+            </button>
+            <div className="border-t border-gray-100" />
             <button
               onClick={handleDelete}
-              className="w-full px-4 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+              className="w-full px-4 py-2.5 text-left text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
             >
+              <FiTrash2 size={13} />
               Delete
-            </button>
-
-            <button
-              className="w-full px-4 py-2.5 text-left text-sm text-slate-400 hover:bg-slate-800 transition-colors"
-            >
-              Archive
             </button>
           </div>
         )}
       </div>
 
-      {/* 🔥 PORTAL FIX */}
       {isEditOpen &&
         createPortal(
           <EditLabModal
