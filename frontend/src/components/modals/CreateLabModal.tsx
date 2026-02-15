@@ -65,14 +65,12 @@ export default function CreateLabModal({ isOpen, onClose, userEmail }: CreateLab
           </div>
 
           {/* Form */}
-<<<<<<< HEAD
-          <form action={handleSubmit} className="p-6 space-y-4">
-=======
+
           <form action={(formData) => {
             formData.append("banner", banner);
             handleSubmit(formData);
           }} className="p-6 space-y-4">
->>>>>>> main
+
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
                 {error}
