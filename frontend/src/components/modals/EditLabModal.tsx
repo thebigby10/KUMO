@@ -36,7 +36,7 @@ export default function EditLabModal({ isOpen, onClose, userEmail, lab }: EditLa
     setLoading(true);
     setError("");
     try {
-      await updateLab(lab.id, userEmail, { name, section, subject, room, banner });
+      await updateLab(lab.id, userEmail, { name, section, subject, room });
       onClose();
     } catch {
       setError("Failed to update lab. Please try again.");
@@ -130,8 +130,6 @@ export default function EditLabModal({ isOpen, onClose, userEmail, lab }: EditLa
                 onChange={(e) => setRoom(e.target.value)}
               />
             </div>
-
-            <LabBannerPicker value={banner} onChange={setBanner} />
 
             {/* Footer */}
             <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
