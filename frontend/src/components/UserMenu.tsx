@@ -31,8 +31,6 @@ export default function UserMenu({ email, name }: UserMenuProps) {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Open account menu"
-        aria-expanded={isOpen}
         className={`flex items-center gap-2 px-2 py-1.5 rounded-xl transition-all border ${
           isOpen
             ? "bg-pink-50 border-pink-200 text-pink-700"
@@ -54,7 +52,7 @@ export default function UserMenu({ email, name }: UserMenuProps) {
 
       {/* Dropdown */}
       {isOpen && (
-        <div role="menu" className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5 z-[60] animate-slide-in-down">
+        <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5 z-[60] animate-slide-in-down">
           {/* User info */}
           <div className="px-4 py-3 border-b border-gray-100">
             <div className="flex items-center gap-3">
@@ -72,11 +70,11 @@ export default function UserMenu({ email, name }: UserMenuProps) {
 
           {/* Menu items */}
           <div className="py-1">
-            <button role="menuitem" className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+            <button className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center gap-3 transition-colors">
               <FiUser size={15} className="text-gray-400" />
               <span>Profile</span>
             </button>
-            <button role="menuitem" className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+            <button className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center gap-3 transition-colors">
               <FiSettings size={15} className="text-gray-400" />
               <span>Settings</span>
             </button>
