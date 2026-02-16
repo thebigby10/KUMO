@@ -15,6 +15,7 @@ import {
   FiCode,
 } from "react-icons/fi";
 import Editor from "@monaco-editor/react";
+import Avatar from "@/components/Avatar";
 
 interface StudentDashboardProps {
   student: {
@@ -120,39 +121,20 @@ export default function StudentDashboard({
     return "text-red-400";
   };
 
-  const getAvatarGradient = (name: string) => {
-    const gradients = [
-      "from-blue-500 to-indigo-600",
-      "from-purple-500 to-pink-600",
-      "from-green-500 to-emerald-600",
-      "from-amber-500 to-orange-600",
-      "from-red-500 to-rose-600",
-      "from-cyan-500 to-teal-600",
-    ];
-    const index = name.charCodeAt(0) % gradients.length;
-    return gradients[index];
-  };
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 shadow-xl">
           <div className="flex items-center gap-4">
-            {student.avatar ? (
-              <img
-                src={student.avatar}
-                alt={student.name || student.email}
-                className="w-16 h-16 rounded-full object-cover ring-4 ring-slate-700"
+            <div className="w-16 h-16">
+              <Avatar
+                name={student.name}
+                email={student.email}
+                avatar={student.avatar}
+                size="lg"
+                className="!w-16 !h-16 !ring-4 !ring-slate-700"
               />
-            ) : (
-              <div
-                className={`w-16 h-16 rounded-full bg-gradient-to-br ${getAvatarGradient(
-                  student.name || student.email
-                )} flex items-center justify-center text-white text-xl font-bold shadow-lg ring-4 ring-slate-700`}
-              >
-                {(student.name || student.email)[0].toUpperCase()}
-              </div>
-            )}
+            </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-bold text-white truncate">
                 {student.name || "Unknown Student"}
