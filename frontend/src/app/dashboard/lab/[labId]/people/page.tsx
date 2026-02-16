@@ -1,10 +1,9 @@
-// src/app/dashboard/lab/[labId]/people/page.tsx
-
 import { getPeople } from "@/actions/classroom-actions/lab";
 import { getCurrentUser } from "@/actions/auth";
 import { InstructorRepository } from "@/repositories/InstructorRepository";
 import { FiUser, FiUsers, FiChevronRight } from "react-icons/fi";
 import Link from "next/link";
+import Avatar from "@/components/Avatar";
 
 const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
   const { labId } = await params;
@@ -22,32 +21,6 @@ const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
 
   const teachers = peoples?.instructors || [];
   const students = peoples?.students || [];
-
-  // Generate avatar gradient based on name
-  const getAvatarGradient = (name: string) => {
-    const gradients = [
-      "from-red-500 to-orange-500",
-      "from-blue-500 to-cyan-500",
-      "from-green-500 to-emerald-500",
-      "from-yellow-500 to-orange-500",
-      "from-purple-500 to-pink-500",
-      "from-pink-500 to-rose-500",
-      "from-indigo-500 to-purple-500",
-      "from-teal-500 to-green-500",
-    ];
-    const index = name.charCodeAt(0) % gradients.length;
-    return gradients[index];
-  };
-
-  // Get initials from name
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   return (
     <div className="max-w-5xl space-y-8">
@@ -76,21 +49,12 @@ const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
                   index !== teachers.length - 1 ? "border-b border-slate-700/50" : ""
                 }`}
               >
-                {teacher.avatar ? (
-                  <img
-                    src={teacher.avatar}
-                    alt={teacher.name || teacher.email}
-                    className="w-12 h-12 rounded-full object-cover ring-2 ring-slate-600"
-                  />
-                ) : (
-                  <div
-                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarGradient(
-                      teacher.name || teacher.email
-                    )} flex items-center justify-center text-white font-bold shadow-lg`}
-                  >
-                    {getInitials(teacher.name || teacher.email)}
-                  </div>
-                )}
+                <Avatar
+                  name={teacher.name}
+                  email={teacher.email}
+                  avatar={teacher.avatar}
+                  size="lg"
+                />
                 <div className="flex-1">
                   <p className="text-white font-medium">
                     {teacher.name || teacher.email}
@@ -140,21 +104,12 @@ const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
               {students.map((student: any) => {
                 const studentCard = (
                   <>
-                    {student.avatar ? (
-                      <img
-                        src={student.avatar}
-                        alt={student.name || student.email}
-                        className="w-11 h-11 rounded-full object-cover ring-2 ring-slate-600"
-                      />
-                    ) : (
-                      <div
-                        className={`w-11 h-11 rounded-full bg-gradient-to-br ${getAvatarGradient(
-                          student.name || student.email
-                        )} flex items-center justify-center text-white font-bold shadow-lg`}
-                      >
-                        {getInitials(student.name || student.email)}
-                      </div>
-                    )}
+                    <Avatar
+                      name={student.name}
+                      email={student.email}
+                      avatar={student.avatar}
+                      size="md"
+                    />
                     <div className="flex-1">
                       <p className="text-white font-medium">
                         {student.name || student.email}
