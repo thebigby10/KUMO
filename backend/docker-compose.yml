@@ -18,27 +18,7 @@ services:
       - kumo-network
 
   # ==========================================
-  # 2. AUTH SERVICE (Node.js)
-  # ==========================================
-  auth-service:
-    build:
-      context: ./auth-service
-      dockerfile: Dockerfile
-    container_name: auth_service
-    ports:
-      - "3001:3001"
-    environment:
-      # NOTE: "postgres" here refers to the service name defined above, not localhost
-      DATABASE_URL: "postgresql://kumo_admin:secure_password_123@postgres:5432/kumo_auth?schema=public"
-      JWT_SECRET: "6f1e5fe88ad128ad8fd561c3476f11ce3f944f027329b9ebe58a5f72b10e97e4"
-      GOOGLE_CLIENT_ID: "514889526106-472odpbmjcc9qipsiodsitcqa74akuvf.apps.googleusercontent.com"
-    depends_on:
-      - postgres
-    networks:
-      - kumo-network
-
-  # ==========================================
-  # 3. PISTON ENGINE (Code Runner)
+  # 2. PISTON ENGINE (Code Runner)
   # ==========================================
   piston:
     image: ghcr.io/engineer-man/piston:latest
@@ -75,7 +55,7 @@ services:
       - kumo-network
 
   # ==========================================
-  # 4. CODE EXECUTION SERVICE (Python API)
+  # 3. CODE EXECUTION SERVICE (Python API)
   # ==========================================
   code-execution-service:
     build:
@@ -91,7 +71,7 @@ services:
       - kumo-network
 
   # ==========================================
-  # 5. OBJECT STORAGE (MinIO)
+  # 4. OBJECT STORAGE (MinIO)
   # ==========================================
   minio:
     image: minio/minio
@@ -109,7 +89,7 @@ services:
       - kumo-network
 
   # ==========================================
-  # 6. FILE STORAGE SERVICE (FastAPI)
+  # 5. FILE STORAGE SERVICE (FastAPI)
   # ==========================================
   file-storage-service:
     build:
