@@ -3,52 +3,63 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import jwt from "jsonwebtoken";
+import argon2 from "argon2";
+import { OAuth2Client } from "google-auth-library";
+import prisma from "@/lib/prisma";
 
-const AUTH_API_URL = "http://127.0.0.1:3001";
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-interface AuthResponse {
-  error?: string;
-  token?: string;
-  user?: {
-    id: string;
-    email: string;
-    name: string;
-  };
+function issueToken(userId: string, email: string): string {
+  return jwt.sign(
+    { userId, email },
+    process.env.JWT_SECRET!,
+    { expiresIn: "7d" },
+  );
+}
+
+async function setTokenCookie(token: string) {
+  const cookieStore = await cookies();
+  cookieStore.set("kumo_token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 7,
+    path: "/",
+  });
 }
 
 export async function loginAction(prevState: any, formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
+  if (!email || !password) {
+    return { error: "Email and password are required" };
+  }
+
   try {
-    const res = await fetch(`${AUTH_API_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
-    const data: AuthResponse = await res.json();
-
-    if (!res.ok) {
-      return { error: data.error || "Login failed" };
+    if (!user) {
+      return { error: "Invalid credentials" };
     }
 
-    if (data.token) {
-      const cookieStore = await cookies();
-      cookieStore.set("kumo_token", data.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-        path: "/",
-      });
+    if (!user.password) {
+      return { error: "Please log in with Google" };
     }
+
+    const validPassword = await argon2.verify(user.password, password);
+    if (!validPassword) {
+      return { error: "Invalid credentials" };
+    }
+
+    const token = issueToken(user.id, user.email);
+    await setTokenCookie(token);
   } catch (error) {
     if (error instanceof Error && error.message === "NEXT_REDIRECT") {
       throw error;
     }
     return { error: "Something went wrong. Please try again." };
   }
-  
+
   redirect("/dashboard");
 }
 
@@ -57,21 +68,31 @@ export async function signupAction(prevState: any, formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
+  if (!email || !password) {
+    return { error: "Email and password are required" };
+  }
+
+  if (password.length < 8) {
+    return { error: "Password must be at least 8 characters" };
+  }
+
   try {
-    const res = await fetch(`${AUTH_API_URL}/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return { error: "User already exists" };
+    }
+
+    const hashedPassword = await argon2.hash(password);
+
+    await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name: name || undefined,
+      },
     });
 
-    const data: AuthResponse = await res.json();
-
-    if (!res.ok) {
-      if ((data as any).errors) return { error: "Invalid data provided" };
-      return { error: data.error || "Signup failed" };
-    }
     return { success: "Account created! Please log in." };
-
   } catch (error) {
     return { error: "Something went wrong." };
   }
@@ -90,39 +111,63 @@ export async function getCurrentUser() {
   if (!token) return null;
 
   try {
-    const decoded = jwt.decode(token) as { email: string; userId: string; name?: string } | null;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      email: string;
+      userId: string;
+      name?: string;
+    };
     return decoded;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
 
 export async function googleLoginAction(googleIdToken: string) {
   try {
-    const res = await fetch(`${AUTH_API_URL}/auth/google`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: googleIdToken }),
+    const ticket = await googleClient.verifyIdToken({
+      idToken: googleIdToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-    const data: AuthResponse = await res.json();
-
-    if (!res.ok) {
-      return { error: data.error || "Google login failed" };
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      return { error: "Invalid Google token" };
     }
 
-    if (data.token) {
-      const cookieStore = await cookies();
-      cookieStore.set("kumo_token", data.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24 * 7,
-        path: "/",
+    const { email, name, sub, picture, email_verified } = payload;
+
+    let user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name: name || "Google User",
+          password: null,
+          googleId: sub,
+          provider: "google",
+          avatar: picture,
+          isEmailVerified: email_verified === true,
+        },
+      });
+    } else if (!user.googleId) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          googleId: sub,
+          avatar: user.avatar || picture,
+          isEmailVerified: user.isEmailVerified || email_verified === true,
+        },
       });
     }
 
+    const token = issueToken(user.id, user.email);
+    await setTokenCookie(token);
   } catch (error) {
-    return { error: "Connection to auth service failed" };
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error;
+    }
+    return { error: "Google authentication failed" };
   }
 
   redirect("/dashboard");
