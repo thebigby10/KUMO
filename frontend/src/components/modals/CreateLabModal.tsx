@@ -4,6 +4,8 @@ import { X } from "lucide-react";
 import { createLab } from "../../actions/classroom-actions/lab";
 import { useState } from "react";
 
+import LabBannerPicker from "../LabBannerPicker";
+
 interface CreateLabModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,6 +20,7 @@ const inputClass =
 export default function CreateLabModal({ isOpen, onClose, userEmail }: CreateLabModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [banner, setBanner] = useState("bg-gradient-to-br from-pink-400 via-rose-400 to-pink-600");
 
   if (!isOpen) return null;
 
@@ -62,7 +65,10 @@ export default function CreateLabModal({ isOpen, onClose, userEmail }: CreateLab
           </div>
 
           {/* Form */}
-          <form action={handleSubmit} className="p-6 space-y-4">
+          <form action={(formData) => {
+            formData.append("banner", banner);
+            handleSubmit(formData);
+          }} className="p-6 space-y-4">
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
                 {error}
@@ -112,6 +118,8 @@ export default function CreateLabModal({ isOpen, onClose, userEmail }: CreateLab
                 className={inputClass}
               />
             </div>
+            
+            <LabBannerPicker value={banner} onChange={setBanner} />
 
             {/* Footer */}
             <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-100">
