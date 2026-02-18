@@ -9,7 +9,7 @@ export class LabController {
   // ... create, getAllForUser, join, removeStudent remain the same ...
 
   static async create(
-    data: { name: string; section?: string; subject?: string; room?: string },
+    data: { name: string; section?: string; subject?: string; room?: string; banner?: string },
     userEmail: string,
   ) {
     if (!data.name || !userEmail) {
@@ -21,6 +21,7 @@ export class LabController {
       section: data.section,
       subject: data.subject,
       room: data.room,
+      banner: data.banner,
       labCode: generateLabCode(),
       instructors: {
         create: {
@@ -137,6 +138,7 @@ export class LabController {
       room?: string;
       section?: string;
       subject?: string;
+      banner?: string;
       isArchived?: boolean;
     },
   ) {
