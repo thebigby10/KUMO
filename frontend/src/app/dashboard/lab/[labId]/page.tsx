@@ -28,7 +28,16 @@ export default async function LabStreamPage({
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 shadow-2xl">
+      <div className={`relative h-64 rounded-2xl overflow-hidden shadow-2xl ${
+        lab.banner?.startsWith("http") ? "" : (lab.banner || "bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600")
+      }`}>
+        {lab.banner?.startsWith("http") && (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${lab.banner})` }}
+          />
+        )}
+        
         {/* Pattern overlay */}
         <div className="absolute inset-0 opacity-10" style={{
           backgroundImage: `
@@ -38,7 +47,7 @@ export default async function LabStreamPage({
           backgroundSize: '24px 24px'
         }} />
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         
         <div className="relative h-full p-8 flex flex-col justify-end text-white">
           <h1 className="text-4xl md:text-5xl font-bold mb-2">{lab.name}</h1>

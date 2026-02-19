@@ -63,14 +63,25 @@ export default async function DashboardPage() {
                 <div className="relative bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-pink-200 transition-all duration-200 flex flex-col h-72 hover:-translate-y-0.5">
                   {/* Card Header */}
                   <div className="relative h-28 overflow-hidden">
-                    {/* Gradient background */}
-                    <div
-                      className={`absolute inset-0 ${
-                        isMyClass
-                          ? "bg-gradient-to-br from-pink-400 via-rose-400 to-pink-600"
-                          : "bg-gradient-to-br from-blue-400 via-indigo-400 to-blue-600"
-                      }`}
-                    />
+                    {/* Gradient or Image background */}
+                    {lab.banner?.startsWith("http") ? (
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${lab.banner})` }}
+                      >
+                         <div className="absolute inset-0 bg-black/20" /> {/* Slight overlay for text readability */}
+                      </div>
+                    ) : lab.banner ? (
+                      <div className={`absolute inset-0 ${lab.banner}`} />
+                    ) : (
+                      <div
+                        className={`absolute inset-0 ${
+                          isMyClass
+                            ? "bg-gradient-to-br from-pink-400 via-rose-400 to-pink-600"
+                            : "bg-gradient-to-br from-blue-400 via-indigo-400 to-blue-600"
+                        }`}
+                      />
+                    )}
                     {/* Subtle grid */}
                     <div
                       className="absolute inset-0 opacity-20"
