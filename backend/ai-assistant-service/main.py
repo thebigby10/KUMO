@@ -5,7 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from pdf_processor import process_pdf
-from vector_store import store_chunks, delete_task_data, has_task_data
+from vector_store import store_chunks, retrieve_chunks, delete_task_data, has_task_data
+from llm import generate_answer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,6 +28,14 @@ app.add_middleware(
 class IngestRequest(BaseModel):
     task_id: str
     pdf_url: str
+
+
+class AskRequest(BaseModel):
+    task_id: str
+    question: str
+    task_title: str = ""
+    task_description: str = ""
+    chat_history: list[dict] = []
 
 
 # --- Endpoints ---
@@ -83,6 +92,54 @@ async def delete_task(task_id: str):
         "status": "deleted" if deleted else "not_found",
         "task_id": task_id,
     }
+
+
+@app.post("/ask")
+async def ask_question(req: AskRequest):
+    """Answer a student question using RAG from the task's ingested PDF.
+
+    1. Retrieves relevant chunks from the vector store for this task
+    2. Passes them + the question + guard rails to Gemini
+    3. Returns the answer
+
+    The LLM is instructed to:
+    - Only answer from the PDF content
+    - Never directly solve the assignment task
+    """
+    # Check if this task has ingested data
+    if not has_task_data(req.task_id):
+        return {
+            "answer": "No reference material has been uploaded for this task yet. "
+                      "Please ask your instructor to upload a PDF.",
+            "task_id": req.task_id,
+            "chunks_used": 0,
+        }
+
+    try:
+        # 1. Retrieve relevant chunks
+        chunks = retrieve_chunks(req.task_id, req.question)
+
+        # 2. Generate guard-railed answer
+        answer = await generate_answer(
+            question=req.question,
+            context_chunks=chunks,
+            task_title=req.task_title,
+            task_description=req.task_description,
+            chat_history=req.chat_history,
+        )
+
+        return {
+            "answer": answer,
+            "task_id": req.task_id,
+            "chunks_used": len(chunks),
+        }
+
+    except Exception as e:
+        logger.error(f"Ask failed for task {req.task_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate answer: {str(e)}",
+        )
 
 
 @app.get("/task/{task_id}/status")
