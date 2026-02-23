@@ -111,10 +111,28 @@ services:
     networks:
       - kumo-network
 
+  # ==========================================
+  # 6. AI ASSISTANT SERVICE (RAG-based)
+  # ==========================================
+  ai-assistant-service:
+    build:
+      context: ./ai-assistant-service
+    container_name: ai_assistant_service
+    ports:
+      - "8003:8000" # Maps Host 8003 -> Container 8000
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - CHROMA_PERSIST_DIR=/app/chroma_data
+    volumes:
+      - chroma_data:/app/chroma_data
+    networks:
+      - kumo-network
+
 volumes:
   postgres_data:
   piston_packages:
   minio_data:
+  chroma_data:
 
 networks:
   kumo-network:

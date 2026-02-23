@@ -95,6 +95,7 @@ export class WorkRepository {
         createdTasks.push({
           id: newTask.id,
           starterCode: taskData.starterCode,
+          pdfUrl: taskData.pdfUrl || null,
         });
       }
 
@@ -125,7 +126,11 @@ export class WorkRepository {
         });
       }
 
-      return newWork;
+      // Return work with tasks so callers can access task IDs/URLs (e.g., for AI ingestion)
+      return await tx.work.findUniqueOrThrow({
+        where: { id: newWork.id },
+        include: { tasks: true },
+      });
     });
   }
 
@@ -306,7 +311,11 @@ export class WorkRepository {
         }
       }
 
-      return updatedWork;
+      // Return work with tasks so callers can access task IDs/URLs (e.g., for AI ingestion)
+      return await tx.work.findUniqueOrThrow({
+        where: { id: data.workId },
+        include: { tasks: true },
+      });
     });
   }
 }
