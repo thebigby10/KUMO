@@ -5,7 +5,6 @@ Uses PyMuPDF for text extraction and LangChain's RecursiveCharacterTextSplitter
 for intelligent chunking with overlap.
 """
 
-import io
 import logging
 
 import fitz  # PyMuPDF
@@ -17,10 +16,27 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 
+def _resolve_pdf_url(pdf_url: str) -> str:
+    """Rewrite localhost URLs to Docker-internal hostnames.
+
+    PDF URLs stored in the database are public-facing (e.g. http://localhost:9000/...),
+    but inside Docker, the AI service can't reach 'localhost:9000' — it needs 'minio:9000'.
+    """
+    if settings.MINIO_PUBLIC_URL and settings.MINIO_INTERNAL_URL:
+        if pdf_url.startswith(settings.MINIO_PUBLIC_URL):
+            resolved = pdf_url.replace(
+                settings.MINIO_PUBLIC_URL, settings.MINIO_INTERNAL_URL, 1
+            )
+            logger.info(f"Rewrote PDF URL for Docker: {pdf_url} -> {resolved}")
+            return resolved
+    return pdf_url
+
+
 async def download_pdf(pdf_url: str) -> bytes:
     """Download a PDF from a URL and return raw bytes."""
+    resolved_url = _resolve_pdf_url(pdf_url)
     async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
-        response = await client.get(pdf_url)
+        response = await client.get(resolved_url)
         response.raise_for_status()
         return response.content
 

@@ -31,15 +31,6 @@ def _get_embedding_model() -> SentenceTransformer:
     return _embedding_model
 
 
-def _get_chroma_client() -> chromadb.ClientAPI:
-    """Get a persistent ChromaDB client."""
-    return chromadb.Client(ChromaSettings(
-        chroma_db_impl="duckdb+parquet",
-        persist_directory=settings.CHROMA_PERSIST_DIR,
-        anonymized_telemetry=False,
-    ))
-
-
 # Use a single persistent client
 _chroma_client: chromadb.ClientAPI | None = None
 
