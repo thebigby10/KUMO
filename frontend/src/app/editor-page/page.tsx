@@ -19,6 +19,7 @@ import Editor, { OnMount } from "@monaco-editor/react";
 import PanelContainer from "./PanelContainer";
 import PanelHeader from "./PanelHeader";
 import ResizeHandle from "./ResizeHandle";
+import AiChatPanel from "./AiChatPanel";
 import {
   submitTaskAction,
   autoSaveCode,
@@ -91,6 +92,9 @@ const CodeEditorPageInner = ({ tasks, workId, endTime }: CodeEditorPageProps) =>
   // KIOSK STATE
   const [isKioskActive, setIsKioskActive] = useState(false);
   const [warnings, setWarnings] = useState<string[]>([]);
+
+  // AI CHAT STATE
+  const [showAiChat, setShowAiChat] = useState(false);
 
   // Layout State
   const [isDragging, setIsDragging] = useState(false);
@@ -725,6 +729,39 @@ const CodeEditorPageInner = ({ tasks, workId, endTime }: CodeEditorPageProps) =>
           </div>
         </PanelContainer>
       </div>
+      {/* AI Chat Floating Button */}
+      <button
+        onClick={() => setShowAiChat((v) => !v)}
+        className={`fixed bottom-6 right-6 z-99 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
+          showAiChat
+            ? "bg-purple-600 hover:bg-purple-500 scale-90"
+            : "bg-[#333] hover:bg-purple-600 border border-[#555] hover:border-purple-500"
+        }`}
+        title="AI Assistant"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-white"
+        >
+          <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+        </svg>
+      </button>
+
+      {/* AI Chat Panel */}
+      <AiChatPanel
+        taskId={activeTask.id}
+        taskTitle={activeTask.title}
+        taskDescription={activeTask.description || ""}
+        isOpen={showAiChat}
+        onClose={() => setShowAiChat(false)}
+      />
     </div>
   );
 };

@@ -6,6 +6,7 @@ student questions strictly from PDF context while refusing to solve
 the actual assignment tasks directly.
 """
 
+import asyncio
 import logging
 
 import google.generativeai as genai
@@ -14,8 +15,15 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-# Configure Gemini on module load
-genai.configure(api_key=settings.GEMINI_API_KEY)
+_gemini_configured = False
+
+
+def _ensure_configured():
+    """Configure Gemini API key lazily (only when actually needed)."""
+    global _gemini_configured
+    if not _gemini_configured and settings.GEMINI_API_KEY:
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        _gemini_configured = True
 
 SYSTEM_PROMPT = """\
 You are KUMO AI, a helpful teaching assistant for a university coding lab platform.
@@ -91,6 +99,8 @@ async def generate_answer(
     if not settings.GEMINI_API_KEY:
         return "AI assistant is not configured. Please ask your instructor to set up the GEMINI_API_KEY."
 
+    _ensure_configured()
+
     # Build the full task description for the guard rail
     full_task_desc = ""
     if task_title:
@@ -120,11 +130,13 @@ async def generate_answer(
 
     try:
         model = genai.GenerativeModel(
-            "gemini-2.0-flash",
+            "gemini-2.5-flash",
             system_instruction=full_prompt,
         )
 
-        response = model.generate_content(
+        # Run synchronous Gemini SDK call in a thread to avoid blocking the event loop
+        response = await asyncio.to_thread(
+            model.generate_content,
             question,
             generation_config=genai.types.GenerationConfig(
                 temperature=0.3,  # Low temperature for factual answers

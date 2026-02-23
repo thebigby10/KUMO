@@ -1,4 +1,4 @@
-import { db, Prisma, Work } from "@/lib/prisma";
+import { db, Prisma, Work, Task } from "@/lib/prisma";
 
 export interface CreateWorkPayload {
   labId: string;
@@ -33,7 +33,7 @@ export interface UpdateWorkPayload extends CreateWorkPayload {
 }
 
 export class WorkRepository {
-  static async createWithTasks(data: CreateWorkPayload): Promise<Work> {
+  static async createWithTasks(data: CreateWorkPayload): Promise<Work & { tasks: Task[] }> {
     return await db.$transaction(async (tx) => {
       // 1. Create Parent Work
       const newWork = await tx.work.create({
@@ -175,7 +175,7 @@ export class WorkRepository {
     });
   }
 
-  static async updateWorkTransaction(data: UpdateWorkPayload) {
+  static async updateWorkTransaction(data: UpdateWorkPayload): Promise<Work & { tasks: Task[] }> {
     return await db.$transaction(async (tx) => {
       // 1. Update Parent Work Fields
       const updatedWork = await tx.work.update({
