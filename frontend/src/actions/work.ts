@@ -6,6 +6,22 @@ import { WorkRepository } from "@/repositories/WorkRepository"; // [FIX] Added i
 import { InstructorRepository } from "@/repositories/InstructorRepository"; // [FIX] Added for permission check
 import { getCurrentUser } from "@/actions/auth";
 
+// --- AI Assistant Ingestion (best-effort, non-blocking) ---
+const AI_ASSISTANT_URL = process.env.AI_ASSISTANT_URL || "http://localhost:8003";
+
+async function triggerPdfIngestion(taskId: string, pdfUrl: string) {
+  try {
+    await fetch(`${AI_ASSISTANT_URL}/ingest`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ task_id: taskId, pdf_url: pdfUrl }),
+    });
+  } catch (error) {
+    // Ingestion failure should never break work creation/editing
+    console.error(`AI ingestion failed for task ${taskId}:`, error);
+  }
+}
+
 // --- CREATE Types ---
 interface CreateWorkFormPayload {
   labId: string;
@@ -54,7 +70,16 @@ export async function createLabWork(payload: CreateWorkFormPayload) {
       })),
     };
 
-    await WorkController.createAssignment(repositoryPayload, userEmail);
+    const createdWork = await WorkController.createAssignment(repositoryPayload, userEmail);
+
+    // Trigger AI ingestion for tasks that have PDF URLs (best-effort, non-blocking)
+    if (createdWork && createdWork.tasks) {
+      for (const task of createdWork.tasks) {
+        if (task.url) {
+          triggerPdfIngestion(task.id, task.url).catch(() => {});
+        }
+      }
+    }
 
     revalidatePath(`/dashboard/lab/${labId}/work`);
     return { success: true };
@@ -128,7 +153,16 @@ export async function editLabWork(payload: EditWorkFormPayload) {
       })),
     };
 
-    await WorkRepository.updateWorkTransaction(repositoryPayload);
+    const updatedWork = await WorkRepository.updateWorkTransaction(repositoryPayload);
+
+    // Trigger AI ingestion for tasks with PDF URLs after edit (re-ingests on update)
+    if (updatedWork && updatedWork.tasks) {
+      for (const task of updatedWork.tasks) {
+        if (task.url) {
+          triggerPdfIngestion(task.id, task.url).catch(() => {});
+        }
+      }
+    }
 
     revalidatePath(`/dashboard/lab/${labId}/work`);
     return { success: true };
