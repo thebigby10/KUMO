@@ -1,11 +1,3 @@
-"""
-LLM Module — Google Gemini integration with guard-railed system prompt.
-
-Uses Gemini 2.0 Flash (free tier: 15 RPM, 1M tokens/day) to answer
-student questions strictly from PDF context while refusing to solve
-the actual assignment tasks directly.
-"""
-
 import asyncio
 import logging
 
@@ -71,7 +63,7 @@ def _format_chat_history(history: list[dict]) -> str:
         return "(No previous messages)"
 
     formatted = []
-    for msg in history[-6:]:  # Keep last 6 messages (3 exchanges) for context
+    for msg in history[-6:]:  
         role = "Student" if msg.get("role") == "user" else "KUMO AI"
         formatted.append(f"{role}: {msg.get('content', '')}")
     return "\n".join(formatted)
@@ -139,7 +131,7 @@ async def generate_answer(
             model.generate_content,
             question,
             generation_config=genai.types.GenerationConfig(
-                temperature=0.3,  # Low temperature for factual answers
+                temperature=0.3,  
                 max_output_tokens=1024,
             ),
         )

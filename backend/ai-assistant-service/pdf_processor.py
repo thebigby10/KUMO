@@ -1,13 +1,6 @@
-"""
-PDF Processor — Downloads a PDF from a URL and extracts chunked text.
-
-Uses PyMuPDF for text extraction and LangChain's RecursiveCharacterTextSplitter
-for intelligent chunking with overlap.
-"""
-
 import logging
 
-import fitz  # PyMuPDF
+import fitz  
 import httpx
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -17,11 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 def _resolve_pdf_url(pdf_url: str) -> str:
-    """Rewrite localhost URLs to Docker-internal hostnames.
-
-    PDF URLs stored in the database are public-facing (e.g. http://localhost:9000/...),
-    but inside Docker, the AI service can't reach 'localhost:9000' — it needs 'minio:9000'.
-    """
     if settings.MINIO_PUBLIC_URL and settings.MINIO_INTERNAL_URL:
         if pdf_url.startswith(settings.MINIO_PUBLIC_URL):
             resolved = pdf_url.replace(
@@ -33,7 +21,6 @@ def _resolve_pdf_url(pdf_url: str) -> str:
 
 
 async def download_pdf(pdf_url: str) -> bytes:
-    """Download a PDF from a URL and return raw bytes."""
     resolved_url = _resolve_pdf_url(pdf_url)
     async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
         response = await client.get(resolved_url)
@@ -42,7 +29,6 @@ async def download_pdf(pdf_url: str) -> bytes:
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """Extract all text from a PDF using PyMuPDF."""
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     pages = []
     for page_num, page in enumerate(doc):

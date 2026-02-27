@@ -121,7 +121,7 @@ services:
     ports:
       - "8003:8000" # Maps Host 8003 -> Container 8000
     environment:
-      - GEMINI_API_KEY=AIzaSyBmcXHqNMs5TZaLz1QyqsoQRLJTHFNnvps
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - CHROMA_PERSIST_DIR=/app/chroma_data
       - MINIO_INTERNAL_URL=http://minio:9000
       - MINIO_PUBLIC_URL=http://localhost:9000

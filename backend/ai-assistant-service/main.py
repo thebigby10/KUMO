@@ -54,7 +54,6 @@ async def ingest_pdf(req: IngestRequest):
     If the task already has ingested data, it is replaced (clean re-ingestion).
     """
     try:
-        # 1. Download + extract + chunk
         chunks = await process_pdf(req.pdf_url)
 
         if not chunks:
@@ -63,7 +62,6 @@ async def ingest_pdf(req: IngestRequest):
                 detail="No text could be extracted from the PDF",
             )
 
-        # 2. Embed + store in ChromaDB
         num_stored = store_chunks(req.task_id, chunks)
 
         return {
@@ -96,17 +94,6 @@ async def delete_task(task_id: str):
 
 @app.post("/ask")
 async def ask_question(req: AskRequest):
-    """Answer a student question using RAG from the task's ingested PDF.
-
-    1. Retrieves relevant chunks from the vector store for this task
-    2. Passes them + the question + guard rails to Gemini
-    3. Returns the answer
-
-    The LLM is instructed to:
-    - Only answer from the PDF content
-    - Never directly solve the assignment task
-    """
-    # Check if this task has ingested data
     if not has_task_data(req.task_id):
         return {
             "answer": "No reference material has been uploaded for this task yet. "
@@ -116,10 +103,8 @@ async def ask_question(req: AskRequest):
         }
 
     try:
-        # 1. Retrieve relevant chunks
         chunks = retrieve_chunks(req.task_id, req.question)
 
-        # 2. Generate guard-railed answer
         answer = await generate_answer(
             question=req.question,
             context_chunks=chunks,

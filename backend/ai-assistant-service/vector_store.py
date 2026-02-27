@@ -1,12 +1,3 @@
-"""
-Vector Store — ChromaDB wrapper for storing and retrieving PDF chunk embeddings.
-
-Each task gets its own ChromaDB collection (named by taskId), so embeddings
-are isolated per task and can be independently created/deleted.
-
-Uses sentence-transformers for local, free embeddings on CPU.
-"""
-
 import logging
 
 import chromadb
@@ -17,12 +8,10 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-# Initialize the embedding model once at module level (loaded at import time)
 _embedding_model: SentenceTransformer | None = None
 
 
 def _get_embedding_model() -> SentenceTransformer:
-    """Lazy-load the embedding model (cached after first call)."""
     global _embedding_model
     if _embedding_model is None:
         logger.info(f"Loading embedding model: {settings.EMBEDDING_MODEL}")
@@ -31,7 +20,6 @@ def _get_embedding_model() -> SentenceTransformer:
     return _embedding_model
 
 
-# Use a single persistent client
 _chroma_client: chromadb.ClientAPI | None = None
 
 
@@ -47,14 +35,7 @@ def _get_client() -> chromadb.ClientAPI:
 
 
 def _collection_name(task_id: str) -> str:
-    """Generate a valid ChromaDB collection name from a task ID.
-    ChromaDB collection names must be 3-63 chars, start/end with alphanumeric.
-    UUIDs like 'a1b2c3d4-...' are valid as-is, but we prefix for clarity.
-    """
-    # ChromaDB doesn't allow names starting with non-alphanumeric
-    # UUIDs are safe, but let's add a prefix for clarity
     name = f"task-{task_id}"
-    # Ensure length constraints (UUID = 36 chars + "task-" = 41, well within 63)
     return name[:63]
 
 
@@ -69,12 +50,11 @@ def store_chunks(task_id: str, chunks: list[str]) -> int:
     client = _get_client()
     col_name = _collection_name(task_id)
 
-    # Delete existing collection if it exists (clean re-ingestion)
     try:
         client.delete_collection(col_name)
         logger.info(f"Deleted existing collection: {col_name}")
     except Exception:
-        pass  # Collection didn't exist, that's fine
+        pass 
 
     collection = client.create_collection(
         name=col_name,
