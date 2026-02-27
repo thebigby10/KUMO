@@ -2,10 +2,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    # Google Gemini (free tier)
-    GEMINI_API_KEY: str = "AIzaSyDbque0KU5Tne1628WV08vy89CQ105qy8o"
+    GEMINI_API_KEY: str = ""
 
-    # ChromaDB storage path (persisted via Docker volume)
     CHROMA_PERSIST_DIR: str = "/app/chroma_data"
 
     # File storage service URL (to download PDFs)
@@ -15,7 +13,6 @@ class Settings(BaseSettings):
     MINIO_INTERNAL_URL: str = "http://minio:9000"
     MINIO_PUBLIC_URL: str = "http://localhost:9000"
 
-    # Embedding model (runs locally on CPU, completely free)
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
 
     # Chunking parameters
