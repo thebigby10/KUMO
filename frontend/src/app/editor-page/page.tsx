@@ -530,27 +530,35 @@ const CodeEditorPageInner = ({ tasks, workId, endTime }: CodeEditorPageProps) =>
               ))}
             </div>
           </PanelHeader>
-          <div className="w-ful h-full bg-[#111]">
-            {/* Primary PDF preview using <object> with an iframe fallback */}
-            {activeTask.url ? (
-              <object
-                data={activeTask.url}
-                type="application/pdf"
-                width="100%"
-                height="100%"
-                className="block"
-              >
-                <iframe
-                  src={activeTask.url}
-                  className="w-full h-full"
-                  title="PDF Preview"
-                />
-              </object>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
-                No PDF provided.
+          <div className="flex flex-col h-full bg-[#111] overflow-hidden">
+            {activeTask.description && activeTask.description !== "No description." && (
+              <div className="shrink-0 px-4 py-3 border-b border-[#2a2a2a] bg-[#161616]">
+                <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {activeTask.description}
+                </p>
               </div>
             )}
+            <div className="flex-1 min-h-0">
+              {activeTask.url ? (
+                <object
+                  data={activeTask.url}
+                  type="application/pdf"
+                  width="100%"
+                  height="100%"
+                  className="block"
+                >
+                  <iframe
+                    src={activeTask.url}
+                    className="w-full h-full"
+                    title="PDF Preview"
+                  />
+                </object>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
+                  No PDF provided.
+                </div>
+              )}
+            </div>
           </div>
         </PanelContainer>
       </div>
