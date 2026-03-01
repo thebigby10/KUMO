@@ -91,11 +91,7 @@ export default function DashboardLayoutClient({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-pink-50 text-pink-700 border border-pink-200"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-transparent"
-                  }`}
+                  className={primaryNavLinkClass(isActive)}
                 >
                   <Icon size={16} />
                   <span>{item.label}</span>
@@ -132,19 +128,8 @@ export default function DashboardLayoutClient({
                     <Link
                       key={lab?.id}
                       href={`/dashboard/lab/${lab?.id}`}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-sm ${
-                        labID === lab?.id
-                          ? "bg-pink-50 text-pink-700 border border-pink-200"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-transparent"
-                      }`}
-                    >
-                      <div
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center font-semibold text-xs shrink-0 ${
-                          labID === lab?.id
-                            ? "bg-pink-100 text-pink-700"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
+                      className={labNavLinkClass(labID === lab?.id, "pink")}>
+                      <div className={labAvatarClass(labID === lab?.id, "pink")}>
                         {lab?.name[0].toUpperCase()}
                       </div>
                       <div className="flex flex-col flex-1 min-w-0">
@@ -186,19 +171,8 @@ export default function DashboardLayoutClient({
                     <Link
                       key={lab?.id}
                       href={`/dashboard/lab/${lab?.id}`}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-sm ${
-                        labID === lab?.id
-                          ? "bg-blue-50 text-blue-700 border border-blue-200"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-transparent"
-                      }`}
-                    >
-                      <div
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center font-semibold text-xs shrink-0 ${
-                          labID === lab?.id
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
+                      className={labNavLinkClass(labID === lab?.id, "blue")}>
+                      <div className={labAvatarClass(labID === lab?.id, "blue")}>
                         {lab?.name[0].toUpperCase()}
                       </div>
                       <div className="flex flex-col flex-1 min-w-0">
@@ -225,15 +199,11 @@ export default function DashboardLayoutClient({
                 <Link
                   key={item.href}
                   href={item.href}
-<<<<<<< HEAD
-                  className={primaryNavLinkClass(isActive)}
-=======
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                     isActive
                       ? "bg-pink-50 text-pink-700 border border-pink-200"
                       : "text-gray-500 hover:bg-gray-100 hover:text-gray-700 border border-transparent"
                   }`}
->>>>>>> 93684aa (style(dashboard): convert sidebar from dark slate to white light theme)
                 >
                   <Icon size={16} />
                   <span>{item.label}</span>
