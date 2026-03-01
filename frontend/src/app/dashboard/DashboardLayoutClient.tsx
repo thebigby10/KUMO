@@ -14,6 +14,35 @@ import {
 } from "react-icons/fi";
 import { LabType } from "@/types/labType";
 
+/** Returns the Tailwind class string for primary sidebar nav links. */
+function primaryNavLinkClass(isActive: boolean): string {
+  return `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+    isActive
+      ? "bg-pink-50 text-pink-700 border border-pink-200"
+      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-transparent"
+  }`;
+}
+
+/** Returns the Tailwind class string for lab list items in the sidebar. */
+function labNavLinkClass(isActive: boolean, activeColor: "pink" | "blue"): string {
+  const activeStyles =
+    activeColor === "pink"
+      ? "bg-pink-50 text-pink-700 border border-pink-200"
+      : "bg-blue-50 text-blue-700 border border-blue-200";
+  return `flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-sm ${
+    isActive ? activeStyles : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-transparent"
+  }`;
+}
+
+/** Returns the Tailwind class string for a lab avatar badge. */
+function labAvatarClass(isActive: boolean, activeColor: "pink" | "blue"): string {
+  const activeStyles =
+    activeColor === "pink" ? "bg-pink-100 text-pink-700" : "bg-blue-100 text-blue-700";
+  return `w-7 h-7 rounded-lg flex items-center justify-center font-semibold text-xs shrink-0 ${
+    isActive ? activeStyles : "bg-gray-100 text-gray-600"
+  }`;
+}
+
 const navItems = [
   { href: "/dashboard", icon: FiHome, label: "Dashboard" },
 ];
@@ -62,11 +91,7 @@ export default function DashboardLayoutClient({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-pink-50 text-pink-700 border border-pink-200"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-transparent"
-                  }`}
+                  className={primaryNavLinkClass(isActive)}
                 >
                   <Icon size={16} />
                   <span>{item.label}</span>
@@ -103,19 +128,8 @@ export default function DashboardLayoutClient({
                     <Link
                       key={lab?.id}
                       href={`/dashboard/lab/${lab?.id}`}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-sm ${
-                        labID === lab?.id
-                          ? "bg-pink-50 text-pink-700 border border-pink-200"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-transparent"
-                      }`}
-                    >
-                      <div
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center font-semibold text-xs shrink-0 ${
-                          labID === lab?.id
-                            ? "bg-pink-100 text-pink-700"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
+                      className={labNavLinkClass(labID === lab?.id, "pink")}>
+                      <div className={labAvatarClass(labID === lab?.id, "pink")}>
                         {lab?.name[0].toUpperCase()}
                       </div>
                       <div className="flex flex-col flex-1 min-w-0">
@@ -157,19 +171,8 @@ export default function DashboardLayoutClient({
                     <Link
                       key={lab?.id}
                       href={`/dashboard/lab/${lab?.id}`}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-sm ${
-                        labID === lab?.id
-                          ? "bg-blue-50 text-blue-700 border border-blue-200"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-transparent"
-                      }`}
-                    >
-                      <div
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center font-semibold text-xs shrink-0 ${
-                          labID === lab?.id
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
+                      className={labNavLinkClass(labID === lab?.id, "blue")}>
+                      <div className={labAvatarClass(labID === lab?.id, "blue")}>
                         {lab?.name[0].toUpperCase()}
                       </div>
                       <div className="flex flex-col flex-1 min-w-0">
@@ -196,11 +199,7 @@ export default function DashboardLayoutClient({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-pink-50 text-pink-700 border border-pink-200"
-                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-700 border border-transparent"
-                  }`}
+                  className={primaryNavLinkClass(isActive)}
                 >
                   <Icon size={16} />
                   <span>{item.label}</span>
