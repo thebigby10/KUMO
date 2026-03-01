@@ -69,17 +69,17 @@ export default function AuthForm() {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input name="email" type="email" required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="you@example.com" />
+            <input name="email" type="email" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400/40 focus:border-pink-400 transition-all" placeholder="you@example.com" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input name="password" type="password" required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••" />
+            <input name="password" type="password" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400/40 focus:border-pink-400 transition-all" placeholder="••••••••" />
           </div>
 
           <button
             type="submit"
             disabled={isLoginPending}
-            className="w-full py-2.5 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2.5 text-white bg-pink-500 rounded-lg hover:bg-pink-600 active:bg-pink-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
             {isLoginPending ? "Signing in..." : "Sign in"}
           </button>
@@ -99,21 +99,21 @@ export default function AuthForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-            <input name="name" type="text" className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="John Doe" />
+            <input name="name" type="text" className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400/40 focus:border-pink-400 transition-all" placeholder="John Doe" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input name="email" type="email" required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="you@example.com" />
+            <input name="email" type="email" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400/40 focus:border-pink-400 transition-all" placeholder="you@example.com" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input name="password" type="password" required minLength={8} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Min 8 chars" />
+            <input name="password" type="password" required minLength={8} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400/40 focus:border-pink-400 transition-all" placeholder="Min 8 chars" />
           </div>
 
           <button
             type="submit"
             disabled={isSignupPending}
-            className="w-full py-2.5 text-white bg-green-600 rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2.5 text-white bg-pink-500 rounded-lg hover:bg-pink-600 active:bg-pink-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
             {isSignupPending ? "Creating account..." : "Create Account"}
           </button>
@@ -125,7 +125,7 @@ export default function AuthForm() {
         {isLogin ? "Don't have an account? " : "Already have an account? "}
         <button
           onClick={() => setIsLogin(!isLogin)}
-          className="text-blue-600 font-medium hover:underline"
+          className="text-pink-600 font-medium hover:underline"
         >
           {isLogin ? "Sign up" : "Log in"}
         </button>
