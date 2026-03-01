@@ -98,6 +98,7 @@ export default async function WorkEnvPage({
       // Use existing submission code if available, else starter code
       initialCode: sub?.code || task.editors[0]?.solution || "",
       url: task.url || "",
+      testCaseCount: task.testCases?.length || 0,
     };
   });
 
