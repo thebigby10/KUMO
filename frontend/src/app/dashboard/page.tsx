@@ -124,7 +124,7 @@ export default async function DashboardPage() {
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-5 flex-1 flex flex-col gap-3">
+                  <div className="p-5 flex-1 flex flex-col gap-2">
                     {/* Instructor info for enrolled */}
                     {!isMyClass && owner && (
                       <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
@@ -134,7 +134,7 @@ export default async function DashboardPage() {
                     )}
 
                     {/* Lab details */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {lab.subject && (
                         <div className="flex items-center gap-2 text-xs text-gray-500">
                           <FiCode className="w-3.5 h-3.5 shrink-0 text-gray-400" />
