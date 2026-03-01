@@ -20,6 +20,7 @@ import {
   FiShield,
 } from "react-icons/fi";
 import { gradeTaskAction } from "@/actions/grading";
+import { runTestsAction } from "@/actions/submission";
 
 // Types matching the Prisma include result from SubmissionRepository
 interface ViolationLog {
@@ -46,6 +47,7 @@ interface SubmissionData {
   task: {
     title: string;
     point: number;
+    testCases?: { id: string; input: string; expectOutput: string }[];
   };
 }
 
@@ -84,6 +86,9 @@ export default function GradingInterface({
   const [searchTerm, setSearchTerm] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [violationsExpanded, setViolationsExpanded] = useState(false);
+  const [testsExpanded, setTestsExpanded] = useState(false);
+  const [isRunningTests, setIsRunningTests] = useState(false);
+  const [testResults, setTestResults] = useState<any[]>([]);
 
   // Derived State based on search
   const filteredStudents = students.filter(
@@ -105,6 +110,8 @@ export default function GradingInterface({
     setSelectedTaskIndex(taskIdx);
     setSaveSuccess(false);
     setViolationsExpanded(false);
+    setTestsExpanded(false);
+    setTestResults([]);
 
     const sub = filteredStudents[studentIdx]?.tasks[taskIdx];
     if (sub) {
@@ -498,6 +505,117 @@ export default function GradingInterface({
                               </div>
                             </div>
                           ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Test Cases Section */}
+                {(() => {
+                  const testCases = activeSubmission?.task.testCases || [];
+                  if (testCases.length === 0) return null;
+
+                  const handleRunTests = async () => {
+                    if (!activeSubmission) return;
+                    setIsRunningTests(true);
+                    setTestsExpanded(true);
+                    setTestResults([]);
+
+                    const result = await runTestsAction(
+                      activeSubmission.taskId,
+                      activeSubmission.code,
+                      activeSubmission.language || "python",
+                    );
+
+                    if (result.testResults) {
+                      setTestResults(result.testResults);
+                    }
+                    setIsRunningTests(false);
+                  };
+
+                  const passed = testResults.filter((r: any) => r.passed).length;
+
+                  return (
+                    <div className="border-b border-slate-800">
+                      <div className="flex items-center justify-between px-4 py-3">
+                        <button
+                          onClick={() => setTestsExpanded(!testsExpanded)}
+                          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                        >
+                          <FiCheckCircle size={14} className="text-orange-400" />
+                          <span className="text-xs font-semibold text-orange-400 uppercase tracking-wide">
+                            Test Cases
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                            {testCases.length}
+                          </span>
+                          {testResults.length > 0 && (
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${
+                              passed === testResults.length
+                                ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                : "bg-red-500/20 text-red-400 border-red-500/30"
+                            }`}>
+                              {passed}/{testResults.length}
+                            </span>
+                          )}
+                          {testsExpanded ? (
+                            <FiChevronUp size={14} className="text-slate-400" />
+                          ) : (
+                            <FiChevronDown size={14} className="text-slate-400" />
+                          )}
+                        </button>
+                        <button
+                          onClick={handleRunTests}
+                          disabled={isRunningTests}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-orange-600 hover:bg-orange-500 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isRunningTests ? (
+                            <>
+                              <FiLoader size={12} className="animate-spin" />
+                              Running...
+                            </>
+                          ) : (
+                            <>
+                              <FiSend size={12} />
+                              Run Tests
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {testsExpanded && (
+                        <div className="px-4 pb-3 space-y-2 max-h-60 overflow-y-auto">
+                          {testResults.length > 0 ? (
+                            testResults.map((res: any, i: number) => (
+                              <div
+                                key={i}
+                                className={`p-2.5 rounded-lg border text-xs font-mono ${
+                                  res.passed
+                                    ? "bg-green-500/5 border-green-500/20"
+                                    : "bg-red-500/5 border-red-500/20"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={res.passed ? "text-green-400" : "text-red-400"}>
+                                    {res.passed ? "✅" : "❌"} Test {i + 1}
+                                  </span>
+                                </div>
+                                {!res.passed && (
+                                  <div className="space-y-1 text-[11px]">
+                                    <p className="text-slate-400">Input: <span className="text-slate-300">{res.input}</span></p>
+                                    <p className="text-slate-400">Expected: <span className="text-green-300">{res.expected}</span></p>
+                                    <p className="text-slate-400">Actual: <span className="text-red-300">{res.actual}</span></p>
+                                    {res.error && <p className="text-red-400">Error: {res.error}</p>}
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-xs text-slate-500 text-center py-2">
+                              Click &quot;Run Tests&quot; to execute {testCases.length} test case{testCases.length > 1 ? "s" : ""}
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
