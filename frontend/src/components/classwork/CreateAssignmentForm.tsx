@@ -400,7 +400,6 @@ export default function CreateAssignmentForm({
                 placeholder="Problem description"
               />
 
-              {/* Editor */}
               <div className="border border-slate-700 rounded-lg overflow-hidden">
                 <Editor
                   height="200px"
@@ -412,6 +411,113 @@ export default function CreateAssignmentForm({
                   theme="vs-dark"
                   options={{ minimap: { enabled: false }, fontSize: 13 }}
                 />
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-slate-300">
+                    Test Cases
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => addTestCase(tIndex)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors"
+                  >
+                    <Plus size={14} />
+                    Add Test Case
+                  </button>
+                </div>
+                {task.testCases.length === 0 && (
+                  <p className="text-xs text-slate-500 italic">
+                    No test cases yet. Add test cases to enable auto-grading.
+                  </p>
+                )}
+                {task.testCases.map((tc, tcIdx) => (
+                  <div
+                    key={tcIdx}
+                    className="flex items-start gap-3 p-3 bg-slate-800/50 border border-slate-700 rounded-lg"
+                  >
+                    <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded bg-slate-700 text-[10px] font-bold text-slate-400 mt-1">
+                      {tcIdx + 1}
+                    </span>
+                    <div className="flex-1 grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wide mb-1 block">
+                          Input
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={tc.input}
+                          onChange={(e) =>
+                            updateTestCase(tIndex, tcIdx, "input", e.target.value)
+                          }
+                          className="w-full px-3 py-2 bg-slate-900 text-white text-sm font-mono border border-slate-600 rounded-lg outline-none resize-none placeholder-slate-600"
+                          placeholder="stdin input"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wide mb-1 block">
+                          Expected Output
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={tc.expectOutput}
+                          onChange={(e) =>
+                            updateTestCase(tIndex, tcIdx, "expectOutput", e.target.value)
+                          }
+                          className="w-full px-3 py-2 bg-slate-900 text-white text-sm font-mono border border-slate-600 rounded-lg outline-none resize-none placeholder-slate-600"
+                          placeholder="expected stdout"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeTestCase(tIndex, tcIdx)}
+                      className="shrink-0 p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors mt-1"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-slate-300">
+                    Hints
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => addHint(tIndex)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-lg transition-colors"
+                  >
+                    <Plus size={14} />
+                    Add Hint
+                  </button>
+                </div>
+                {task.hints.map((hint, hIdx) => (
+                  <div
+                    key={hIdx}
+                    className="flex items-center gap-3"
+                  >
+                    <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded bg-slate-700 text-[10px] font-bold text-slate-400">
+                      {hIdx + 1}
+                    </span>
+                    <input
+                      value={hint}
+                      onChange={(e) => updateHint(tIndex, hIdx, e.target.value)}
+                      className="flex-1 px-3 py-2 bg-slate-800 text-white text-sm border border-slate-700 rounded-lg outline-none placeholder-slate-600"
+                      placeholder="Enter a hint"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeHint(tIndex, hIdx)}
+                      className="shrink-0 p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}

@@ -41,10 +41,6 @@ def _collection_name(task_id: str) -> str:
 
 def store_chunks(task_id: str, chunks: list[str]) -> int:
     """Embed and store text chunks for a given task.
-
-    If the collection already exists for this task, it is deleted and recreated
-    (ensures re-ingestion on PDF update is clean).
-
     Returns the number of chunks stored.
     """
     client = _get_client()
