@@ -3,6 +3,7 @@
 import { getCurrentUser } from "@/actions/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { SubmissionController } from "@/controller/SubmissionController";
 
 // 1. Ensure Submissions Exist (Initialize Work)
 export async function initializeWorkSession(workId: string) {
@@ -124,11 +125,6 @@ export async function submitTaskAction(
   const user = await getCurrentUser();
   if (!user?.email) return { error: "Unauthorized" };
 
-  // If forceSubmit (Time limit reached), skip validation tests if needed,
-  // or just run them and finalize.
-
-  // ... existing implementation ...
-  // Ensure status is updated to SUBMITTED
   try {
     const submission = await prisma.submission.findUnique({
       where: { taskId_userEmail: { taskId, userEmail: user.email } },
@@ -136,17 +132,47 @@ export async function submitTaskAction(
 
     if (!submission) return { error: "No record" };
 
-    // Save Code
     await prisma.submission.update({
       where: { id: submission.id },
       data: { code, language, status: "SUBMITTED", submittedAt: new Date() },
     });
 
-    // You can keep the test running logic here if you want grading on submit
+    // Run test cases against the submitted code
+    const testResults = await SubmissionController.runTestCases(
+      taskId,
+      code,
+      language,
+    );
 
     revalidatePath(`/work/${workId}`);
-    return { success: true, testResults: [] as Array<unknown> };
+    return { success: true, testResults };
   } catch (e) {
     return { error: "Submit failed" };
+  }
+}
+
+// Run tests without submitting (student can test before final submission)
+export async function runTestsAction(
+  taskId: string,
+  code: string,
+  language: string,
+) {
+  const user = await getCurrentUser();
+  if (!user?.email) return { error: "Unauthorized" };
+
+  try {
+    const testResults = await SubmissionController.runTestCases(
+      taskId,
+      code,
+      language,
+    );
+
+    if (testResults.length === 0) {
+      return { success: true, testResults: [], message: "No test cases defined." };
+    }
+
+    return { success: true, testResults };
+  } catch (e) {
+    return { error: "Test execution failed" };
   }
 }

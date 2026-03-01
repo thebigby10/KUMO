@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   RefreshCw,
   WifiOff,
+  FlaskConical,
 } from "lucide-react";
 import Editor, { OnMount } from "@monaco-editor/react";
 import PanelContainer from "./PanelContainer";
@@ -24,6 +25,7 @@ import {
   submitTaskAction,
   autoSaveCode,
   logViolationAction,
+  runTestsAction,
 } from "@/actions/submission";
 
 // --- Types ---
@@ -38,6 +40,7 @@ interface Task {
   url?: string | null;
   initialCode?: string;
   initialLanguage?: string;
+  testCaseCount?: number;
 }
 
 interface CodeEditorPageProps {
@@ -82,6 +85,7 @@ const CodeEditorPageInner = ({ tasks, workId, endTime }: CodeEditorPageProps) =>
   const [status, setStatus] = useState<ServiceStatus>("checking");
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRunningTests, setIsRunningTests] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
 
   // Sync & Timer State
@@ -370,6 +374,52 @@ const CodeEditorPageInner = ({ tasks, workId, endTime }: CodeEditorPageProps) =>
       setSaveStatus("error");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // RUN TESTS (without submitting)
+  // ---------------------------------------------------------------------------
+  const handleRunTests = async () => {
+    if (!activeTask.testCaseCount) return;
+    setIsRunningTests(true);
+    updateCurrentTaskState({ output: "Running test cases..." });
+
+    try {
+      const result = await runTestsAction(
+        activeTask.id,
+        currentTaskState.code,
+        currentTaskState.language,
+      );
+
+      if (result.error) {
+        updateCurrentTaskState({ output: `Test Error: ${result.error}` });
+        return;
+      }
+
+      const results = result.testResults || [];
+      let outputLog = "--- Test Results ---\n\n";
+      let passedCount = 0;
+
+      results.forEach((res: any, idx: number) => {
+        if (res.passed) passedCount++;
+        outputLog += `Test Case ${idx + 1}: ${res.passed ? "✅ PASS" : "❌ FAIL"}\n`;
+        if (!res.passed) {
+          outputLog += `    Input:    ${res.input}\n    Expected: ${res.expected}\n    Actual:   ${res.actual}\n`;
+          if (res.error) outputLog += `    Error:    ${res.error}\n`;
+        }
+      });
+
+      outputLog +=
+        results.length === 0
+          ? "No test cases defined for this task."
+          : `\nSummary: ${passedCount}/${results.length} Passed`;
+
+      updateCurrentTaskState({ output: outputLog });
+    } catch {
+      updateCurrentTaskState({ output: "Test execution failed unexpectedly." });
+    } finally {
+      setIsRunningTests(false);
     }
   };
 
@@ -703,6 +753,20 @@ const CodeEditorPageInner = ({ tasks, workId, endTime }: CodeEditorPageProps) =>
                 )}
                 {isRunning ? "Running..." : "Run"}
               </button>
+              {(activeTask.testCaseCount ?? 0) > 0 && (
+                <button
+                  onClick={handleRunTests}
+                  disabled={isRunning || isSubmitting || isRunningTests}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm font-medium transition-colors ${isRunningTests ? "bg-gray-600 cursor-not-allowed text-gray-300" : "bg-orange-600 hover:bg-orange-700 text-white"}`}
+                >
+                  {isRunningTests ? (
+                    <Activity size={14} className="animate-spin" />
+                  ) : (
+                    <FlaskConical size={14} />
+                  )}
+                  {isRunningTests ? "Testing..." : "Run Tests"}
+                </button>
+              )}
               <button
                 onClick={handleSubmit}
                 disabled={isRunning || isSubmitting}
