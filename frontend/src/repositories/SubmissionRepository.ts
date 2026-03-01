@@ -120,6 +120,13 @@ export class SubmissionRepository {
             id: true,
             title: true,
             point: true,
+            testCases: {
+              select: {
+                id: true,
+                input: true,
+                expectOutput: true,
+              },
+            },
           },
         },
       },
