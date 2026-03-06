@@ -176,3 +176,30 @@ export async function runTestsAction(
     return { error: "Test execution failed" };
   }
 }
+
+// 4. Evaluate using AI Detection Service
+export async function evaluateAISubmissionAction(code: string, language: string) {
+  const user = await getCurrentUser();
+  if (!user?.email) return { error: "Unauthorized" };
+
+  const AI_DETECT_URL = process.env.AI_DETECT_URL || "http://localhost:8004/detect";
+
+  try {
+    const res = await fetch(AI_DETECT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, language }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      return { error: errorData.detail || "AI Detection service failed to respond." };
+    }
+
+    const data = await res.json();
+    return { success: true, result: data };
+  } catch (error) {
+    console.error("AI Evaluation Error:", error);
+    return { error: "Failed to connect to AI Detection service." };
+  }
+}

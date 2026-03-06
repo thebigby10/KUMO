@@ -20,7 +20,8 @@ import {
   FiShield,
 } from "react-icons/fi";
 import { gradeTaskAction } from "@/actions/grading";
-import { runTestsAction } from "@/actions/submission";
+import { runTestsAction, evaluateAISubmissionAction } from "@/actions/submission";
+import { FiCpu } from "react-icons/fi";
 
 // Types matching the Prisma include result from SubmissionRepository
 interface ViolationLog {
@@ -90,6 +91,15 @@ export default function GradingInterface({
   const [isRunningTests, setIsRunningTests] = useState(false);
   const [testResults, setTestResults] = useState<any[]>([]);
 
+  // AI Detection State
+  const [aiExpanded, setAiExpanded] = useState(false);
+  const [isAnalyzingAI, setIsAnalyzingAI] = useState(false);
+  const [aiResult, setAiResult] = useState<{
+    is_ai_generated: boolean;
+    confidence: number;
+    reasoning: string;
+  } | null>(null);
+
   // Derived State based on search
   const filteredStudents = students.filter(
     (s) =>
@@ -111,7 +121,9 @@ export default function GradingInterface({
     setSaveSuccess(false);
     setViolationsExpanded(false);
     setTestsExpanded(false);
+    setAiExpanded(false);
     setTestResults([]);
+    setAiResult(null);
 
     const sub = filteredStudents[studentIdx]?.tasks[taskIdx];
     if (sub) {
@@ -505,6 +517,113 @@ export default function GradingInterface({
                               </div>
                             </div>
                           ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* AI Detection Section */}
+                {(() => {
+                  const handleRunAnalysis = async () => {
+                    if (!activeSubmission || !activeSubmission.code) return;
+                    setIsAnalyzingAI(true);
+                    setAiExpanded(true);
+                    setAiResult(null);
+
+                    const res = await evaluateAISubmissionAction(
+                      activeSubmission.code,
+                      activeSubmission.language || "python"
+                    );
+
+                    if (res?.error) {
+                      alert(res.error);
+                    } else if (res?.result) {
+                      setAiResult(res.result);
+                    }
+                    setIsAnalyzingAI(false);
+                  };
+
+                  return (
+                    <div className="border-b border-slate-800">
+                      <div className="flex items-center justify-between px-4 py-3">
+                        <button
+                          onClick={() => setAiExpanded(!aiExpanded)}
+                          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                        >
+                          <FiCpu size={14} className="text-purple-400" />
+                          <span className="text-xs font-semibold text-purple-400 uppercase tracking-wide">
+                            AI Detection
+                          </span>
+                          {aiResult && (
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                aiResult.is_ai_generated
+                                  ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                  : "bg-green-500/20 text-green-400 border-green-500/30"
+                              }`}
+                            >
+                              {aiResult.is_ai_generated ? "Likely AI" : "Likely Human"} ({(aiResult.confidence * 100).toFixed(0)}%)
+                            </span>
+                          )}
+                          {aiExpanded ? (
+                            <FiChevronUp size={14} className="text-slate-400" />
+                          ) : (
+                            <FiChevronDown size={14} className="text-slate-400" />
+                          )}
+                        </button>
+                        <button
+                          onClick={handleRunAnalysis}
+                          disabled={isAnalyzingAI || !activeSubmission?.code}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-purple-600 hover:bg-purple-500 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isAnalyzingAI ? (
+                            <>
+                              <FiLoader size={12} className="animate-spin" />
+                              Analyzing...
+                            </>
+                          ) : (
+                            <>
+                              <FiSend size={12} />
+                              Analyze AI
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {aiExpanded && (
+                        <div className="px-4 pb-3 space-y-2 max-h-60 overflow-y-auto">
+                          {aiResult ? (
+                            <div
+                              className={`p-3 rounded-lg border text-sm ${
+                                aiResult.is_ai_generated
+                                  ? "bg-red-500/5 border-red-500/20"
+                                  : "bg-green-500/5 border-green-500/20"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 mb-2">
+                                <span
+                                  className={`font-semibold ${
+                                    aiResult.is_ai_generated
+                                      ? "text-red-400"
+                                      : "text-green-400"
+                                  }`}
+                                >
+                                  {aiResult.is_ai_generated ? "🤖 AI Generated" : "🧑‍💻 Human Written"}
+                                </span>
+                                <span className="text-slate-500 text-xs">
+                                  | {Math.round(aiResult.confidence * 100)}% Confidence
+                                </span>
+                              </div>
+                              <p className="text-slate-300 text-xs leading-relaxed italic">
+                                "{aiResult.reasoning}"
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-500 text-center py-2">
+                              Click &quot;Analyze AI&quot; to check if this code was AI generated.
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
