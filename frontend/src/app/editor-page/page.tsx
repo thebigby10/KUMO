@@ -49,7 +49,12 @@ interface CodeEditorPageProps {
   endTime: string | null;
 }
 
-const LANGUAGES = [{ key: "python" as LanguageKey, label: "Python" }];
+const LANGUAGES = [
+  { key: "python" as LanguageKey, label: "Python" },
+  { key: "cpp" as LanguageKey, label: "C++" },
+  { key: "c" as LanguageKey, label: "C" },
+  { key: "java" as LanguageKey, label: "Java" },
+];
 
 const CodeEditorPageInner = ({ tasks, workId, endTime }: CodeEditorPageProps) => {
   const router = useRouter();

@@ -31,22 +31,22 @@ const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
             <FiUser className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white">Instructors</h2>
-            <p className="text-sm text-slate-400">{teachers.length} instructor{teachers.length !== 1 ? 's' : ''}</p>
+            <h2 className="text-2xl font-bold text-gray-900">Instructors</h2>
+            <p className="text-sm text-gray-500">{teachers.length} instructor{teachers.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
 
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl overflow-hidden shadow-xl">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
           {teachers.length === 0 ? (
-            <div className="p-8 text-center text-slate-400">
+            <div className="p-8 text-center text-gray-400">
               No instructors found
             </div>
           ) : (
             teachers.map((teacher: any, index: number) => (
               <div
                 key={teacher.email}
-                className={`flex items-center gap-4 p-4 hover:bg-slate-700/30 transition-colors ${
-                  index !== teachers.length - 1 ? "border-b border-slate-700/50" : ""
+                className={`flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors ${
+                  index !== teachers.length - 1 ? "border-b border-gray-100" : ""
                 }`}
               >
                 <Avatar
@@ -56,15 +56,15 @@ const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
                   size="lg"
                 />
                 <div className="flex-1">
-                  <p className="text-white font-medium">
+                  <p className="text-gray-900 font-medium">
                     {teacher.name || teacher.email}
                   </p>
                   {teacher.name && (
-                    <p className="text-sm text-slate-400">{teacher.email}</p>
+                    <p className="text-sm text-gray-500">{teacher.email}</p>
                   )}
                 </div>
-                <div className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full">
-                  <span className="text-xs font-medium text-indigo-400">
+                <div className="px-3 py-1 bg-indigo-50 border border-indigo-200 rounded-full">
+                  <span className="text-xs font-medium text-indigo-600">
                     {teacher.role || "OWNER"}
                   </span>
                 </div>
@@ -81,26 +81,26 @@ const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
             <FiUsers className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white">Students</h2>
-            <p className="text-sm text-slate-400">{students.length} student{students.length !== 1 ? 's' : ''}</p>
+            <h2 className="text-2xl font-bold text-gray-900">Students</h2>
+            <p className="text-sm text-gray-500">{students.length} student{students.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
 
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl overflow-hidden shadow-xl">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
           {students.length === 0 ? (
             <div className="p-12 text-center">
-              <div className="w-20 h-20 bg-slate-700/50 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                <FiUsers className="w-10 h-10 text-slate-500" />
+              <div className="w-20 h-20 bg-gray-50 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <FiUsers className="w-10 h-10 text-gray-300" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 No students yet
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-gray-500">
                 Students will appear here once they join the lab
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-700/50">
+            <div className="divide-y divide-gray-100">
               {students.map((student: any) => {
                 const studentCard = (
                   <>
@@ -111,15 +111,15 @@ const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
                       size="md"
                     />
                     <div className="flex-1">
-                      <p className="text-white font-medium">
+                      <p className="text-gray-900 font-medium">
                         {student.name || student.email}
                       </p>
                       {student.name && (
-                        <p className="text-sm text-slate-400">{student.email}</p>
+                        <p className="text-sm text-gray-500">{student.email}</p>
                       )}
                     </div>
                     {isInstructor && (
-                      <FiChevronRight className="w-5 h-5 text-slate-500 group-hover:text-white transition-colors" />
+                      <FiChevronRight className="w-5 h-5 text-gray-300 group-hover:text-gray-700 transition-colors" />
                     )}
                   </>
                 );
@@ -128,7 +128,7 @@ const page = async ({ params }: { params: Promise<{ labId: string }> }) => {
                   <Link
                     key={student.email}
                     href={`/dashboard/lab/${labId}/student/${encodeURIComponent(student.email)}`}
-                    className="group flex items-center gap-4 p-4 hover:bg-slate-700/30 transition-colors cursor-pointer"
+                    className="group flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     {studentCard}
                   </Link>

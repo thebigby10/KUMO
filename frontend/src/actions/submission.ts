@@ -42,7 +42,7 @@ export async function initializeWorkSession(workId: string) {
             userEmail: user.email,
             code: task.editors[0]?.solution || "", // Starter code
             status: "DRAFT",
-            language: "python",
+            language: task.language || "python",
           },
         });
       }
