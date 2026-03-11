@@ -19,6 +19,12 @@ export const metadata: Metadata = {
   description:
     "A secure, AI-enhanced coding assessment platform that standardizes CS Labs with intelligent grading, real-time feedback, and plagiarism detection.",
   keywords: ["coding", "assessment", "AI", "education", "CS labs", "grading"],
+  openGraph: {
+    title: "KUMO – AI-Enhanced Coding Assessment",
+    description:
+      "A secure, AI-enhanced coding assessment platform that standardizes CS Labs with intelligent grading, real-time feedback, and plagiarism detection.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -33,7 +39,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900`}
       >
-        <GoogleOAuthProvider clientId={clientId}>
+        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
           <ToastProvider>
             {children}
           </ToastProvider>
