@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, BookOpen, Users } from "lucide-react";
 import CreateLabModal from "@/components/modals/CreateLabModal";
 import JoinLabModal from "@/components/modals/JoinLabModal";
 
@@ -28,8 +28,7 @@ export default function ClassroomActionWrapper({
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const openCreate = () => {
@@ -49,63 +48,44 @@ export default function ClassroomActionWrapper({
         onClick={() => setIsDropdownOpen((v) => !v)}
         title="Create or join a lab"
         className={`
-          p-2 rounded-xl transition-all duration-200
+          inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium
+          transition-all border
           ${
             isDropdownOpen
-              ? "bg-slate-800 text-white rotate-45"
-              : "text-slate-400 hover:text-white hover:bg-slate-800"
+              ? "bg-pink-500 text-white border-pink-500 shadow-sm"
+              : "bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100"
           }
         `}
       >
-        <Plus size={22} />
+        <Plus size={16} className={`transition-transform ${isDropdownOpen ? "rotate-45" : ""}`} />
+        <span>New</span>
       </button>
 
       {/* Dropdown */}
       {isDropdownOpen && (
-        <div
-          className="
-            absolute right-0 mt-3 w-48
-            bg-slate-900 border border-slate-700
-            rounded-xl shadow-xl
-            z-[60]
-            overflow-hidden
-            animate-in fade-in zoom-in-95 duration-150
-            origin-top-right
-          "
-        >
+        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5 z-[60] animate-slide-in-down">
           <button
             onClick={openJoin}
-            className="
-              w-full text-left px-4 py-3 text-sm
-              text-slate-300
-              hover:bg-slate-800 hover:text-white
-              transition-colors
-            "
+            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 flex items-center gap-3 transition-colors"
           >
+            <Users size={15} className="text-gray-400" />
             Join lab
           </button>
-
           <button
             onClick={openCreate}
-            className="
-              w-full text-left px-4 py-3 text-sm
-              text-slate-300
-              hover:bg-slate-800 hover:text-white
-              transition-colors
-            "
+            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 flex items-center gap-3 transition-colors"
           >
+            <BookOpen size={15} className="text-gray-400" />
             Create lab
           </button>
         </div>
       )}
 
-      {/* Modals (unchanged) */}
       <CreateLabModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         userEmail={userEmail}
       />
-
       <JoinLabModal
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
