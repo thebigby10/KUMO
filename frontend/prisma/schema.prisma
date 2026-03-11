@@ -140,6 +140,7 @@ model Task {
   title       String
   description String?
   url         String? //Used for PDF URL
+  language    String   @default("python")
   point       Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

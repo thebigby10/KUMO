@@ -86,7 +86,7 @@ input:-webkit-autofill:active {
 input,
 textarea,
 select {
-    color: #1F2937;
+    color: inherit;
 }
 
 /* ============================================================
