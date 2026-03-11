@@ -44,7 +44,7 @@ class ConnectionManager:
             if websocket in self.active_connections[user_id]:
                 self.active_connections[user_id].remove(websocket)
             if len(self.active_connections[user_id]) == 0:
-                del self.active_connections[user_id]
+                self.active_connections.pop(user_id, None)
         print(f"User {user_id} disconnected.")
 
     async def send_personal_message(self, message: str, user_id: str):
