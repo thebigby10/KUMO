@@ -186,21 +186,21 @@ export default function GradingInterface({
     switch (status) {
       case "RETURNED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-50 text-green-600 border border-green-200">
             <FiCheckCircle size={12} />
             Graded
           </span>
         );
       case "SUBMITTED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
             <FiClock size={12} />
             Pending
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-400 border border-slate-600">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200">
             <FiFileText size={12} />
             Draft
           </span>
@@ -210,22 +210,22 @@ export default function GradingInterface({
 
   if (!activeStudent)
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-slate-900 text-slate-400">
-        <FiUser size={48} className="text-slate-700 mb-4" />
-        <p className="text-lg font-semibold text-white">No students found</p>
+      <div className="flex flex-col items-center justify-center h-full bg-gray-50 text-gray-500">
+        <FiUser size={48} className="text-gray-300 mb-4" />
+        <p className="text-lg font-semibold text-gray-900">No students found</p>
         <p className="text-sm">There are no submissions to grade yet.</p>
       </div>
     );
 
   return (
-    <div className="flex h-full bg-slate-900">
+    <div className="flex h-full bg-gray-50">
       {/* LEFT PANEL: Students List */}
-      <div className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
         {/* Search & Stats Header */}
-        <div className="p-4 border-b border-slate-800 space-y-3">
+        <div className="p-4 border-b border-gray-200 space-y-3">
           <div className="relative">
             <FiSearch
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               size={16}
             />
             <input
@@ -236,14 +236,14 @@ export default function GradingInterface({
                 setSearchTerm(e.target.value);
                 setSelectedStudentIndex(0);
               }}
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-500"
+              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all placeholder:text-gray-400"
             />
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-400">
+            <span className="text-gray-500">
               {gradedStudents} of {totalStudents} graded
             </span>
-            <div className="w-20 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all"
                 style={{
@@ -281,8 +281,8 @@ export default function GradingInterface({
                 onClick={() => handleSelectionChange(idx, 0)}
                 className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-all border-l-2 ${
                   isSelected
-                    ? "bg-blue-500/10 border-l-blue-500"
-                    : "border-l-transparent hover:bg-slate-800/50"
+                    ? "bg-pink-50 border-l-pink-500"
+                    : "border-l-transparent hover:bg-gray-50"
                 }`}
               >
                 {/* Avatar */}
@@ -290,14 +290,14 @@ export default function GradingInterface({
                   <img
                     src={student.user.avatar}
                     alt=""
-                    className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-700 shadow-lg"
+                    className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-200 shadow-sm"
                   />
                 ) : (
                   <div
-                    className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-lg ${
+                    className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-sm ${
                       isSelected
-                        ? "bg-gradient-to-br from-blue-500 to-indigo-600"
-                        : "bg-gradient-to-br from-slate-600 to-slate-700"
+                        ? "bg-gradient-to-br from-pink-500 to-rose-500"
+                        : "bg-gradient-to-br from-gray-400 to-gray-500"
                     }`}
                   >
                     {student.user.name?.[0]?.toUpperCase() || "?"}
@@ -309,7 +309,7 @@ export default function GradingInterface({
                   <div className="flex items-center gap-2">
                     <p
                       className={`text-sm font-medium truncate ${
-                        isSelected ? "text-white" : "text-slate-300"
+                        isSelected ? "text-gray-900" : "text-gray-700"
                       }`}
                     >
                       {student.user.name || "Unknown Student"}
@@ -317,24 +317,24 @@ export default function GradingInterface({
                     {allGraded && (
                       <FiCheckCircle
                         size={14}
-                        className="text-green-400 shrink-0"
+                        className="text-green-500 shrink-0"
                       />
                     )}
                     {totalViolations > 0 && (
-                      <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/20 shrink-0">
+                      <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-500 border border-red-200 shrink-0">
                         <FiAlertTriangle size={10} />
                         {totalViolations}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-slate-500 truncate">
+                    <span className="text-xs text-gray-400 truncate">
                       {student.tasks.length} tasks
                     </span>
                     {allGraded && (
                       <>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-xs font-medium text-green-400">
+                        <span className="text-gray-300">•</span>
+                        <span className="text-xs font-medium text-green-600">
                           {earnedPoints}/{totalPoints}
                         </span>
                       </>
@@ -350,7 +350,7 @@ export default function GradingInterface({
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Task Navigation Bar */}
-        <div className="h-12 bg-slate-950 border-b border-slate-800 flex items-center px-2 gap-1 overflow-x-auto shrink-0">
+        <div className="h-12 bg-white border-b border-gray-200 flex items-center px-2 gap-1 overflow-x-auto shrink-0">
           {activeStudent.tasks.map((sub, idx) => {
             const isTaskSelected = idx === selectedTaskIndex;
             const isGraded = sub.status === "RETURNED";
@@ -361,8 +361,8 @@ export default function GradingInterface({
                 onClick={() => handleSelectionChange(selectedStudentIndex, idx)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   isTaskSelected
-                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
-                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                    ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                 }`}
               >
                 <span className="truncate max-w-[120px]">{sub.task.title}</span>
@@ -371,8 +371,8 @@ export default function GradingInterface({
                     isTaskSelected
                       ? "bg-white/20 text-white"
                       : isGraded
-                        ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                        : "bg-slate-700 text-slate-400"
+                        ? "bg-green-50 text-green-600 border border-green-200"
+                        : "bg-gray-100 text-gray-500"
                   }`}
                 >
                   {sub.grade !== null ? sub.grade : "—"}/{sub.task.point}
@@ -385,9 +385,9 @@ export default function GradingInterface({
         {/* Code Editor Area */}
         <div className="flex-1 flex min-h-0 p-3 gap-3">
           {/* Editor */}
-          <div className="flex-1 flex flex-col min-w-0 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shadow-xl">
+          <div className="flex-1 flex flex-col min-w-0 bg-slate-950 rounded-xl border border-gray-200 overflow-hidden shadow-sm">
             {/* Editor Header */}
-            <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+            <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-red-500" />
@@ -428,7 +428,7 @@ export default function GradingInterface({
                   }}
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-slate-500">
+                <div className="flex items-center justify-center h-full text-gray-400">
                   Select a task to view code
                 </div>
               )}
@@ -436,28 +436,28 @@ export default function GradingInterface({
           </div>
 
           {/* Grading Panel */}
-          <div className="w-72 flex flex-col bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shadow-xl shrink-0">
+          <div className="w-72 flex flex-col bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm shrink-0">
             {activeSubmission ? (
               <>
                 {/* Student Info Header */}
-                <div className="p-4 border-b border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950">
+                <div className="p-4 border-b border-gray-200 bg-gray-50">
                   <div className="flex items-center gap-3">
                     {activeStudent.user.avatar ? (
                       <img
                         src={activeStudent.user.avatar}
                         alt=""
-                        className="w-11 h-11 rounded-full object-cover ring-2 ring-slate-700 shadow-lg"
+                        className="w-11 h-11 rounded-full object-cover ring-2 ring-gray-200 shadow-sm"
                       />
                     ) : (
-                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white font-bold shadow-sm">
                         {activeStudent.user.name?.[0]?.toUpperCase() || "?"}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-white truncate text-sm">
+                      <h3 className="font-semibold text-gray-900 truncate text-sm">
                         {activeStudent.user.name || "Unknown"}
                       </h3>
-                      <p className="text-xs text-slate-400 truncate">
+                      <p className="text-xs text-gray-500 truncate">
                         {activeSubmission.task.title} •{" "}
                         {activeSubmission.task.point} pts
                       </p>
@@ -475,24 +475,24 @@ export default function GradingInterface({
                   if (count === 0) return null;
 
                   return (
-                    <div className="border-b border-slate-800">
+                    <div className="border-b border-gray-200">
                       <button
                         onClick={() => setViolationsExpanded(!violationsExpanded)}
-                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-800/50 transition-colors"
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
                       >
                         <div className="flex items-center gap-2">
-                          <FiShield size={14} className="text-red-400" />
-                          <span className="text-xs font-semibold text-red-400 uppercase tracking-wide">
+                          <FiShield size={14} className="text-red-500" />
+                          <span className="text-xs font-semibold text-red-500 uppercase tracking-wide">
                             Violations
                           </span>
-                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-50 text-red-500 border border-red-200">
                             {count}
                           </span>
                         </div>
                         {violationsExpanded ? (
-                          <FiChevronUp size={14} className="text-slate-400" />
+                          <FiChevronUp size={14} className="text-gray-400" />
                         ) : (
-                          <FiChevronDown size={14} className="text-slate-400" />
+                          <FiChevronDown size={14} className="text-gray-400" />
                         )}
                       </button>
 
@@ -501,17 +501,17 @@ export default function GradingInterface({
                           {logs.map((log, i) => (
                             <div
                               key={i}
-                              className="flex items-start gap-2 p-2 bg-red-500/5 border border-red-500/10 rounded-lg"
+                              className="flex items-start gap-2 p-2 bg-red-50 border border-red-100 rounded-lg"
                             >
                               <FiAlertTriangle
                                 size={12}
-                                className="text-red-400 mt-0.5 shrink-0"
+                                className="text-red-500 mt-0.5 shrink-0"
                               />
                               <div className="min-w-0">
-                                <p className="text-xs text-red-300">
+                                <p className="text-xs text-red-600">
                                   {log.description}
                                 </p>
-                                <p className="text-[10px] text-slate-500 mt-0.5">
+                                <p className="text-[10px] text-gray-400 mt-0.5">
                                   {new Date(log.time).toLocaleString()}
                                 </p>
                               </div>
@@ -656,32 +656,32 @@ export default function GradingInterface({
                   const passed = testResults.filter((r: any) => r.passed).length;
 
                   return (
-                    <div className="border-b border-slate-800">
+                    <div className="border-b border-gray-200">
                       <div className="flex items-center justify-between px-4 py-3">
                         <button
                           onClick={() => setTestsExpanded(!testsExpanded)}
                           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                         >
-                          <FiCheckCircle size={14} className="text-orange-400" />
-                          <span className="text-xs font-semibold text-orange-400 uppercase tracking-wide">
+                          <FiCheckCircle size={14} className="text-orange-500" />
+                          <span className="text-xs font-semibold text-orange-500 uppercase tracking-wide">
                             Test Cases
                           </span>
-                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-orange-500 border border-orange-200">
                             {testCases.length}
                           </span>
                           {testResults.length > 0 && (
                             <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${
                               passed === testResults.length
-                                ? "bg-green-500/20 text-green-400 border-green-500/30"
-                                : "bg-red-500/20 text-red-400 border-red-500/30"
+                                ? "bg-green-50 text-green-600 border-green-200"
+                                : "bg-red-50 text-red-500 border-red-200"
                             }`}>
                               {passed}/{testResults.length}
                             </span>
                           )}
                           {testsExpanded ? (
-                            <FiChevronUp size={14} className="text-slate-400" />
+                            <FiChevronUp size={14} className="text-gray-400" />
                           ) : (
-                            <FiChevronDown size={14} className="text-slate-400" />
+                            <FiChevronDown size={14} className="text-gray-400" />
                           )}
                         </button>
                         <button
@@ -711,27 +711,27 @@ export default function GradingInterface({
                                 key={i}
                                 className={`p-2.5 rounded-lg border text-xs font-mono ${
                                   res.passed
-                                    ? "bg-green-500/5 border-green-500/20"
-                                    : "bg-red-500/5 border-red-500/20"
+                                    ? "bg-green-50 border-green-200"
+                                    : "bg-red-50 border-red-200"
                                 }`}
                               >
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className={res.passed ? "text-green-400" : "text-red-400"}>
+                                  <span className={res.passed ? "text-green-600" : "text-red-500"}>
                                     {res.passed ? "✅" : "❌"} Test {i + 1}
                                   </span>
                                 </div>
                                 {!res.passed && (
                                   <div className="space-y-1 text-[11px]">
-                                    <p className="text-slate-400">Input: <span className="text-slate-300">{res.input}</span></p>
-                                    <p className="text-slate-400">Expected: <span className="text-green-300">{res.expected}</span></p>
-                                    <p className="text-slate-400">Actual: <span className="text-red-300">{res.actual}</span></p>
-                                    {res.error && <p className="text-red-400">Error: {res.error}</p>}
+                                    <p className="text-gray-500">Input: <span className="text-gray-700">{res.input}</span></p>
+                                    <p className="text-gray-500">Expected: <span className="text-green-600">{res.expected}</span></p>
+                                    <p className="text-gray-500">Actual: <span className="text-red-500">{res.actual}</span></p>
+                                    {res.error && <p className="text-red-500">Error: {res.error}</p>}
                                   </div>
                                 )}
                               </div>
                             ))
                           ) : (
-                            <p className="text-xs text-slate-500 text-center py-2">
+                            <p className="text-xs text-gray-400 text-center py-2">
                               Click &quot;Run Tests&quot; to execute {testCases.length} test case{testCases.length > 1 ? "s" : ""}
                             </p>
                           )}
@@ -745,8 +745,8 @@ export default function GradingInterface({
                 <div className="flex-1 p-4 overflow-y-auto space-y-4">
                   {/* Grade Input */}
                   <div>
-                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">
-                      <FiAward size={14} className="text-amber-400" />
+                    <label className="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                      <FiAward size={14} className="text-amber-500" />
                       Grade
                     </label>
                     <div className="flex items-center gap-2">
@@ -756,11 +756,11 @@ export default function GradingInterface({
                         max={activeSubmission.task.point}
                         value={currentGrade}
                         onChange={(e) => setCurrentGrade(e.target.value)}
-                        className="w-20 px-3 py-2.5 text-center text-lg font-bold text-white bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                        className="w-20 px-3 py-2.5 text-center text-lg font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition-all"
                         placeholder="0"
                       />
-                      <span className="text-slate-500">/</span>
-                      <span className="text-lg font-bold text-slate-300">
+                      <span className="text-gray-400">/</span>
+                      <span className="text-lg font-bold text-gray-700">
                         {activeSubmission.task.point}
                       </span>
                     </div>
@@ -768,21 +768,21 @@ export default function GradingInterface({
 
                   {/* Feedback Input */}
                   <div className="flex-1 flex flex-col">
-                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">
-                      <FiMessageSquare size={14} className="text-blue-400" />
+                    <label className="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                      <FiMessageSquare size={14} className="text-blue-500" />
                       Feedback
                     </label>
                     <textarea
                       value={currentFeedback}
                       onChange={(e) => setCurrentFeedback(e.target.value)}
-                      className="flex-1 min-h-[120px] w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm text-white resize-none transition-all placeholder:text-slate-500"
+                      className="flex-1 min-h-[120px] w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none text-sm text-gray-900 resize-none transition-all placeholder:text-gray-400"
                       placeholder="Add feedback for the student..."
                     />
                   </div>
                 </div>
 
                 {/* Actions Footer */}
-                <div className="p-3 border-t border-slate-800 bg-slate-900/50 space-y-2">
+                <div className="p-3 border-t border-gray-200 bg-gray-50 space-y-2">
                   {/* Save Button */}
                   <button
                     onClick={handleSave}
@@ -790,7 +790,7 @@ export default function GradingInterface({
                     className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${
                       saveSuccess
                         ? "bg-green-500 text-white"
-                        : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg"
+                        : "bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white shadow-sm"
                     } disabled:opacity-60 disabled:cursor-not-allowed`}
                   >
                     {loading ? (
@@ -821,12 +821,12 @@ export default function GradingInterface({
                         handleSelectionChange(selectedStudentIndex - 1, 0)
                       }
                       disabled={selectedStudentIndex === 0}
-                      className="flex items-center gap-1 px-3 py-2 text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-all"
+                      className="flex items-center gap-1 px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 transition-all"
                     >
                       <FiChevronLeft size={14} />
                       Prev
                     </button>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-gray-400">
                       {selectedStudentIndex + 1}/{filteredStudents.length}
                     </span>
                     <button
@@ -837,7 +837,7 @@ export default function GradingInterface({
                       disabled={
                         selectedStudentIndex === filteredStudents.length - 1
                       }
-                      className="flex items-center gap-1 px-3 py-2 text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-all"
+                      className="flex items-center gap-1 px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 transition-all"
                     >
                       Next
                       <FiChevronRight size={14} />
@@ -846,8 +846,8 @@ export default function GradingInterface({
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-6">
-                <FiFileText size={40} className="text-slate-700 mb-3" />
+              <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-6">
+                <FiFileText size={40} className="text-gray-300 mb-3" />
                 <p className="text-sm">Select a submission to grade</p>
               </div>
             )}
