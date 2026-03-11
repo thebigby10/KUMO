@@ -71,6 +71,25 @@ export default async function DashboardPage() {
                           : "bg-gradient-to-br from-blue-400 via-indigo-400 to-blue-600"
                       }`}
                     />
+                    {/* Gradient or Image background */}
+                    {lab.banner?.startsWith("http") ? (
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${lab.banner})` }}
+                      >
+                         <div className="absolute inset-0 bg-black/20" /> {/* Slight overlay for text readability */}
+                      </div>
+                    ) : lab.banner ? (
+                      <div className={`absolute inset-0 ${lab.banner}`} />
+                    ) : (
+                      <div
+                        className={`absolute inset-0 ${
+                          isMyClass
+                            ? "bg-gradient-to-br from-pink-400 via-rose-400 to-pink-600"
+                            : "bg-gradient-to-br from-blue-400 via-indigo-400 to-blue-600"
+                        }`}
+                      />
+                    )}
                     {/* Subtle grid */}
                     <div
                       className="absolute inset-0 opacity-20"
