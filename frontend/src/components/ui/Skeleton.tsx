@@ -17,7 +17,7 @@ export function Skeleton({ className = "", rounded = "rounded-lg" }: SkeletonPro
 export function LabCardSkeleton() {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden h-72">
-      <Skeleton className="h-32 w-full" rounded="rounded-none" />
+      <Skeleton className="h-28 w-full" rounded="rounded-none" />
       <div className="p-5 space-y-3">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-3 w-1/2" />
