@@ -56,52 +56,52 @@ export default async function LabStreamPage({
         {/* LEFT COLUMN: Class Info */}
         <div className="space-y-4">
           {isInstructor ? (
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-5 shadow-xl">
+            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold text-slate-300">
+                <span className="text-sm font-semibold text-gray-600">
                   Lab Code
                 </span>
-                <button className="text-slate-400 hover:text-white hover:bg-slate-700 p-1.5 rounded-lg transition-colors">
+                <button className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 p-1.5 rounded-lg transition-colors">
                   <FiMoreVertical size={16} />
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-3xl font-bold font-mono text-blue-400 tracking-wider">
+                <span className="text-3xl font-bold font-mono text-pink-500 tracking-wider">
                   {lab.labCode}
                 </span>
                 <CopyLabCodeButton code={lab.labCode} />
               </div>
-              <p className="text-xs text-slate-500 mt-3">
+              <p className="text-xs text-gray-400 mt-3">
                 Share this code with students to join
               </p>
             </div>
           ) : (
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-5 shadow-xl">
-              <h3 className="text-sm font-semibold text-slate-300 mb-4">
+            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-600 mb-4">
                 Upcoming
               </h3>
-              <p className="text-xs text-slate-500 mb-4">No work due soon</p>
-              <button className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors">
+              <p className="text-xs text-gray-400 mb-4">No work due soon</p>
+              <button className="text-sm font-medium text-pink-500 hover:text-pink-600 transition-colors">
                 View all →
               </button>
             </div>
           )}
 
           {/* Quick Stats */}
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-5 shadow-xl space-y-3">
-            <h3 className="text-sm font-semibold text-slate-300 mb-4">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-3">
+            <h3 className="text-sm font-semibold text-gray-600 mb-4">
               Quick Stats
             </h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-400">Students</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-xs text-gray-400">Students</span>
+                <span className="text-sm font-semibold text-gray-900">
                   {lab.enrollments?.length || 0}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-400">Assignments</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-xs text-gray-400">Assignments</span>
+                <span className="text-sm font-semibold text-gray-900">
                   {lab.works?.length || 0}
                 </span>
               </div>
@@ -118,14 +118,14 @@ export default async function LabStreamPage({
           />
 
           {lab.announcements.length === 0 ? (
-            <div className="bg-slate-800/30 border border-slate-700 rounded-xl p-12 text-center">
-              <div className="w-24 h-24 bg-slate-700/50 mb-6 rounded-2xl mx-auto flex items-center justify-center">
+            <div className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-12 text-center">
+              <div className="w-24 h-24 bg-gray-50 mb-6 rounded-2xl mx-auto flex items-center justify-center">
                 <span className="text-5xl">💬</span>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Start the conversation
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-gray-500">
                 Share announcements and updates with your class
               </p>
             </div>
@@ -134,7 +134,7 @@ export default async function LabStreamPage({
               {lab.announcements.map((post) => (
                 <div
                   key={post.id}
-                  className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-slate-600 transition-all shadow-lg"
+                  className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-all shadow-sm"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -142,10 +142,10 @@ export default async function LabStreamPage({
                         {post.user.email.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-white">
+                        <span className="text-sm font-semibold text-gray-900">
                           {post.user.name || post.user.email}
                         </span>
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-gray-400">
                           {new Date(post.createdAt).toLocaleDateString(
                             "en-US",
                             { month: "short", day: "numeric", year: "numeric" },
@@ -155,30 +155,30 @@ export default async function LabStreamPage({
                     </div>
                   </div>
 
-                  <div className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">
+                  <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
                     {post.content}
                   </div>
 
                   {/* Materials */}
                   {post.materials && post.materials.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-slate-700 space-y-2">
+                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
                       {post.materials.map((material: any) => (
                         <a
                           key={material.id}
                           href={material.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 bg-slate-700/30 hover:bg-slate-700/50 rounded-lg transition-colors group"
+                          className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
                         >
-                          <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                            <FiCalendar className="w-4 h-4 text-blue-400" />
+                          <div className="w-8 h-8 bg-pink-50 rounded-lg flex items-center justify-center">
+                            <FiCalendar className="w-4 h-4 text-pink-500" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors truncate">
+                            <p className="text-sm font-medium text-gray-900 group-hover:text-pink-500 transition-colors truncate">
                               {material.title}
                             </p>
                             {material.description && (
-                              <p className="text-xs text-slate-500 truncate">
+                              <p className="text-xs text-gray-400 truncate">
                                 {material.description}
                               </p>
                             )}

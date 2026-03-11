@@ -67,19 +67,19 @@ export default function WorkActionMenu({ workId, labId }: WorkActionMenuProps) {
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+        className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
       >
         <FiMoreVertical size={20} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleDashboard();
             }}
-            className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700 flex items-center gap-3 transition-colors"
+            className="w-full text-left px-4 py-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center gap-3 transition-colors"
           >
             <FiBarChart2 size={16} />
             View Dashboard
@@ -90,7 +90,7 @@ export default function WorkActionMenu({ workId, labId }: WorkActionMenuProps) {
               e.stopPropagation();
               handleEdit();
             }}
-            className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700 flex items-center gap-3 border-t border-slate-700/50 transition-colors"
+            className="w-full text-left px-4 py-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center gap-3 border-t border-gray-100 transition-colors"
           >
             <FiEdit size={16} />
             Edit Assignment
@@ -102,7 +102,7 @@ export default function WorkActionMenu({ workId, labId }: WorkActionMenuProps) {
               handleDelete();
             }}
             disabled={isDeleting}
-            className="w-full text-left px-4 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 flex items-center gap-3 border-t border-slate-700/50 transition-colors disabled:opacity-50"
+            className="w-full text-left px-4 py-3 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 flex items-center gap-3 border-t border-gray-100 transition-colors disabled:opacity-50"
           >
             <FiTrash2 size={16} />
             {isDeleting ? "Deleting..." : "Delete"}
