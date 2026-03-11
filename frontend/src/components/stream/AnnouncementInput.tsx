@@ -52,35 +52,35 @@ export default function AnnouncementInput({ labId, userEmail, userAvatarChar }: 
 
   if (isExpanded) {
     return (
-      <div ref={containerRef} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl shadow-xl p-5">
+      <div ref={containerRef} className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
         <div className="flex gap-4">
            <div className="flex-1">
              <textarea
                value={content}
                onChange={(e) => setContent(e.target.value)}
                placeholder="Announce something to your class..."
-               className="w-full h-36 p-4 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all text-white placeholder-slate-500"
+               className="w-full h-36 p-4 bg-gray-50 border border-gray-200 rounded-lg focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 outline-none resize-none transition-all text-gray-900 placeholder-gray-400"
                autoFocus
              />
            </div>
         </div>
 
-        <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-700">
-          <button className="p-2.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors">
+        <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+          <button className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
             <FiPaperclip size={20} />
           </button>
           
           <div className="flex gap-3">
             <button 
               onClick={() => setIsExpanded(false)}
-              className="px-5 py-2.5 text-sm font-medium text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+              className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button 
               onClick={handlePost}
               disabled={!content.trim() || isPosting}
-              className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-lg shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+              className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
             >
               {isPosting ? (
                 <>
@@ -107,12 +107,12 @@ export default function AnnouncementInput({ labId, userEmail, userAvatarChar }: 
   return (
     <div 
       onClick={() => setIsExpanded(true)}
-      className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-5 flex items-center gap-4 cursor-pointer hover:border-slate-600 hover:bg-slate-800/70 transition-all shadow-lg"
+      className="bg-white border border-gray-200 rounded-xl p-5 flex items-center gap-4 cursor-pointer hover:border-gray-300 hover:shadow-sm transition-all"
     >
       <div className="w-11 h-11 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold shrink-0 shadow-lg">
          {userAvatarChar}
       </div>
-      <p className="text-slate-400 text-sm flex-1">
+      <p className="text-gray-400 text-sm flex-1">
         Announce something to your class...
       </p>
     </div>

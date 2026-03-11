@@ -73,26 +73,26 @@ export default async function ClassworkPage({
       const totalScore = subs.reduce((acc, curr) => acc + (curr.grade || 0), 0);
       return {
         label: "Graded",
-        color: "bg-green-500/10 text-green-400 border-green-500/20",
+        color: "bg-green-50 text-green-600 border-green-200",
         score: totalScore,
       };
     }
 
     // Check submission progress
     if (submittedCount === totalTasks && totalTasks > 0) {
-      return { label: "Turned In", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" };
+      return { label: "Turned In", color: "bg-blue-50 text-blue-600 border-blue-200" };
     }
 
     // Late/Missing check
     if (endTime && now > endTime && submittedCount < totalTasks) {
-      return { label: "Missing", color: "bg-red-500/10 text-red-400 border-red-500/20" };
+      return { label: "Missing", color: "bg-red-50 text-red-600 border-red-200" };
     }
 
     if (submittedCount > 0) {
-      return { label: "In Progress", color: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" };
+      return { label: "In Progress", color: "bg-yellow-50 text-yellow-600 border-yellow-200" };
     }
 
-    return { label: "Assigned", color: "bg-slate-700 text-slate-400 border-slate-600" };
+    return { label: "Assigned", color: "bg-gray-100 text-gray-500 border-gray-200" };
   };
 
   // --- Sort Works: Active first, then by Due Date ---
@@ -113,8 +113,8 @@ export default async function ClassworkPage({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-white mb-2">Classwork</h2>
-          <p className="text-slate-400">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Classwork</h2>
+          <p className="text-gray-500">
             {isInstructor
               ? "Manage assignments and track progress"
               : "View your upcoming and past assignments"}
@@ -124,7 +124,7 @@ export default async function ClassworkPage({
         {isInstructor && (
           <Link
             href={`/dashboard/lab/${labId}/work/create`}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg shadow-blue-500/20 font-medium"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-lg hover:from-pink-600 hover:to-rose-600 transition-all shadow-sm font-medium"
           >
             <FiPlus size={20} />
             <span>Create Assignment</span>
@@ -135,14 +135,14 @@ export default async function ClassworkPage({
       {/* Assignment List */}
       <div className="space-y-4">
         {sortedWorks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/30">
-            <div className="w-20 h-20 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center mb-6">
+          <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
+            <div className="w-20 h-20 bg-pink-50 text-pink-400 rounded-2xl flex items-center justify-center mb-6">
               <FiCode size={40} />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
               No assignments yet
             </h3>
-            <p className="text-slate-400 max-w-md">
+            <p className="text-gray-500 max-w-md">
               {isInstructor
                 ? "Get started by creating the first coding assignment for your students."
                 : "Your instructor hasn't posted any work yet."}
@@ -168,11 +168,11 @@ export default async function ClassworkPage({
               <div key={work.id} className="relative group">
                 <Link
                   href={isLockedForStudent ? "#" : linkHref}
-                  className={`block bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 transition-all relative shadow-lg
+                  className={`block bg-white border border-gray-200 rounded-xl p-6 transition-all relative shadow-sm
                     ${
                       isLockedForStudent
                         ? "opacity-60 cursor-not-allowed"
-                        : "hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer"
+                        : "hover:border-pink-200 hover:shadow-md cursor-pointer"
                     }
                   `}
                 >
@@ -182,11 +182,11 @@ export default async function ClassworkPage({
                       <div
                         className={`p-3 rounded-xl shrink-0 ${
                           isInstructor
-                            ? "bg-purple-500/10 text-purple-400"
+                            ? "bg-purple-50 text-purple-500"
                             : studentStatus.label === "Turned In" ||
                                 studentStatus.label === "Graded"
-                              ? "bg-green-500/10 text-green-400"
-                              : "bg-blue-500/10 text-blue-400"
+                              ? "bg-green-50 text-green-500"
+                              : "bg-pink-50 text-pink-500"
                         }`}
                       >
                         {isLockedForStudent ? (
@@ -198,39 +198,39 @@ export default async function ClassworkPage({
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-2">
-                          <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
+                          <h3 className="text-lg font-bold text-gray-900 group-hover:text-pink-500 transition-colors">
                             {work.title}
                           </h3>
 
                           {/* Lifecycle Badges */}
                           {lifecycle === "CLOSED" && (
-                            <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-400 border border-slate-600">
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200">
                               CLOSED
                             </span>
                           )}
                           {lifecycle === "SCHEDULED" && (
-                            <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-orange-50 text-orange-500 border border-orange-200">
                               SCHEDULED
                             </span>
                           )}
                         </div>
 
                         {work.description && (
-                          <p className="text-sm text-slate-400 mb-3 line-clamp-2">
+                          <p className="text-sm text-gray-500 mb-3 line-clamp-2">
                             {work.description}
                           </p>
                         )}
 
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
                           <span className="flex items-center gap-1.5">
                             <FiBarChart2 size={14} />
-                            <span className="text-slate-400">
+                            <span className="text-gray-500">
                               {work.tasks.length}{" "}
                               {work.tasks.length === 1 ? "Task" : "Tasks"}
                             </span>
                           </span>
-                          <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
-                          <span className="text-slate-400">{work.totalPoints} Points</span>
+                          <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                          <span className="text-gray-500">{work.totalPoints} Points</span>
                         </div>
                       </div>
                     </div>
@@ -240,11 +240,11 @@ export default async function ClassworkPage({
                       {/* INSTRUCTOR VIEW: Stats */}
                       {isInstructor ? (
                         <>
-                          <div className="text-lg font-bold text-white">
+                          <div className="text-lg font-bold text-gray-900">
                             {(work as any)._count?.submissions || 0} Submissions
                           </div>
                           {work.endTime && (
-                            <div className="flex items-center gap-2 text-sm text-slate-400">
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
                               <FiCalendar size={14} />
                               Due{" "}
                               {new Date(work.endTime).toLocaleDateString(
@@ -259,9 +259,9 @@ export default async function ClassworkPage({
                         <>
                           {/* Grade Display */}
                           {studentStatus.score !== undefined && (
-                            <div className="text-2xl font-bold text-white">
+                            <div className="text-2xl font-bold text-gray-900">
                               {studentStatus.score}
-                              <span className="text-slate-500">/{work.totalPoints}</span>
+                              <span className="text-gray-400">/{work.totalPoints}</span>
                             </div>
                           )}
 
@@ -288,8 +288,8 @@ export default async function ClassworkPage({
                                 new Date(work.endTime).getTime() -
                                   now.getTime() <
                                   86400000
-                                  ? "text-red-400 font-semibold"
-                                  : "text-slate-500"
+                                  ? "text-red-500 font-semibold"
+                                  : "text-gray-400"
                               }`}
                             >
                               <FiClock size={12} />
