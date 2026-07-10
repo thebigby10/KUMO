@@ -59,20 +59,6 @@ services:
   # ==========================================
   # 3. AUTH SERVICE (Node.js API)
   # ==========================================
-  auth-service:
-    build:
-      context: ./auth-service
-    container_name: auth_service
-    restart: always
-    ports:
-      - "3001:3001"
-    environment:
-      - DATABASE_URL=postgresql://kumo_admin:secure_password_123@postgres:5432/kumo_auth
-    depends_on:
-      postgres:
-        condition: service_started
-    networks:
-      - kumo-network
 
   # ==========================================
   # 4. CODE EXECUTION SERVICE (Python API)
